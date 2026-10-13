@@ -1,0 +1,428 @@
+// Conversations of the abyss. See src/game/dialogue.rs for the format.
+// Story and characters are original to this game.
+
+// ----------------------------------------------------------- level 1
+
+=== elsmore
+-- start
+Another poor soul thrown into the pit! Welcome, if welcome is the word. I am Elsmore, once a scholar of the Baron's court, now just another outcast warming his hands at this miserable fire.
+* Who art thou? -> who
+* What is this place? -> place
+* I am looking for the Baron's daughter. -> daughter ? !flag:elsmore_daughter
+* Tell me again about the girl. -> daughter2 ? flag:elsmore_daughter
+* Have you any food to spare? -> food ? !flag:elsmore_food
+* How does magic work down here? -> magic
+* Farewell. -> end
+
+-- who
+I came down here years ago to study the ruins of Lord Varian's colony. The Baron's men sealed the gate behind me "for my own safety". There is no way out the way thou camest, {name}.
+* What happened to the colony? -> place
+* Back to other matters. -> start
+
+-- place
+This is the Abyss. Lord Varian built a colony here where men, mountain folk, goblins and lizardmen lived as one, bound by the light of the Lumen Stone. When he died, the Stone was broken into three shards and the peoples turned on each other.
+* Where are the shards now? -> shards
+* Back to other matters. -> start
+
+-- shards
+Valor went to the mountain folk, one level below. Wisdom to the lizardmen of the flooded warrens. Mercy lies with the dead in the crypts. Or so the old tales say.
+! flag know_shards 1
+* Thank thee. -> start
+
+-- daughter
+Lady Rowena? Aye, I heard screams some nights ago, and saw a robed man drag a girl past this very fire toward the stairs. A wizard, by his look. He went down, deep down. The way down lies beyond the hall of the gray goblins, to the north-east.
+! flag elsmore_daughter 1
+! exp 20
+* How do I get past the gray goblins? -> goblins
+* Back to other matters. -> start
+
+-- daughter2
+The robed man took her down the stairs beyond the gray goblins' hall. Find their chief, Rhugg. He can be reasoned with, unlike the green brutes to the west.
+* How do I get past the gray goblins? -> goblins
+* Back to other matters. -> start
+
+-- goblins
+Rhugg guards the portcullis to the stairs. He hates Gnarl, chief of the green goblins in the den beyond the west door, more than he hates us. Bring him proof of Gnarl's death and he may let thee pass. The green goblins also stole the key to our library - north of this fire.
+! flag know_rhugg 1
+* Thank thee, Elsmore. -> start
+
+-- magic
+Magic in the Abyss is worked with rune stones. Place them in thy rune bag, then choose up to three upon thy shelf and cast. IN LOR makes light - very handy down here. ORT JUX hurls a bolt of force. Thou wilt need to be experienced to cast the mightier spells.
+* Back to other matters. -> start
+
+-- food
+Hmm. Thou hast an honest face. Take this loaf - and do not tell the others.
+! give Bread
+! flag elsmore_food 1
+* Thank thee. -> start
+
+=== tobin
+-- start
+Psst! Tobin's the name, and trade's the game. Even down here a man needs coin - or what coin can buy. Care to see my wares?
+* Show me what thou hast. -> wares
+* Where dost thou get these things? -> where
+* Farewell. -> end
+
+-- where
+Here and there. The dead don't need their torches, and the goblins don't count their stores. Now, buying or not?
+* Show me what thou hast. -> wares
+* Farewell. -> end
+
+-- wares
+Torch, 5 gold. Loaf of bread, 3 gold. Red potion of healing, 20 gold. A fine lantern, 35 gold. Lockpick, 10 gold.
+* A torch (5 gold). -> torch ? gold>=5
+* A loaf of bread (3 gold). -> bread ? gold>=3
+* A red potion (20 gold). -> potion ? gold>=20
+* The lantern (35 gold). -> lantern ? gold>=35
+* A lockpick (10 gold). -> pick ? gold>=10
+* Nothing for now. -> end
+
+-- torch
+A wise purchase. Light is life down here.
+! take Coin 5
+! give Torch
+* Let me see the wares again. -> wares
+* Farewell. -> end
+
+-- bread
+Fresh! Well... fresh-ish.
+! take Coin 3
+! give Bread
+* Let me see the wares again. -> wares
+* Farewell. -> end
+
+-- potion
+Drink it when the red runs low, friend.
+! take Coin 20
+! give RedPotion
+* Let me see the wares again. -> wares
+* Farewell. -> end
+
+-- lantern
+Burns long and bright. Hang it on thy shoulder.
+! take Coin 35
+! give Lantern
+* Let me see the wares again. -> wares
+* Farewell. -> end
+
+-- pick
+For opening doors that would rather stay closed. I ask no questions.
+! take Coin 10
+! give Lockpick
+* Let me see the wares again. -> wares
+* Farewell. -> end
+
+=== rhugg
+-- start
+Hrrm. Human. Rhugg is chief of gray goblins. Why you come to Rhugg's hall?
+* I need to pass to the stairs. -> stairs ? !flag:rhugg_open
+* I have brought thee Gnarl's medallion. -> medallion ? item:Medallion & !flag:rhugg_open
+* What dost thou know of a robed wizard? -> wizard
+* Why do thy people hate the green goblins? -> green
+* Farewell. -> end
+
+-- stairs
+Stairs belong to gray goblins. Nobody pass! Unless... Gnarl, the green chief, he steal from us, kill our young ones. You bring Rhugg the medallion of Gnarl, Rhugg open the gate. Or you pay. Fifty gold.
+* I will deal with Gnarl. -> end
+* Here is fifty gold. -> pay ? gold>=50
+* Back. -> start
+
+-- pay
+Hrrm! Gold is good. Gate is open. Go, go!
+! take Coin 50
+! door 55
+! flag rhugg_open 1
+* Thank thee. -> end
+
+-- medallion
+Gnarl's medallion! Gnarl is dead! Ha! You are friend of gray goblins now. Rhugg open the gate for you. Take this also.
+! take Medallion
+! door 55
+! flag rhugg_open 1
+! give Coin 0 30
+! exp 60
+* Thank thee, Rhugg. -> end
+
+-- wizard
+Robed man come with screaming girl. He throw fire at us! He go down the stairs. Rhugg not stop him - Rhugg not stupid.
+* Back. -> start
+
+-- green
+Before, when Lumen Stone shine, gray and green goblins live as one tribe. Stone break, Gnarl say green goblins should rule. Now we fight.
+* Back. -> start
+
+// ----------------------------------------------------------- level 2
+
+=== thorgrim
+-- start
+Halt! Thou standest before Thorgrim, son of Thrain, King under the Mountain. Speak thy business, surface-dweller.
+* I seek a wizard who passed this way. -> wizard
+* I seek the Shard of Valor. -> shard ? !flag:thorgrim_done
+* I have found thy Hammer. -> hammer ? item:Hammer & flag:thorgrim_quest & !flag:thorgrim_done
+* Can I help thy people? -> quest ? !flag:thorgrim_quest
+* About the eastern galleries... -> remind ? flag:thorgrim_quest & !flag:thorgrim_done
+* Farewell, King Thorgrim. -> end
+
+-- wizard
+A robed man with a captive went down through the deep mine, past the fire fissure. My guards were wise enough to let him pass. Wizards make poor enemies.
+* Back. -> start
+
+-- shard
+The Shard of Valor was entrusted to my grandfather by Lord Varian himself. I will not give it to any wanderer who asks. Prove thy valor first.
+* How can I prove myself? -> quest ? !flag:thorgrim_quest
+* Back. -> start
+
+-- quest
+The giant spiders have overrun our eastern galleries. Deep within lies the Hammer of the Mountain, the heirloom of my line. I sealed the shaft to save my people. Here is the key. Bring back the Hammer, and the Shard of Valor is thine.
+! give IronKey 21
+! flag thorgrim_quest 1
+* I shall return with the Hammer. -> end
+
+-- remind
+The sealed door lies east of this hall. Beware the queen of the spiders; her bite carries poison.
+* Back. -> start
+
+-- hammer
+The Hammer of the Mountain! By my beard! Thou hast the courage of ten dwarves. As promised, take the Shard of Valor - and the gratitude of the Mountain Folk.
+! take Hammer
+! give ShardOfValor
+! flag thorgrim_done 1
+! exp 200
+* I am honoured, King Thorgrim. -> end
+
+=== hilda
+-- start
+Oh! A visitor. Mind the beds, I've just made them. I'm Hilda. Hungry, are you? Everyone who comes down here is hungry.
+* Yes, I am hungry. -> food ? !flag:hilda_food
+* Tell me about the mines. -> mines
+* What lies below? -> below
+* Farewell. -> end
+
+-- food
+Here, cheese and bread. Eat, eat! You're skin and bones.
+! give Cheese
+! give Bread
+! flag hilda_food 1
+* Thank thee kindly. -> start
+
+-- mines
+Our people dug these halls long before the colony. The east galleries were the richest - until the spiders came. Bodric at the forge trades for gold nuggets, if you find any.
+* Back. -> start
+
+-- below
+The lizard-folk live in the flooded warrens below. They hiss when they speak, but they're decent enough if you're polite. Below them... the old crypts. We don't go there.
+* Back. -> start
+
+=== bodric
+-- start
+Clang! Clang! What? Oh. A customer. I'm Bodric, smith of the Mountain Folk. I make the best steel in the Abyss and I'll trade it for gold.
+* Show me thy wares. -> wares
+* I have gold nuggets to sell. -> nugget ? item:GoldNugget
+* Farewell. -> end
+
+-- wares
+Chain shirt, 60 gold. Gauntlets, 40 gold. Broadsword, 70 gold. Wooden shield, 25 gold. Torch, 4 gold.
+* A chain shirt (60 gold). -> shirt ? gold>=60
+* Gauntlets (40 gold). -> gauntlets ? gold>=40
+* A broadsword (70 gold). -> sword ? gold>=70
+* A wooden shield (25 gold). -> shield ? gold>=25
+* A torch (4 gold). -> torch ? gold>=4
+* Nothing today. -> end
+
+-- shirt
+Good links, tight weave. It'll turn a spider's fang.
+! take Coin 60
+! give ChainShirt
+* Show me the wares again. -> wares
+* Farewell. -> end
+
+-- gauntlets
+! take Coin 40
+! give Gauntlets
+Steel for thy fists.
+* Show me the wares again. -> wares
+* Farewell. -> end
+
+-- sword
+! take Coin 70
+! give Broadsword
+Balanced like a dancer, bites like a troll.
+* Show me the wares again. -> wares
+* Farewell. -> end
+
+-- shield
+! take Coin 25
+! give WoodenShield
+Oak and iron. Keep it between thee and trouble.
+* Show me the wares again. -> wares
+* Farewell. -> end
+
+-- torch
+! take Coin 4
+! give Torch
+There. Don't burn thy beard - oh, thou hast none.
+* Show me the wares again. -> wares
+* Farewell. -> end
+
+-- nugget
+Gold from the mountain! I'll give thee thirty coins for it.
+! take GoldNugget
+! give Coin 0 30
+* I have more nuggets. -> nugget ? item:GoldNugget
+* Show me the wares. -> wares
+* Farewell. -> end
+
+// ----------------------------------------------------------- level 3
+
+=== hissk
+-- start
+Sssstop, warm-blood. Thisss is the village of the People. Why do you come?
+* I come in peace. -> peace
+* I seek the Shard of Wisdom. -> shard
+* What are the lurkers? -> lurkers
+* Farewell. -> end
+
+-- peace
+Peace is good. Peace is rare. The Sage Ssrath will sspeak with you, in the pool of thinking, north of the village.
+* Thank you. -> start
+
+-- shard
+The green ssshard is kept by the Sage Ssrath. Go north, to the pool of thinking. Be ressspectful.
+* Thank you. -> start
+
+-- lurkers
+Great biting things in the deep water, east. They ssstole the eggs of our clutch. The People mourn.
+* Back. -> start
+
+=== ssrath
+-- start
+Ahhh. A warm-blood comes to the pool of thinking. I am Ssrath, Sage of the People. Sssit. What do you ssseek?
+* I seek the Shard of Wisdom. -> shard ? !flag:ssrath_done
+* I have found the stolen eggs. -> eggs ? item:LizardEgg & !flag:ssrath_done
+* What do you know of the wizard? -> wizard
+* Teach me something of magic. -> teach ? !flag:ssrath_teach
+* Farewell. -> end
+
+-- shard
+Wisdom is not given; it is earned. The lurkers of the eastern grotto have ssstolen the eggs of our clutch. Return them to the People, and you will have shown wisdom - and mercy. Then the ssshard is yours.
+! flag ssrath_quest 1
+* I will find the eggs. -> end
+* Back. -> start
+
+-- eggs
+The eggs! The young of the People will hatch after all. You have the gratitude of the clutch, warm-blood. Take the Ssshard of Wisdom. May it light your path.
+! take LizardEgg
+! give ShardOfWisdom
+! flag ssrath_done 1
+! exp 250
+* I am honoured, Sage. -> end
+
+-- wizard
+A dark warm-blood passsed through, with a girl in chains. He ssseeks to wake the Shadow below the crypts. He needs the ssshards kept apart, ssso the Shadow's prison weakens. Gather them, and you can bind the Shadow forever.
+! flag know_fiend 1
+* How do I bind it? -> bind
+* Back. -> start
+
+-- bind
+Carry all three ssshards into its lair. Only the light of the whole Lumen Stone can wound the Shadow.
+* Back. -> start
+
+-- teach
+Wisdom: the rune WIS means knowledge, AN means negation. Sssay AN NOX and poison flees your blood. I give you the rune of knowledge.
+! rune 22
+! flag ssrath_teach 1
+* Thank you, Sage. -> start
+
+// ----------------------------------------------------------- level 4
+
+=== aldric
+-- start
+Who disturbs the rest of the dead? ... Ah. A living soul, and no tomb-robber by thy look. I am Sir Aldric, once Knight of the Lumen. I cannot rest.
+* Why canst thou not rest? -> why
+* I seek the Shard of Mercy. -> shard ? !flag:aldric_done
+* I have brought thy bones. -> bones ? item:RelicBones & !flag:aldric_done
+* Is there aught else I should know? -> advice
+* Farewell, Sir Knight. -> end
+
+-- why
+The trolls of the eastern caves dragged my bones from this tomb. Without them, my spirit is bound to this place, guarding the Shard of Mercy forever.
+* I will recover thy bones. -> end
+* Back. -> start
+
+-- shard
+I swore to keep the Shard of Mercy until my bones lie at peace. Return my bones from the trolls' den, and I shall give it to thee gladly.
+* I will recover thy bones. -> end
+* Back. -> start
+
+-- bones
+My bones... at last. Thou hast shown true mercy to the dead. Take the Shard of Mercy, and with it my blessing. Now... I can rest.
+! take RelicBones
+! give ShardOfMercy
+! flag aldric_done 1
+! exp 300
+! heal
+* Rest well, Sir Aldric. -> end
+
+-- advice
+In the western tomb lies a silver sapling, a cutting of the great tree of life. Plant it somewhere safe - drop it upon the ground - and should thou fall, it shall call thy spirit back.
+* Thank thee, Sir Knight. -> start
+
+// ----------------------------------------------------------- level 5
+
+=== rowena
+-- start
+Who... who are you? Have you come to rescue me? Malchor said no one would ever come!
+* Thy father, Baron Aldwin, sent me. -> father
+* Where is Malchor? -> malchor
+* What does he plan? -> plan
+* Come with me. -> follow ? !flag:rowena_follow
+* Stay here, where it is safe. -> stay ? flag:rowena_follow
+* Farewell. -> end
+
+-- father
+Father! I knew he would not abandon me. Thank you, {name}. But we cannot simply leave - Malchor means to wake the Shadow Fiend in the pit to the south.
+! flag rowena_met 1
+! exp 50
+* Back. -> start
+
+-- malchor
+His study lies west of the great hall. He keeps the key to this cell upon his person. He is powerful - he throws fire.
+* Back. -> start
+
+-- plan
+He wanted my noble blood for a ritual, to break the last seal on the Fiend's prison. The three shards of the Lumen Stone are the only thing that can harm it. If you have them, you must face it - before it wakes fully.
+! flag know_fiend 1
+* Back. -> start
+
+-- follow
+I will follow you. Please... be careful.
+! follow
+! flag rowena_follow 1
+* Back. -> start
+
+-- stay
+I will wait here. Come back for me.
+! stay
+! flag rowena_follow 0
+* Back. -> start
+
+=== malchor
+-- start
+So. The Baron's dog has sniffed its way to my door. How tiresome. Dost thou know what lies sleeping beneath us, little hero?
+* Release Lady Rowena, wizard! -> release
+* What lies beneath us? -> beneath
+* I have come to stop thee. -> fight
+
+-- beneath
+Power. The Shadow Fiend that Varian chained with his precious Lumen Stone. When it wakes, it will serve me - and the Baron will kneel. Now begone, or burn.
+* Never! -> fight
+* Release Lady Rowena! -> release
+
+-- release
+The girl? She is the key to my ritual. Thou shalt have her over my corpse... which, I assure thee, will not happen.
+* Then over thy corpse it shall be! -> fight
+
+-- fight
+Fool! Feel the fire of the Abyss!
+! hostile
+* (Draw your weapon.) -> end
