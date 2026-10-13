@@ -720,8 +720,8 @@ impl PlayState {
         for (i, ic) in ctx.art.ui.icons.iter().enumerate() {
             let (cx, cy) = ICON_CENTERS[i];
             if Some(i) == sel {
-                fb.fill_ellipse(cx as f32 + 0.5, cy as f32 + 0.5, 14.5, 8.0, c(Ramp::Copper, 12));
-                fb.fill_ellipse(cx as f32 + 0.5, cy as f32 + 0.5, 12.0, 6.5, c(Ramp::Copper, 14));
+                fb.fill_ellipse(cx as f32 + 0.5, cy as f32 + 0.5, 13.0, 7.2, c(Ramp::Copper, 11));
+                fb.fill_ellipse(cx as f32 + 0.5, cy as f32 + 0.5, 10.5, 5.6, c(Ramp::Copper, 13));
             }
             fb.blit(ic, cx - ic.w / 2, cy - ic.h / 2);
         }

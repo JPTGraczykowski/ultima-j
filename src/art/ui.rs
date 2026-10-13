@@ -275,26 +275,28 @@ fn dragon() -> Bitmap {
 fn icon_options() -> Bitmap {
     let mut cv = HCanvas::new(ICON_W, ICON_H);
     let m = cv.add_mat(Mat::new(Ramp::Silver, 4, 15).spec(0.4));
-    let cx = 15.0;
-    let cy = 9.0;
-    cv.ring(cx, cy, 11.0, 6.4, 1.7, 0.0, m);
-    cv.ring(cx, cy, 5.5, 3.2, 1.1, 0.0, m);
-    cv.capsule((4.0, cy), (26.0, cy), 0.9, 0.9, 0.5, 1.0, m);
-    cv.capsule((cx, 3.5), (cx, 14.5), 0.9, 0.9, 0.5, 1.0, m);
-    cv.ellipse(cx, cy, 1.8, 1.8, 2.0, 1.0, m);
-    cv.render(true, true)
+    let (cx, cy) = (15.0, 9.5);
+    cv.ring(cx, cy, 9.2, 6.2, 1.5, 0.0, m);
+    cv.ring(cx, cy, 3.0, 4.4, 1.0, 0.0, m);
+    cv.ellipse(cx, cy, 1.2, 1.4, 2.0, 1.0, m);
+    let mut b = cv.render(true, true);
+    // Bright studs on either side of the inner ring.
+    for &x in &[8, 22] {
+        b.set(x, 9, WHITE);
+        b.set(x, 10, c(Ramp::Silver, 12));
+    }
+    b
 }
 
 fn icon_talk() -> Bitmap {
     let mut cv = HCanvas::new(ICON_W, ICON_H);
     let m = cv.add_mat(Mat::new(Ramp::Silver, 3, 15).spec(0.3));
-    let upper = [(2.0, 9.0), (7.0, 5.5), (11.5, 4.0), (15.0, 6.0), (18.5, 4.0), (23.0, 5.5), (28.0, 9.0), (15.0, 9.4)];
-    cv.poly(&upper, 0.0, 2.5, m);
-    cv.ellipse(15.0, 10.6, 11.0, 4.2, 0.0, 0.9, m);
+    let upper = [(4.0, 9.4), (8.0, 6.8), (12.0, 5.4), (15.0, 7.0), (18.0, 5.4), (22.0, 6.8), (26.0, 9.4), (15.0, 9.6)];
+    cv.poly(&upper, 0.0, 1.5, m);
+    cv.ellipse(15.0, 11.0, 9.5, 3.0, 0.0, 0.9, m);
     let mut b = cv.render(true, true);
-    for x in 4..27 {
-        let y = if (x - 15i32).abs() < 9 { 9 } else { 8 + ((x - 15i32).abs() > 11) as i32 };
-        b.set(x, y, BLACK);
+    for x in 6..25 {
+        b.set(x, 9, BLACK);
     }
     b
 }
@@ -302,16 +304,20 @@ fn icon_talk() -> Bitmap {
 fn icon_get() -> Bitmap {
     let mut cv = HCanvas::new(ICON_W, ICON_H);
     let m = cv.add_mat(Mat::new(Ramp::Silver, 3, 15).spec(0.3));
-    // forearm from the upper right, palm, and fingers curling down to grab
-    cv.capsule((29.0, 2.0), (21.0, 5.0), 3.2, 3.0, 0.0, 0.8, m);
-    cv.ellipse(15.0, 6.5, 7.0, 4.6, 1.0, 0.8, m);
-    cv.capsule((10.0, 8.0), (6.0, 12.5), 1.8, 1.5, 3.0, 1.0, m); // thumb
-    cv.capsule((6.0, 12.5), (8.5, 15.0), 1.5, 1.2, 3.0, 1.0, m);
-    cv.capsule((12.0, 10.0), (11.0, 14.0), 1.7, 1.4, 2.0, 1.0, m);
-    cv.capsule((11.0, 14.0), (13.0, 16.0), 1.4, 1.1, 2.0, 1.0, m);
-    cv.capsule((15.5, 10.5), (15.5, 15.0), 1.7, 1.4, 2.5, 1.0, m);
-    cv.capsule((19.0, 10.0), (20.0, 14.5), 1.6, 1.3, 2.0, 1.0, m);
-    cv.capsule((22.0, 8.5), (23.5, 12.0), 1.4, 1.2, 1.5, 1.0, m);
+    // Forearm from the upper right, the back of the hand, fingers curling down.
+    cv.capsule((24.0, 2.5), (19.5, 6.0), 2.6, 2.6, 0.0, 0.8, m);
+    cv.ellipse(16.0, 8.0, 5.0, 3.8, 1.0, 0.8, m);
+    for (a, b2, c2, r) in [
+        ((12.5, 9.5), (10.0, 12.5), (11.0, 15.5), 1.3),
+        ((14.6, 10.8), (13.0, 14.5), (14.0, 17.0), 1.3),
+        ((16.8, 11.0), (16.2, 14.8), (17.2, 16.8), 1.2),
+    ] {
+        cv.capsule(a, b2, r, r * 0.9, 2.0, 1.0, m);
+        cv.capsule(b2, c2, r * 0.9, r * 0.75, 2.0, 1.0, m);
+    }
+    // Thumb on the right.
+    cv.capsule((20.0, 9.5), (21.6, 13.0), 1.3, 1.1, 3.0, 1.0, m);
+    cv.capsule((21.6, 13.0), (20.4, 15.4), 1.1, 0.9, 3.0, 1.0, m);
     cv.render(true, true)
 }
 
@@ -319,37 +325,35 @@ fn icon_look() -> Bitmap {
     let mut cv = HCanvas::new(ICON_W, ICON_H);
     let white = cv.add_mat(Mat::new(Ramp::Silver, 5, 15).spec(0.2));
     let iris = cv.add_mat(Mat::new(Ramp::Silver, 2, 9).spec(0.5));
-    let almond = [(1.5, 9.0), (6.0, 5.0), (15.0, 3.2), (24.0, 5.0), (28.5, 9.0), (24.0, 13.0), (15.0, 14.8), (6.0, 13.0)];
-    cv.poly(&almond, 0.0, 2.0, white);
-    cv.ellipse(15.0, 9.0, 4.6, 4.6, 1.5, 0.8, iris);
+    let almond = [(3.0, 9.5), (8.0, 6.4), (15.0, 5.6), (22.0, 6.4), (27.0, 9.5), (22.0, 12.6), (15.0, 13.4), (8.0, 12.6)];
+    cv.poly(&almond, 0.0, 1.4, white);
+    cv.ellipse(15.0, 9.5, 3.3, 3.3, 1.5, 0.8, iris);
     let mut b = cv.render(true, true);
-    b.fill_circle_f(15.0, 9.0, 1.9, BLACK);
-    b.set(13, 7, WHITE);
-    // eyelid crease
-    for x in 6..25 {
-        let t = (x as f32 - 15.0) / 10.0;
-        let y = (2.6 + t * t * 2.5).round() as i32;
-        b.set(x, y, c(Ramp::Silver, 5));
+    b.fill_circle_f(15.0, 9.5, 1.5, BLACK);
+    b.set(14, 8, WHITE);
+    // Eyelid crease.
+    for x in 7..24 {
+        let t = (x as f32 - 15.0) / 8.5;
+        let y = (4.4 + t * t * 2.2).round() as i32;
+        b.set(x, y, c(Ramp::Silver, 6));
     }
     b
 }
 
 fn icon_fight() -> Bitmap {
     let mut cv = HCanvas::new(ICON_W, ICON_H);
-    let blade = cv.add_mat(Mat::new(Ramp::Silver, 6, 15).spec(0.8));
+    let blade = cv.add_mat(Mat::new(Ramp::Silver, 7, 15).spec(0.9));
     let hilt = cv.add_mat(Mat::new(Ramp::Silver, 3, 12).spec(0.3));
     let skin = cv.add_mat(Mat::new(Ramp::Silver, 3, 14).spec(0.2));
-    // blade pointing to the upper right
-    cv.poly(&[(12.0, 9.0), (27.5, 0.8), (29.0, 1.5), (14.0, 11.0)], 2.0, 1.0, blade);
-    // cross guard
-    cv.capsule((10.0, 6.0), (15.0, 13.5), 1.2, 1.2, 3.0, 1.0, hilt);
-    // fist around the grip
-    cv.ellipse(8.5, 11.5, 5.4, 4.6, 2.0, 0.9, skin);
-    cv.capsule((5.0, 9.0), (10.0, 8.0), 1.4, 1.4, 4.0, 1.0, skin);
-    // pommel
-    cv.ellipse(3.0, 16.0, 1.6, 1.6, 1.0, 1.0, hilt);
+    // A long, thin blade rising to the upper right.
+    cv.poly(&[(12.5, 10.8), (27.8, 1.0), (29.2, 2.0), (14.0, 12.0)], 2.0, 0.8, blade);
+    cv.capsule((11.0, 7.8), (15.2, 13.4), 1.0, 1.0, 3.0, 1.0, hilt);
+    // Fist around the grip.
+    cv.ellipse(9.0, 12.4, 4.3, 3.8, 2.0, 0.9, skin);
+    cv.capsule((6.0, 10.0), (10.5, 9.3), 1.2, 1.2, 4.0, 1.0, skin);
+    cv.ellipse(5.0, 15.6, 1.3, 1.3, 1.0, 1.0, hilt);
     let mut b = cv.render(true, true);
-    for &(x, y) in &[(7, 11), (8, 12), (9, 13), (6, 13)] {
+    for &(x, y) in &[(8, 12), (9, 13), (7, 14)] {
         b.set(x, y, c(Ramp::Silver, 3));
     }
     b
@@ -359,13 +363,16 @@ fn icon_use() -> Bitmap {
     let mut cv = HCanvas::new(ICON_W, ICON_H);
     let m = cv.add_mat(Mat::new(Ramp::Silver, 3, 15).spec(0.3));
     let cuff = cv.add_mat(Mat::new(Ramp::Silver, 2, 10).spec(0.2));
-    cv.capsule((1.5, 9.5), (6.0, 9.5), 3.8, 3.8, 0.0, 0.8, cuff);
-    cv.ellipse(11.0, 10.0, 5.8, 4.6, 1.0, 0.8, m);
-    cv.capsule((14.0, 7.5), (28.0, 6.5), 1.7, 1.4, 3.0, 1.0, m); // index finger
-    cv.capsule((14.0, 10.5), (19.0, 10.5), 1.5, 1.3, 2.5, 1.0, m);
-    cv.capsule((13.5, 13.0), (18.0, 13.2), 1.5, 1.3, 2.0, 1.0, m);
-    cv.capsule((12.0, 15.0), (16.0, 15.3), 1.3, 1.1, 1.5, 1.0, m);
-    cv.capsule((10.0, 6.0), (16.0, 4.6), 1.4, 1.2, 4.0, 1.0, m); // thumb
+    cv.capsule((2.0, 10.5), (5.0, 10.5), 2.7, 2.7, 0.0, 0.8, cuff);
+    cv.ellipse(10.0, 10.5, 5.2, 4.0, 1.0, 0.8, m);
+    // Index finger pointing right.
+    cv.capsule((14.0, 8.6), (24.5, 8.0), 1.4, 1.1, 3.0, 1.0, m);
+    // Curled fingers stacked under it.
+    for (x, y) in [(15.2, 10.8), (14.7, 12.6), (13.6, 14.2)] {
+        cv.ellipse(x, y, 2.3, 1.15, 2.5, 1.0, m);
+    }
+    // Thumb along the top.
+    cv.capsule((9.0, 7.0), (14.0, 6.6), 1.2, 1.0, 4.0, 1.0, m);
     cv.render(true, true)
 }
 
@@ -697,17 +704,26 @@ pub fn build_frame() -> Bitmap {
     // Copper panels.
     copper_panel(&mut b, ICON_PANEL, 4, seed + 1, 6.4, false);
     copper_panel(&mut b, PANEL, 4, seed + 2, 7.6, true);
-    // Icon dimples on the left panel.
+    // Recessed oval cartouches behind the icons.
     for &(cx, cy) in ICON_CENTERS.iter() {
         let (fx, fy) = (cx as f32 + 0.5, cy as f32 + 0.5);
         for y in cy - 10..=cy + 10 {
             for x in cx - 17..=cx + 17 {
-                let dx = (x as f32 + 0.5 - fx) / 16.0;
-                let dy = (y as f32 + 0.5 - fy) / 9.5;
+                let dx = (x as f32 + 0.5 - fx) / 15.5;
+                let dy = (y as f32 + 0.5 - fy) / 9.0;
                 let d = dx * dx + dy * dy;
-                if d < 1.0 && d > 0.78 {
-                    let col = if dx + dy * 1.4 < 0.0 { c(Ramp::Copper, 4) } else { c(Ramp::Copper, 10) };
-                    b.set(x, y, col);
+                if d >= 1.0 {
+                    continue;
+                }
+                let upper_left = dx * 0.6 + dy < 0.0;
+                if d > 0.80 {
+                    b.set(x, y, if upper_left { c(Ramp::Copper, 3) } else { c(Ramp::Copper, 10) });
+                } else if d > 0.62 && upper_left {
+                    b.set(x, y, c(Ramp::Copper, 4));
+                } else {
+                    // Slightly darker hollow.
+                    let n = hashf(x, y, 8, seed);
+                    b.set(x, y, c(Ramp::Copper, 5 + (n > 0.7) as i32));
                 }
             }
         }
