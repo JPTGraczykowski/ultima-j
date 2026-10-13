@@ -106,7 +106,7 @@ impl SpriteCache {
         let key = paperdoll_key(p);
         if self.paperdoll.as_ref().map(|(k, _)| k != &key).unwrap_or(true) {
             let parts = creatures::player_parts(&outfit(p));
-            let bmp = creatures::paperdoll(&parts, 40, 70, 76.0);
+            let bmp = creatures::paperdoll(&parts, 46, 72, 82.0);
             self.paperdoll = Some((key, bmp));
         }
         &self.paperdoll.as_ref().unwrap().1
@@ -148,7 +148,7 @@ fn armor_cmat(kind: ItemKind) -> CMat {
 
 pub fn outfit(p: &Player) -> Outfit {
     let m = |s: EqSlot| p.equip.get(s).as_ref().map(|i| armor_cmat(i.kind));
-    Outfit { female: p.female, skin: p.skin, hair: p.hair, head: m(EqSlot::Head), chest: m(EqSlot::Chest), legs: m(EqSlot::Legs), feet: m(EqSlot::Feet), hands: m(EqSlot::Hands) }
+    Outfit { female: p.female, beard: p.hair != 1, skin: p.skin, hair: p.hair, head: m(EqSlot::Head), chest: m(EqSlot::Chest), legs: m(EqSlot::Legs), feet: m(EqSlot::Feet), hands: m(EqSlot::Hands) }
 }
 
 /// Pick the animation frame, view index and mirroring for a creature seen from `viewer`.

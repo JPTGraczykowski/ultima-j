@@ -974,6 +974,7 @@ pub fn paperdoll(parts: &[Part], w: i32, h: i32, scale: f32) -> Bitmap {
 /// Player model for the paperdoll, dressed according to equipment colours.
 pub struct Outfit {
     pub female: bool,
+    pub beard: bool,
     pub skin: u8,
     pub hair: u8,
     pub head: Option<CMat>,
@@ -992,12 +993,18 @@ pub fn player_parts(o: &Outfit) -> Vec<Part> {
     };
     let mut s = Humanoid::base(0.82, skin);
     s.girth = if o.female { 0.88 } else { 1.0 };
-    s.hair = Some(match o.hair % 4 {
+    s.head = 1.2;
+    s.nose = 0.9;
+    let hair = match o.hair % 4 {
         0 => m(Ramp::Earth, 1, 6, Fur),
         1 => m(Ramp::Gold, 3, 10, Fur),
         2 => m(Ramp::Grey, 1, 4, Fur),
         _ => m(Ramp::Copper, 2, 8, Fur),
-    });
+    };
+    s.hair = Some(hair);
+    if o.beard && !o.female {
+        s.beard = Some(hair);
+    }
     s.torso = o.chest.unwrap_or(m(Ramp::Earth, 2, 7, Cloth));
     s.sleeves = Some(o.chest.unwrap_or(m(Ramp::Earth, 2, 7, Cloth)));
     s.legs = o.legs.unwrap_or(m(Ramp::Earth, 1, 6, Cloth));

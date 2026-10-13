@@ -386,7 +386,7 @@ fn draw_inventory(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
     }
     // Paperdoll.
     let doll = ctx.cache.paperdoll(&st.game.player).clone();
-    fb.blit(&doll, PAPERDOLL_C.0 - doll.w / 2, 8);
+    fb.blit(&doll, PAPERDOLL_C.0 - doll.w / 2, 6);
     // Equipped items in circles.
     let eq = st.game.player.equip.clone();
     for (slot, (cx, cy)) in EQ_CIRCLES.iter() {
