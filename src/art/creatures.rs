@@ -96,6 +96,7 @@ struct Humanoid {
     muscular: f32,
     loincloth: Option<CMat>,
     fangs: bool,
+    hump: bool,
 }
 
 impl Humanoid {
@@ -103,7 +104,7 @@ impl Humanoid {
         Humanoid {
             h,
             girth: 1.0,
-            head: 1.0,
+            head: 1.1,
             skin,
             torso: skin,
             legs: skin,
@@ -131,6 +132,7 @@ impl Humanoid {
             muscular: 0.0,
             loincloth: None,
             fangs: false,
+            hump: false,
         }
     }
 }
@@ -204,7 +206,9 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
         }
         upper.push(ell(V3::new(0.0, hip_y + 0.02 * h, 0.0), V3::new(0.09 * h, 0.04 * h, 0.05 * h), s.torso));
     } else {
-        upper.push(ell(torso_c, V3::new(0.15 * h * g, 0.2 * h, 0.09 * h * g), s.torso));
+        // A V-shaped torso: broad chest over a narrower waist.
+        upper.push(ell(torso_c + V3::new(0.0, 0.06 * h, 0.0), V3::new(0.15 * h * g, 0.13 * h, 0.085 * h * g), s.torso));
+        upper.push(ell(torso_c + V3::new(0.0, -0.07 * h, 0.0), V3::new(0.115 * h * g, 0.11 * h, 0.075 * h * g), s.torso));
         upper.push(ell(V3::new(0.0, hip_y + 0.02 * h, 0.0), V3::new(0.12 * h * g, 0.07 * h, 0.08 * h * g), if s.robe.is_some() { s.torso } else { s.legs }));
         if let Some(b) = s.belt {
             upper.push(ell(V3::new(0.0, hip_y + 0.07 * h, 0.0), V3::new(0.135 * h * g, 0.02 * h, 0.095 * h * g), b));
@@ -217,6 +221,9 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
             }
             // Abdomen.
             upper.push(ell(torso_c + V3::new(0.0, -0.06 * h, 0.06 * h * g), V3::new(0.065 * h * g, 0.085 * h, 0.03 * h * mu.max(0.5)), s.torso));
+        }
+        if s.hump {
+            upper.push(ell(V3::new(0.0, hip_y + 0.3 * h, -0.07 * h), V3::new(0.13 * h * g, 0.1 * h, 0.08 * h), s.torso));
         }
         if let Some(lc) = s.loincloth {
             upper.push(ell(V3::new(0.0, hip_y - 0.05 * h, 0.085 * h * g), V3::new(0.07 * h, 0.1 * h, 0.012 * h), lc));
@@ -328,7 +335,7 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
         let fdir = limb_dir(pf, splay * 0.5);
         let wrist = elbow + fdir * fore_len;
         let r0 = if s.bony { limb_r * 1.2 } else { 0.042 * h * g };
-        upper.push(ell(sh, V3::new(0.055 * h * g, 0.05 * h, 0.055 * h * g), arm_mat));
+        upper.push(ell(sh, V3::new(0.046 * h * g, 0.044 * h, 0.046 * h * g), arm_mat));
         upper.push(cone(sh, elbow, r0, r0 * 0.85, arm_mat));
         if s.muscular > 0.0 {
             let mid = sh + (elbow - sh) * 0.45;
@@ -443,24 +450,91 @@ fn rat(pose: &Pose) -> Vec<Part> {
 
 fn bat(pose: &Pose) -> Vec<Part> {
     let fur = m(Ramp::Earth, 1, 6, Pattern::Fur);
-    let wing = m(Ramp::Earth, 1, 5, Pattern::Noise(0.2));
+    let membrane = m(Ramp::Red, 1, 4, Pattern::Noise(0.25));
+    let bone = m(Ramp::Earth, 2, 7, Pattern::Plain);
     let eye = m(Ramp::Red, 10, 13, Pattern::Plain).glow();
     let mut p = Vec::new();
-    let y = 0.15;
-    p.push(ell(V3::new(0.0, y, 0.0), V3::new(0.05, 0.07, 0.045), fur));
-    let head = V3::new(0.0, y + 0.07, 0.01);
-    p.push(ell(head, V3::new(0.04, 0.035, 0.035), fur));
+    let y = 0.16;
+    p.push(ell(V3::new(0.0, y, 0.0), V3::new(0.045, 0.065, 0.04), fur));
+    let head = V3::new(0.0, y + 0.065, 0.012);
+    p.push(ell(head, V3::new(0.034, 0.03, 0.032), fur));
+    p.push(ell(head + V3::new(0.0, -0.012, 0.028), V3::new(0.014, 0.01, 0.012), bone));
     for s in [-1.0f32, 1.0] {
-        p.push(cone(head + V3::new(s * 0.02, 0.02, 0.0), head + V3::new(s * 0.04, 0.07, -0.01), 0.015, 0.004, fur));
-        p.push(ell(head + V3::new(s * 0.016, 0.005, 0.03), V3::new(0.008, 0.008, 0.008), eye));
-        let flap = (pose.walk * 2.0 + if pose.attack > 0.0 { pose.attack * 6.0 } else { 0.0 }).sin() * 0.7;
-        let rot = M3::rot_z(s * flap);
-        let c = V3::new(s * 0.13, y + 0.02, -0.01);
-        let mut w = vec![ell(c, V3::new(0.12, 0.05, 0.008), wing), ell(c + V3::new(s * 0.05, -0.03, 0.0), V3::new(0.07, 0.035, 0.007), wing)];
-        transform(&mut w, V3::new(s * 0.03, y, 0.0), &rot, V3::ZERO);
+        // Big pointed ears and glowing eyes.
+        p.push(cone(head + V3::new(s * 0.018, 0.018, 0.0), head + V3::new(s * 0.04, 0.072, -0.005), 0.016, 0.003, fur));
+        p.push(ell(head + V3::new(s * 0.015, 0.006, 0.029), V3::new(0.008, 0.007, 0.007), eye));
+        // Wing: arm bone, three fingers and the membrane between them.
+        let flap = (pose.walk * 2.0 + if pose.attack > 0.0 { pose.attack * 6.0 } else { 0.0 }).sin() * 0.65;
+        let sh = V3::new(s * 0.035, y + 0.03, 0.0);
+        let wrist = sh + V3::new(s * 0.1, 0.05, -0.01);
+        let tips = [V3::new(s * 0.31, y + 0.1, -0.02), V3::new(s * 0.3, y - 0.01, -0.02), V3::new(s * 0.2, y - 0.08, -0.015)];
+        let mut w = vec![cone(sh, wrist, 0.011, 0.008, bone)];
+        for t in tips {
+            w.push(cone(wrist, t, 0.006, 0.003, bone));
+        }
+        w.push(ell(sh + V3::new(s * 0.12, -0.01, -0.012), V3::new(0.12, 0.06, 0.005), membrane));
+        w.push(ell(V3::new(s * 0.25, y + 0.035, -0.018), V3::new(0.07, 0.055, 0.005), membrane));
+        w.push(ell(V3::new(s * 0.2, y - 0.035, -0.016), V3::new(0.07, 0.04, 0.005), membrane));
+        transform(&mut w, sh, &M3::rot_z(s * flap), V3::ZERO);
         p.extend(w);
     }
     finish_death(p, pose, 0.0)
+}
+
+/// A box (slab) running from a to b, for blocky creatures like golems.
+fn slab(a: V3, b: V3, hw: f32, hd: f32, mat: CMat) -> Part {
+    let y = (b - a).norm();
+    let up = if y.y.abs() > 0.9 { V3::new(1.0, 0.0, 0.0) } else { V3::new(0.0, 1.0, 0.0) };
+    let x = V3::new(up.y * y.z - up.z * y.y, up.z * y.x - up.x * y.z, up.x * y.y - up.y * y.x).norm();
+    let z = V3::new(x.y * y.z - x.z * y.y, x.z * y.x - x.x * y.z, x.x * y.y - x.y * y.x).norm();
+    let rot = M3([[x.x, y.x, z.x], [x.y, y.y, z.y], [x.z, y.z, z.z]]);
+    bx((a + b) * 0.5, V3::new(hw, (b - a).len() * 0.5, hd), rot, mat)
+}
+
+/// The earth golem: a hulking figure of rough stone slabs.
+fn golem(pose: &Pose) -> Vec<Part> {
+    let rock = m(Ramp::Stone, 2, 9, Pattern::Noise(0.5));
+    let dark = m(Ramp::Stone, 1, 6, Pattern::Noise(0.45));
+    let eye = m(Ramp::Fire, 9, 13, Pattern::Plain).glow();
+    let h = 1.1;
+    let mut p = Vec::new();
+    let swing = pose.walk.sin() * 0.35 * pose.stride;
+    let hip_y = 0.42 * h + (pose.walk * 2.0).sin().abs() * 0.01 * pose.stride;
+    for side in [-1.0f32, 1.0] {
+        let a = swing * side;
+        let hip = V3::new(side * 0.1, hip_y, 0.0);
+        let knee = hip + limb_dir(a, 0.0) * 0.22;
+        let ankle = knee + limb_dir(a - 0.1, 0.0) * 0.2;
+        p.push(slab(hip, knee, 0.075, 0.08, rock));
+        p.push(slab(knee, ankle, 0.065, 0.07, dark));
+        p.push(bx(ankle + V3::new(0.0, -0.01, 0.03), V3::new(0.08, 0.035, 0.1), M3::rot_y(side * 0.1), rock));
+    }
+    let mut upper = Vec::new();
+    upper.push(bx(V3::new(0.0, hip_y + 0.05, 0.0), V3::new(0.17, 0.07, 0.1), M3::IDENTITY, dark));
+    upper.push(bx(V3::new(0.0, hip_y + 0.22, 0.0), V3::new(0.22, 0.13, 0.13), M3::rot_z(0.04), rock));
+    upper.push(bx(V3::new(0.0, hip_y + 0.36, 0.01), V3::new(0.26, 0.07, 0.14), M3::rot_z(-0.05), rock));
+    upper.push(bx(V3::new(0.0, hip_y + 0.48, 0.05), V3::new(0.075, 0.07, 0.07), M3::rot_y(0.15), dark));
+    for side in [-1.0f32, 1.0] {
+        upper.push(ell(V3::new(side * 0.03, hip_y + 0.49, 0.12), V3::new(0.018, 0.012, 0.01), eye));
+        let sh = V3::new(side * 0.3, hip_y + 0.38, 0.0);
+        let (pu, pf) = if pose.attack > 0.0 {
+            let t = pose.attack;
+            (lerp3(2.6, 1.4, 0.5, t), lerp3(2.9, 1.2, 0.3, t))
+        } else if pose.hit > 0.0 {
+            (0.5, 0.9)
+        } else {
+            (-swing * side * 0.6 + 0.1, -swing * side * 0.6 + 0.35)
+        };
+        let elbow = sh + limb_dir(pu, side * 0.2) * 0.23;
+        let wrist = elbow + limb_dir(pf, side * 0.1) * 0.22;
+        upper.push(slab(sh, elbow, 0.07, 0.075, rock));
+        upper.push(slab(elbow, wrist, 0.075, 0.08, dark));
+        upper.push(bx(wrist + limb_dir(pf, 0.0) * 0.05, V3::new(0.08, 0.07, 0.08), M3::rot_y(0.3), rock));
+    }
+    let lean = -pose.hit * 0.25 + if pose.attack > 0.0 { (pose.attack * PI).sin() * 0.15 } else { 0.05 };
+    transform(&mut upper, V3::new(0.0, hip_y, 0.0), &M3::rot_x(lean), V3::ZERO);
+    p.extend(upper);
+    finish_death(p, pose, h)
 }
 
 fn spider(pose: &Pose) -> Vec<Part> {
@@ -728,8 +802,9 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
         Race::Troll => {
             let skin = m(Moss, 2, 10, Noise(0.3));
             let mut s = Humanoid::base(1.05, skin);
-            s.girth = 1.4;
+            s.girth = 1.22;
             s.head = 0.85;
+            s.hump = true;
             s.nose = 1.6;
             s.ears = 0.6;
             s.torso = skin;
@@ -827,6 +902,7 @@ pub fn model(race: Race, look: u8, pose: &Pose) -> Vec<Part> {
         Race::Slug => slug(pose),
         Race::Lurker => lurker(pose),
         Race::Reaper => reaper(pose),
+        Race::Golem => golem(pose),
         _ => humanoid(&spec_for(race, look).expect("humanoid spec"), pose),
     }
 }
