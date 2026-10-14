@@ -749,7 +749,7 @@ pub fn fixture(kind: ItemKind) -> Bitmap {
             parts.push(bx(V3::new(0.0, 0.08, 0.0), V3::new(0.26, 0.08, 0.2), M3::IDENTITY, stone));
             parts.push(cone(V3::new(0.0, 0.16, 0.0), V3::new(0.0, 0.62, 0.0), 0.05, 0.05, gold));
             parts.push(cone(V3::new(-0.17, 0.5, 0.0), V3::new(0.17, 0.5, 0.0), 0.04, 0.04, gold));
-            parts.push(Part { prim: super::sprite3d::Prim::Ellipsoid { c: V3::new(0.0, 0.73, 0.0), r: V3::new(0.1, 0.13, 0.03), rot: M3::IDENTITY }, mat: gold });
+            parts.push(Part { prim: super::sprite3d::Prim::Ellipsoid { c: V3::new(0.0, 0.73, 0.0), r: V3::new(0.1, 0.13, 0.03), rot: M3::IDENTITY }, mat: gold, face: false });
             parts.push(ell(V3::new(0.0, 0.73, 0.0), V3::new(0.055, 0.08, 0.035), m(Ramp::Grey, 0, 1, Plain)));
         }
         ItemKind::Lever => {

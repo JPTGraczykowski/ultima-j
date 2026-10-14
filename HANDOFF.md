@@ -36,15 +36,34 @@ ULTIMA_J_SELFTEST=out.png target/release/ultima-j --play   # real-window capture
 Compare screenshots against originals side by side (native 320×200 DOS
 captures are on oldgames.sk; the reference card is on mocagh.org).
 
-## Next steps (from the last side-by-side review)
+## Art review (2026-10-14)
 
-1. Command icons: make them smaller and finer (about 24×14) and add the oval
-   cartouches the original draws behind each icon; refine the Get and Fight hands.
-2. Paperdoll: bigger head with a face (hair, beard), better torso shape; it is
-   currently a plain brown figure while the original's is detailed.
-3. Creature sprites: more hand-drawn-looking faces and detail; bat wings and the
-   troll's body shape need work.
-4. Intro vignettes could be richer.
-5. A full manual playthrough for balance on levels 2–5.
-6. Not implemented: barter screen (trading happens in dialogue), Repair, Charm
-   and Appraise skills. Save files are 3–4 MB of JSON (could be compressed).
+- Command icons are pixel art (`ICON_ROWS` in `src/art/ui.rs`): 19-29 px wide
+  like the original, black outlines, flat silver tones, a brighter set for the
+  active command, and oval recesses with a dark upper-left rim and a warm
+  lower-right lip (`oval_rim`). Checked icon by icon against og39/og05.
+- Paperdoll: the body is still modelled (so armour sets keep working), the
+  head is hand-drawn pixel art (`HEAD_BEARD`/`HEAD_SHAVEN`/`HEAD_FEMALE` and
+  `HELM` in `src/art/creatures.rs`); sleeveless woven tunic with a V-neck,
+  seam lines where materials meet, bigger feet, proportions matched to og39.
+  The Flesh ramp is now the original's redder skin tone.
+- Creatures: facial features are painted over the modelled heads as pixel
+  art (`src/art/faces.rs`), turning with the head in every pose and hidden by
+  anything in front of it. The bat has membrane wings (new triangle
+  primitive), the reaper is a bare tree with raised branch arms, bark grooves
+  and a carved face, the troll has a bigger head, the lurker a toothy maw,
+  the headless the original's orange skin and loincloth.
+- Review tools: `--dump-art DIR` now also writes `paperdolls.png` (every
+  armour set) and `portraits.png`; the headless script has
+  `spawn Race DIST [LOOK]` to put a creature in front of the player.
+
+## Next steps
+
+1. Creature bodies are still smooth "clay": the originals have chunkier,
+   hand-shaded bodies and more varied poses (weapons held out, crouching
+   goblins). The golem has no visible head/face (the original's does).
+2. Paperdoll arms are a little stiff and pale next to the original's.
+3. Intro vignettes could be richer.
+4. A full manual playthrough for balance on levels 2-5.
+5. Not implemented: barter screen (trading happens in dialogue), Repair, Charm
+   and Appraise skills. Save files are 3-4 MB of JSON (could be compressed).

@@ -1,9 +1,10 @@
 //! Procedural creature models, posed per animation frame and rendered from
 //! five view angles with the clay renderer.
 
-use super::sprite3d::{bx, cone, ell, ell_rot, render, CMat, Part, Pattern, Prim, View3};
+use super::faces::{self, Face};
+use super::sprite3d::{bx, cone, ell, ell_rot, render_ids, render_lined, tri, CMat, Part, Pattern, Prim, View3};
 use crate::game::creatures::Race;
-use crate::gfx::palette::Ramp;
+use crate::gfx::palette::{c, Ramp, BLACK};
 use crate::gfx::Bitmap;
 use crate::util::{M3, V3};
 use std::f32::consts::PI;
@@ -97,6 +98,14 @@ struct Humanoid {
     loincloth: Option<CMat>,
     fangs: bool,
     hump: bool,
+    /// Feet size multiplier.
+    foot: f32,
+    /// Chest width multiplier (narrower for a sleeveless tunic).
+    chest: f32,
+    /// Leave the head off the model; it is drawn as pixel art instead (paperdoll).
+    head_sprite: bool,
+    /// Hand-drawn facial features painted over the head after rendering.
+    face: Option<Face>,
 }
 
 impl Humanoid {
@@ -133,6 +142,10 @@ impl Humanoid {
             loincloth: None,
             fangs: false,
             hump: false,
+            foot: 1.0,
+            chest: 1.0,
+            head_sprite: false,
+            face: None,
         }
     }
 }
@@ -152,6 +165,10 @@ fn transform(parts: &mut [Part], pivot: V3, rot: &M3, shift: V3) {
             Prim::Ellipsoid { c, r, rot: r0 } => Prim::Ellipsoid { c: rot.mul_v(c - pivot) + pivot + shift, r, rot: rot.mul(&r0) },
             Prim::Cone { a, b, ra, rb } => Prim::Cone { a: rot.mul_v(a - pivot) + pivot + shift, b: rot.mul_v(b - pivot) + pivot + shift, ra, rb },
             Prim::Box { c, h, rot: r0 } => Prim::Box { c: rot.mul_v(c - pivot) + pivot + shift, h, rot: rot.mul(&r0) },
+            Prim::Tri { a, b, c } => {
+                let f = |p: V3| rot.mul_v(p - pivot) + pivot + shift;
+                Prim::Tri { a: f(a), b: f(b), c: f(c) }
+            }
         };
     }
 }
@@ -191,7 +208,8 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
                 let calf = knee + (ankle - knee) * 0.35 + V3::new(0.0, 0.0, -0.012 * h);
                 parts.push(ell(calf, V3::new(limb_r * 1.25, shin * 0.25, limb_r * 1.3), s.legs));
             }
-            parts.push(ell(ankle + V3::new(0.0, -0.015 * h, 0.04 * h), V3::new(0.04 * h, 0.03 * h, 0.075 * h), s.feet));
+            let f = s.foot;
+            parts.push(ell(ankle + V3::new(side * 0.012 * h * (f - 1.0), -0.015 * h, 0.04 * h), V3::new(0.04 * h * f, 0.03 * h * f.sqrt(), 0.075 * h), s.feet));
         }
     }
 
@@ -207,7 +225,7 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
         upper.push(ell(V3::new(0.0, hip_y + 0.02 * h, 0.0), V3::new(0.09 * h, 0.04 * h, 0.05 * h), s.torso));
     } else {
         // A V-shaped torso: broad chest over a narrower waist.
-        upper.push(ell(torso_c + V3::new(0.0, 0.06 * h, 0.0), V3::new(0.15 * h * g, 0.13 * h, 0.085 * h * g), s.torso));
+        upper.push(ell(torso_c + V3::new(0.0, 0.06 * h, 0.0), V3::new(0.15 * h * g * s.chest, 0.13 * h, 0.085 * h * g), s.torso));
         upper.push(ell(torso_c + V3::new(0.0, -0.07 * h, 0.0), V3::new(0.115 * h * g, 0.11 * h, 0.075 * h * g), s.torso));
         upper.push(ell(V3::new(0.0, hip_y + 0.02 * h, 0.0), V3::new(0.12 * h * g, 0.07 * h, 0.08 * h * g), if s.robe.is_some() { s.torso } else { s.legs }));
         if let Some(b) = s.belt {
@@ -217,7 +235,7 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
             let mu = s.muscular;
             for side in [-1.0f32, 1.0] {
                 // Pectorals.
-                upper.push(ell(torso_c + V3::new(side * 0.068 * h * g, 0.075 * h, 0.06 * h * g), V3::new(0.075 * h * g, 0.055 * h, 0.035 * h * mu.max(0.5)), s.torso));
+                upper.push(ell(torso_c + V3::new(side * 0.068 * h * g * s.chest, 0.075 * h, 0.06 * h * g), V3::new(0.075 * h * g * s.chest, 0.055 * h, 0.035 * h * mu.max(0.5)), s.torso));
             }
             // Abdomen.
             upper.push(ell(torso_c + V3::new(0.0, -0.06 * h, 0.06 * h * g), V3::new(0.065 * h * g, 0.085 * h, 0.03 * h * mu.max(0.5)), s.torso));
@@ -236,12 +254,14 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
     let head_c = V3::new(0.0, neck_y + hr * 0.95, 0.01 * h);
     if !s.headless {
         upper.push(cone(V3::new(0.0, neck_y - 0.03 * h, 0.0), head_c, 0.035 * h, 0.03 * h, s.skin));
-        upper.push(ell(head_c, V3::new(hr * 0.9, hr, hr * 0.95), s.skin));
+    }
+    if !s.headless && !s.head_sprite {
+        upper.push(ell(head_c, V3::new(hr * 0.9, hr, hr * 0.95), s.skin).face());
         if s.snout > 0.0 {
-            upper.push(cone(head_c + V3::new(0.0, -0.01 * h, 0.03 * h), head_c + V3::new(0.0, -0.025 * h, hr + s.snout * h), hr * 0.6, hr * 0.35, s.skin));
+            upper.push(cone(head_c + V3::new(0.0, -0.01 * h, 0.03 * h), head_c + V3::new(0.0, -0.025 * h, hr + s.snout * h), hr * 0.6, hr * 0.35, s.skin).face());
         }
         if s.nose > 0.0 {
-            upper.push(ell(head_c + V3::new(0.0, -0.01 * h, hr * 0.92), V3::new(0.02 * h * s.nose, 0.025 * h * s.nose, 0.025 * h * s.nose), s.skin));
+            upper.push(ell(head_c + V3::new(0.0, -0.01 * h, hr * 0.92), V3::new(0.02 * h * s.nose, 0.025 * h * s.nose, 0.025 * h * s.nose), s.skin).face());
         }
         if s.ears > 0.0 {
             for side in [-1.0f32, 1.0] {
@@ -260,7 +280,8 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
             upper.push(ell(head_c + V3::new(0.0, -hr * 0.7, hr * 0.45), V3::new(hr * 0.75, hr * 0.85, hr * 0.5), beard));
         }
         if let Some(helm) = s.helmet {
-            upper.push(ell(head_c + V3::new(0.0, hr * 0.3, -hr * 0.05), V3::new(hr * 1.05, hr * 0.8, hr * 1.02), helm));
+            // Sits above the eyes.
+            upper.push(ell(head_c + V3::new(0.0, hr * 0.5, -hr * 0.05), V3::new(hr * 1.05, hr * 0.75, hr * 1.02), helm));
         }
         if let Some(horn) = s.horns {
             for side in [-1.0f32, 1.0] {
@@ -275,10 +296,12 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
         }
         // Face: brow ridge, jaw, mouth and eyes set under the brow.
         if s.helmet.is_none() || s.snout == 0.0 {
-            upper.push(ell(head_c + V3::new(0.0, hr * 0.36, hr * 0.62), V3::new(hr * 0.78, hr * 0.2, hr * 0.3), s.skin));
+            upper.push(ell(head_c + V3::new(0.0, hr * 0.36, hr * 0.62), V3::new(hr * 0.78, hr * 0.2, hr * 0.3), s.skin).face());
         }
         if s.snout == 0.0 {
-            upper.push(ell(head_c + V3::new(0.0, -hr * 0.52, hr * 0.3), V3::new(hr * 0.66, hr * 0.42, hr * 0.6), s.skin));
+            upper.push(ell(head_c + V3::new(0.0, -hr * 0.52, hr * 0.3), V3::new(hr * 0.66, hr * 0.42, hr * 0.6), s.skin).face());
+        }
+        if s.snout == 0.0 && s.face.is_none() {
             let mouth = CMat::new(Ramp::Red, 0, 3, Pattern::Plain);
             let mw = if s.fangs { 0.48 } else { 0.32 };
             upper.push(ell(head_c + V3::new(0.0, -hr * 0.5, hr * 0.84), V3::new(hr * mw, hr * if s.fangs { 0.12 } else { 0.06 }, hr * 0.1), mouth));
@@ -289,11 +312,13 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
                 }
             }
         }
-        for side in [-1.0f32, 1.0] {
-            let e = head_c + V3::new(side * hr * 0.36, hr * 0.13, hr * 0.84);
-            upper.push(ell(e, V3::new(hr * 0.15, hr * 0.1, hr * 0.12), s.eyes));
+        if s.face.is_none() {
+            for side in [-1.0f32, 1.0] {
+                let e = head_c + V3::new(side * hr * 0.36, hr * 0.13, hr * 0.84);
+                upper.push(ell(e, V3::new(hr * 0.15, hr * 0.1, hr * 0.12), s.eyes));
+            }
         }
-    } else {
+    } else if s.headless {
         // Headless: hunched shoulder mound.
         upper.push(ell(V3::new(0.0, neck_y, 0.0), V3::new(0.13 * h * g, 0.06 * h, 0.08 * h), s.skin));
     }
@@ -311,7 +336,7 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
 
     // Arms.
     let sh_y = hip_y + 0.33 * h;
-    let sh_dx = 0.16 * h * g;
+    let sh_dx = 0.16 * h * g * (0.4 + 0.6 * s.chest);
     let upper_len = 0.17 * h * s.arm_len;
     let fore_len = 0.16 * h * s.arm_len;
     let arm_mat = s.sleeves.unwrap_or(s.skin);
@@ -416,6 +441,7 @@ fn lowest_point(parts: &[Part]) -> f32 {
             Prim::Ellipsoid { c, r, .. } => c.y - r.x.min(r.y).min(r.z),
             Prim::Cone { a, b, ra, rb } => (a.y - ra).min(b.y - rb),
             Prim::Box { c, h, .. } => c.y - h.y,
+            Prim::Tri { a, b, c } => a.y.min(b.y).min(c.y),
         })
         .fold(f32::MAX, f32::min)
 }
@@ -450,8 +476,8 @@ fn rat(pose: &Pose) -> Vec<Part> {
 
 fn bat(pose: &Pose) -> Vec<Part> {
     let fur = m(Ramp::Earth, 1, 6, Pattern::Fur);
-    let membrane = m(Ramp::Red, 1, 4, Pattern::Noise(0.25));
-    let bone = m(Ramp::Earth, 2, 7, Pattern::Plain);
+    let membrane = m(Ramp::Red, 2, 8, Pattern::Plain);
+    let bone = m(Ramp::Earth, 1, 5, Pattern::Plain);
     let eye = m(Ramp::Red, 10, 13, Pattern::Plain).glow();
     let mut p = Vec::new();
     let y = 0.16;
@@ -463,18 +489,23 @@ fn bat(pose: &Pose) -> Vec<Part> {
         // Big pointed ears and glowing eyes.
         p.push(cone(head + V3::new(s * 0.018, 0.018, 0.0), head + V3::new(s * 0.04, 0.072, -0.005), 0.016, 0.003, fur));
         p.push(ell(head + V3::new(s * 0.015, 0.006, 0.029), V3::new(0.008, 0.007, 0.007), eye));
-        // Wing: arm bone, three fingers and the membrane between them.
+        // Wing: arm bone, three long fingers and the membrane stretched
+        // between them, its trailing edge scalloped between the finger tips.
         let flap = (pose.walk * 2.0 + if pose.attack > 0.0 { pose.attack * 6.0 } else { 0.0 }).sin() * 0.65;
         let sh = V3::new(s * 0.035, y + 0.03, 0.0);
-        let wrist = sh + V3::new(s * 0.1, 0.05, -0.01);
-        let tips = [V3::new(s * 0.31, y + 0.1, -0.02), V3::new(s * 0.3, y - 0.01, -0.02), V3::new(s * 0.2, y - 0.08, -0.015)];
+        let wrist = sh + V3::new(s * 0.1, 0.07, -0.01);
+        let tips = [V3::new(s * 0.26, y + 0.19, -0.02), V3::new(s * 0.34, y + 0.05, -0.02), V3::new(s * 0.27, y - 0.07, -0.02), V3::new(s * 0.05, y - 0.06, -0.01)];
         let mut w = vec![cone(sh, wrist, 0.011, 0.008, bone)];
-        for t in tips {
-            w.push(cone(wrist, t, 0.006, 0.003, bone));
+        for t in &tips[..3] {
+            w.push(cone(wrist, *t, 0.006, 0.003, bone));
         }
-        w.push(ell(sh + V3::new(s * 0.12, -0.01, -0.012), V3::new(0.12, 0.06, 0.005), membrane));
-        w.push(ell(V3::new(s * 0.25, y + 0.035, -0.018), V3::new(0.07, 0.055, 0.005), membrane));
-        w.push(ell(V3::new(s * 0.2, y - 0.035, -0.016), V3::new(0.07, 0.04, 0.005), membrane));
+        w.push(tri(sh, wrist, tips[3], membrane));
+        for k in 0..3 {
+            let (a, b) = (tips[k], tips[k + 1]);
+            let notch = (a + b) * 0.5 + (wrist - (a + b) * 0.5) * 0.28;
+            w.push(tri(wrist, a, notch, membrane));
+            w.push(tri(wrist, notch, b, membrane));
+        }
         transform(&mut w, sh, &M3::rot_z(s * flap), V3::ZERO);
         p.extend(w);
     }
@@ -540,16 +571,14 @@ fn golem(pose: &Pose) -> Vec<Part> {
 fn spider(pose: &Pose) -> Vec<Part> {
     let body = m(Ramp::Grey, 3, 12, Pattern::Fur);
     let leg = m(Ramp::Grey, 2, 10, Pattern::Plain);
-    let eye = m(Ramp::Red, 10, 14, Pattern::Plain).glow();
     let mut p = Vec::new();
     let y = 0.17 + (pose.walk * 2.0).sin().abs() * 0.01;
     let lunge = if pose.attack > 0.0 { (pose.attack * PI).sin() * 0.06 } else { 0.0 };
     p.push(ell(V3::new(0.0, y + 0.04, -0.16), V3::new(0.15, 0.12, 0.17), body));
     p.push(ell(V3::new(0.0, y + 0.01, 0.06 + lunge), V3::new(0.1, 0.08, 0.1), body));
     let head = V3::new(0.0, y + 0.02, 0.15 + lunge);
-    p.push(ell(head, V3::new(0.06, 0.05, 0.05), body));
+    p.push(ell(head, V3::new(0.06, 0.05, 0.05), body).face());
     for s in [-1.0f32, 1.0] {
-        p.push(ell(head + V3::new(s * 0.022, 0.025, 0.035), V3::new(0.014, 0.014, 0.012), eye));
         p.push(cone(head + V3::new(s * 0.02, -0.03, 0.03), head + V3::new(s * 0.012, -0.07, 0.06), 0.012, 0.005, leg));
         for k in 0..4 {
             let ang = (k as f32 - 1.5) * 0.45;
@@ -588,16 +617,12 @@ fn slug(pose: &Pose) -> Vec<Part> {
 }
 
 fn lurker(pose: &Pose) -> Vec<Part> {
-    let skin = m(Ramp::Slate, 2, 10, Pattern::Scales);
-    let maw = m(Ramp::Red, 2, 8, Pattern::Plain);
-    let eye = m(Ramp::Gold, 11, 14, Pattern::Plain).glow();
+    let skin = m(Ramp::Moss, 2, 10, Pattern::Scales);
     let mut p = Vec::new();
     let rise = 0.05 + if pose.attack > 0.0 { (pose.attack * PI).sin() * 0.1 } else { (pose.walk).sin() * 0.02 };
     let head = V3::new(0.0, 0.18 + rise, 0.0);
-    p.push(ell(head, V3::new(0.24, 0.2, 0.2), skin));
-    p.push(ell(head + V3::new(0.0, -0.06, 0.16), V3::new(0.16, 0.06, 0.06), maw));
+    p.push(ell(head, V3::new(0.24, 0.2, 0.2), skin).face());
     for s in [-1.0f32, 1.0] {
-        p.push(ell(head + V3::new(s * 0.1, 0.1, 0.15), V3::new(0.035, 0.035, 0.03), eye));
         for k in 0..2 {
             let a = pose.walk + k as f32;
             let base = head + V3::new(s * 0.2, -0.05, 0.05 - k as f32 * 0.1);
@@ -608,26 +633,35 @@ fn lurker(pose: &Pose) -> Vec<Part> {
 }
 
 fn reaper(pose: &Pose) -> Vec<Part> {
-    let bark = m(Ramp::Earth, 1, 7, Pattern::Wood);
-    let leaf = m(Ramp::Moss, 2, 8, Pattern::Noise(0.4));
-    let eye = m(Ramp::Gold, 11, 15, Pattern::Plain).glow();
+    let bark = m(Ramp::Copper, 2, 10, Pattern::Bark);
     let mut p = Vec::new();
     let sway = (pose.walk).sin() * 0.04;
-    p.push(cone(V3::new(0.0, 0.0, 0.0), V3::new(sway, 0.85, 0.0), 0.16, 0.11, bark));
+    // Trunk, flaring into roots at the base.
+    // (Marked as face so the drawn face spills from the bulge onto it.)
+    p.push(cone(V3::new(0.0, 0.0, 0.0), V3::new(sway, 0.9, 0.0), 0.15, 0.1, bark).face());
+    for a in [0.4f32, 1.9, 3.3, 4.8] {
+        let d = V3::new(a.cos(), 0.0, a.sin());
+        p.push(cone(d * 0.08 + V3::new(0.0, 0.1, 0.0), d * 0.26, 0.07, 0.02, bark));
+    }
+    // A broken crown of short stubs.
+    for (dx, dz, len) in [(-0.09f32, 0.03f32, 0.16f32), (0.08, -0.03, 0.2), (0.01, 0.05, 0.1)] {
+        let top = V3::new(sway + dx * 0.4, 0.84, dz * 0.5);
+        p.push(cone(top, top + V3::new(dx, len, dz), 0.055, 0.015, bark));
+    }
+    // The face is drawn on a bulge of bark on the upper trunk.
+    p.push(ell(V3::new(sway * 0.8, 0.64, 0.05), V3::new(0.1, 0.13, 0.075), bark).face());
+    // Branch arms held high, ending in twig fingers.
     for (k, s) in [-1.0f32, 1.0].iter().enumerate() {
-        p.push(cone(V3::new(s * 0.1, 0.02, 0.0), V3::new(s * 0.25, 0.0, 0.08), 0.06, 0.02, bark));
-        let raise = if pose.attack > 0.0 && k == 0 { lerp3(0.6, 0.0, -0.4, pose.attack) } else { 0.2 + (pose.walk + k as f32).sin() * 0.1 };
-        let sh = V3::new(s * 0.1, 0.72, 0.0);
-        let el = sh + V3::new(s * 0.22, 0.12 + raise * 0.2, 0.1);
-        let tip = el + V3::new(s * 0.08, 0.22 * (1.0 - raise), 0.18 + raise * 0.2);
-        p.push(cone(sh, el, 0.05, 0.035, bark));
-        p.push(cone(el, tip, 0.035, 0.01, bark));
+        let raise = if pose.attack > 0.0 && k == 0 { lerp3(0.2, -0.1, -0.5, pose.attack) } else { 0.12 + (pose.walk + k as f32).sin() * 0.06 };
+        let sh = V3::new(sway + s * 0.08, 0.6, 0.0);
+        let el = sh + V3::new(s * 0.22, 0.06, 0.03);
+        let hand = el + V3::new(s * 0.05, 0.22 + raise, 0.04 + (0.2 - raise).max(0.0) * 0.5);
+        p.push(cone(sh, el, 0.055, 0.04, bark));
+        p.push(cone(el, hand, 0.04, 0.025, bark));
+        for (tx, ty) in [(-0.07f32, 0.08f32), (0.0, 0.11), (0.07, 0.07)] {
+            p.push(cone(hand, hand + V3::new(s * tx, ty, 0.0), 0.018, 0.004, bark));
+        }
     }
-    p.push(ell(V3::new(sway, 0.95, -0.02), V3::new(0.2, 0.14, 0.16), leaf));
-    for s in [-1.0f32, 1.0] {
-        p.push(ell(V3::new(sway + s * 0.05, 0.7, 0.11), V3::new(0.025, 0.02, 0.02), eye));
-    }
-    p.push(ell(V3::new(sway, 0.6, 0.12), V3::new(0.06, 0.02, 0.02), m(Ramp::Grey, 0, 1, Pattern::Plain)));
     finish_death(p, pose, 0.0)
 }
 
@@ -677,6 +711,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.muscular = 1.0;
             s.fangs = true;
             s.loincloth = Some(m(Earth, 1, 6, Cloth));
+            s.face = Some(Face::Goblin);
             s
         }
         Race::Skeleton => {
@@ -689,6 +724,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.eyes = red_eyes;
             s.weapon = Weapon::Sword;
             s.weapon_mat = m(Grey, 3, 11, Metal);
+            s.face = Some(Face::Skull);
             s
         }
         Race::Lizardman => {
@@ -704,6 +740,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.belt = Some(m(Copper, 2, 7, Plain));
             s.hunch = 0.15;
             s.muscular = 0.6;
+            s.face = Some(Face::Lizard);
             s
         }
         Race::Dwarf => {
@@ -726,6 +763,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.weapon = Weapon::Axe;
             s.nose = 1.2;
             s.muscular = 0.4;
+            s.face = Some(Face::Human);
             s
         }
         Race::Human if look == 4 => {
@@ -740,6 +778,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.feet = m(Earth, 1, 5, Plain);
             s.eyes = eyes_dark;
             s.belt = Some(m(Gold, 4, 12, Metal));
+            s.face = Some(Face::Human);
             s
         }
         Race::Human => {
@@ -764,6 +803,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             if look == 3 {
                 s.shield = Some(m(Earth, 2, 8, Wood));
             }
+            s.face = Some(Face::Human);
             s
         }
         Race::Mage => {
@@ -783,6 +823,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.feet = m(Earth, 1, 5, Plain);
             s.eyes = eyes_dark;
             s.weapon = Weapon::Staff;
+            s.face = Some(Face::Human);
             s
         }
         Race::Ghoul => {
@@ -797,13 +838,14 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.arm_len = 1.2;
             s.muscular = 0.5;
             s.fangs = true;
+            s.face = Some(Face::Ghoul);
             s
         }
         Race::Troll => {
             let skin = m(Moss, 2, 10, Noise(0.3));
             let mut s = Humanoid::base(1.05, skin);
             s.girth = 1.22;
-            s.head = 0.85;
+            s.head = 1.15;
             s.hump = true;
             s.nose = 1.6;
             s.ears = 0.6;
@@ -817,6 +859,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.muscular = 1.2;
             s.fangs = true;
             s.loincloth = Some(m(Earth, 1, 5, Fur));
+            s.face = Some(Face::Troll);
             s
         }
         Race::Ghost => {
@@ -828,6 +871,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.hair = Some(m(Silver, 8, 15, Fur));
             s.eyes = m(Blue, 11, 15, Plain).glow();
             s.weapon = Weapon::Claws;
+            s.face = Some(Face::Ghost);
             s
         }
         Race::Golem => {
@@ -844,12 +888,13 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s
         }
         Race::Headless => {
-            let skin = m(Flesh, 2, 9, Noise(0.15));
+            let skin = m(Copper, 2, 9, Noise(0.15));
             let mut s = Humanoid::base(0.85, skin);
             s.headless = true;
             s.girth = 1.25;
             s.torso = skin;
-            s.legs = m(Earth, 1, 6, Cloth);
+            s.legs = skin;
+            s.loincloth = Some(m(Grey, 3, 10, Cloth));
             s.feet = skin;
             s.weapon = Weapon::Club;
             s.muscular = 1.1;
@@ -868,6 +913,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.feet = skin;
             s.eyes = yellow_eyes;
             s.weapon = Weapon::Claws;
+            s.face = Some(Face::Imp);
             s
         }
         Race::Demon => {
@@ -886,6 +932,7 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s.hunch = 0.2;
             s.muscular = 1.0;
             s.fangs = true;
+            s.face = Some(Face::Fiend);
             s
         }
         _ => return None,
@@ -918,6 +965,7 @@ pub fn render_creature(race: Race, look: u8) -> CreatureSprites {
     for f in 0..FRAMES {
         let pose = pose_for_frame(f);
         let parts = model(race, look, &pose);
+        let face = face_for(race, look);
         let mut views = Vec::with_capacity(VIEWS);
         for vi in 0..VIEWS {
             let v = View3 {
@@ -929,7 +977,7 @@ pub fn render_creature(race: Race, look: u8) -> CreatureSprites {
                 center: V3::ZERO,
                 center_row: ch as f32 - 2.0,
             };
-            views.push(render(&parts, &v, true));
+            views.push(render_faced(&parts, &v, face));
         }
         frames.push(views);
     }
@@ -947,7 +995,7 @@ pub fn portrait(race: Race, look: u8, size: i32) -> Bitmap {
         Race::Spider => (0.2, 0.4),
         Race::Slug => (0.15, 0.35),
         Race::Lurker => (0.22, 0.5),
-        Race::Reaper => (0.8, 0.5),
+        Race::Reaper => (0.68, 0.5),
         Race::Headless => (h * 0.75, h * 0.45),
         Race::Golem | Race::Troll | Race::Demon => (h * 0.82, h * 0.36),
         _ => (h * 0.86, h * 0.3),
@@ -962,13 +1010,214 @@ pub fn portrait(race: Race, look: u8, size: i32) -> Bitmap {
         center: V3::new(0.0, center_y, 0.0),
         center_row: size as f32 * 0.5,
     };
-    render(&parts, &v, true)
+    render_faced(&parts, &v, face_for(race, look))
 }
 
-/// The paperdoll body for the inventory panel.
-pub fn paperdoll(parts: &[Part], w: i32, h: i32, scale: f32) -> Bitmap {
+/// The drawn face and eye colour of a creature, if it has one.
+fn face_for(race: Race, look: u8) -> Option<(Face, CMat)> {
+    let glow = |r: Ramp, lo: i32, hi: i32| m(r, lo, hi, Pattern::Plain).glow();
+    match race {
+        Race::Reaper => Some((Face::Tree, glow(Ramp::Red, 10, 14))),
+        Race::Spider => Some((Face::Spider, glow(Ramp::Red, 10, 14))),
+        Race::Lurker => Some((Face::Lurker, glow(Ramp::Gold, 11, 14))),
+        _ => spec_for(race, look).and_then(|s| s.face.map(|f| (f, s.eyes))),
+    }
+}
+
+/// Render a model and paint its drawn face, if it has one.
+fn render_faced(parts: &[Part], v: &View3, face: Option<(Face, CMat)>) -> Bitmap {
+    let (mut b, pid) = render_ids(parts, v, true, false);
+    if let Some((face, eyes)) = face {
+        faces::paint(&mut b, &pid, parts, v, face, eyes);
+    }
+    b
+}
+
+/// The player's head and shoulders for conversations.
+pub fn player_portrait(o: &Outfit, v: &View3) -> Bitmap {
+    let s = player_spec(o);
+    render_faced(&player_finish(o, humanoid(&s, &Pose::default())), v, Some((Face::Human, s.eyes)))
+}
+
+/// Paperdoll heads, drawn as pixel art: `K` outline, `a`-`d` hair and `w`-`z`
+/// beard (dark to light), `1`-`5` skin, `e` eyes, `m` mouth.
+const HEAD_BEARD: [&str; 16] = [
+    ".....KKKKKK.....",
+    "...KKbcddcbKK...",
+    "..KbcddddddcbK..",
+    "..Kbc345543cbK..",
+    ".Kab34555543baK.",
+    ".Kab4aa44aa2baK.",
+    ".Kab3e254e22baK.",
+    ".Kab34452332baK.",
+    ".Kab34412332baK.",
+    ".Kab3xyyyyx2baK.",
+    ".KawxxymmyxxwaK.",
+    ".KawxyzyyzyxwaK.",
+    "..KwwxyyyyxwwK..",
+    "...KwwxyyxwwK...",
+    "....KKwxxwKK....",
+    "......KKKK......",
+];
+const HEAD_SHAVEN: [&str; 15] = [
+    ".....KKKKKK.....",
+    "...KKbcddcbKK...",
+    "..KbcddddddcbK..",
+    "..Kbc345543cbK..",
+    ".Kab34555543baK.",
+    ".Kab4aa44aa2baK.",
+    ".Kab3e254e22baK.",
+    ".Kab34452332baK.",
+    ".Kab34412332baK.",
+    ".Kab34455432baK.",
+    "..Kb342mm232bK..",
+    "..Kb23444322bK..",
+    "...K22333221K...",
+    "....KK2221KK....",
+    "......KKKK......",
+];
+const HEAD_FEMALE: [&str; 17] = [
+    ".....KKKKKK.....",
+    "...KKbcddcbKK...",
+    "..KbcddddddcbK..",
+    ".Kbcdc4554cdcbK.",
+    ".Kbc34555543cbK.",
+    ".Kbc42255222cbK.",
+    ".Kbc3e254e22cbK.",
+    ".Kbc34452332cbK.",
+    ".Kbc34412332cbK.",
+    ".Kbc44455432cbK.",
+    ".Kbb343mm332bbK.",
+    ".Kbbb344432bbbK.",
+    ".Kabbb2332bbbaK.",
+    ".KaabbK22KbbaaK.",
+    ".KaaabK..KbaaaK.",
+    "..KaaK....KaaK..",
+    "...KK......KK...",
+];
+/// Cap or helm over the top of a head (`p`-`t` dark to light); `n` marks the
+/// nose guard, drawn on plate helms only.
+const HELM: [&str; 8] = [
+    ".....KKKKKK.....",
+    "...KKrsttsrKK...",
+    "..KqrsttttsrqK..",
+    ".KKKKKKKKKKKKKK.",
+    ".KpqrrssssrrqpK.",
+    ".KKKKKKnnKKKKKK.",
+    ".......nn.......",
+    ".......nn.......",
+];
+
+fn hair_mat(style: u8) -> CMat {
+    match style % 4 {
+        0 => m(Ramp::Earth, 1, 6, Pattern::Fur),
+        1 => m(Ramp::Gold, 3, 10, Pattern::Fur),
+        2 => m(Ramp::Grey, 2, 7, Pattern::Fur),
+        _ => m(Ramp::Copper, 2, 8, Pattern::Fur),
+    }
+}
+
+fn skin_mat(tone: u8) -> CMat {
+    match tone % 3 {
+        0 => m(Ramp::Flesh, 3, 11, Pattern::Noise(0.08)),
+        1 => m(Ramp::Flesh, 2, 9, Pattern::Noise(0.08)),
+        _ => m(Ramp::Copper, 2, 9, Pattern::Noise(0.08)),
+    }
+}
+
+/// Shade `t` (0..1) of a material's range.
+fn tone(mat: &CMat, t: f32) -> u8 {
+    c(mat.ramp, (mat.lo as f32 + (mat.hi - mat.lo) as f32 * t).round() as i32)
+}
+
+/// The player's head for the paperdoll, with any helmet.
+fn player_head(o: &Outfit) -> Bitmap {
+    let rows: &[&str] = if o.female {
+        &HEAD_FEMALE
+    } else if o.beard {
+        &HEAD_BEARD
+    } else {
+        &HEAD_SHAVEN
+    };
+    let (hair, skin) = (hair_mat(o.hair), skin_mat(o.skin));
+    // A chain cowl replaces the hair with mail.
+    let cowl = o.head.filter(|h| h.pattern == Pattern::Chain);
+    let mut b = Bitmap::new(rows[0].len() as i32, rows.len() as i32);
+    for (y, row) in rows.iter().enumerate() {
+        for (x, ch) in row.chars().enumerate() {
+            let (x, y) = (x as i32, y as i32);
+            let col = match ch {
+                'K' => BLACK,
+                'e' => c(Ramp::Grey, 1),
+                'm' => c(Ramp::Red, 3),
+                'a'..='d' => {
+                    let t = (ch as u8 - b'a') as f32 / 3.0;
+                    match &cowl {
+                        Some(cm) => tone(cm, 0.15 + t * 0.6 + if (x + y) & 1 == 0 { 0.12 } else { -0.05 }),
+                        None => tone(&hair, t),
+                    }
+                }
+                'w'..='z' => tone(&hair, (ch as u8 - b'w') as f32 / 3.0),
+                '1'..='5' => tone(&skin, [0.12, 0.33, 0.5, 0.7, 0.9][(ch as u8 - b'1') as usize]),
+                _ => continue,
+            };
+            b.set(x, y, col);
+        }
+    }
+    if let Some(hm) = o.head.filter(|h| h.pattern != Pattern::Chain) {
+        let nose_guard = hm.pattern == Pattern::Metal;
+        for (y, row) in HELM.iter().enumerate() {
+            for (x, ch) in row.chars().enumerate() {
+                let col = match ch {
+                    'K' => BLACK,
+                    'p'..='t' => tone(&hm, (ch as u8 - b'p') as f32 / 4.0),
+                    'n' if nose_guard => tone(&hm, 0.5),
+                    _ => continue,
+                };
+                b.set(x as i32, y as i32, col);
+            }
+        }
+    }
+    b
+}
+
+/// The paperdoll for the inventory panel: the body is modelled and rendered,
+/// the head is pixel art set on the shoulders.
+pub fn paperdoll(o: &Outfit, w: i32, h: i32, scale: f32) -> Bitmap {
+    let mut s = player_spec(o);
+    s.head_sprite = true;
+    s.foot = 2.0;
+    let parts = player_finish(o, humanoid(&s, &Pose::default()));
     let v = View3 { yaw: 0.0, pitch: 0.0, scale, w, h, center: V3::ZERO, center_row: h as f32 - 2.0 };
-    render(parts, &v, true)
+    let mut b = render_lined(&parts, &v, true, true);
+    // Row of the top of the shoulders (shoulder joint plus its radius).
+    let shoulder = (v.center_row - (0.80 * s.h + 0.044 * s.h) * scale).round() as i32;
+    if o.chest.is_none() {
+        // V-neck of the tunic.
+        let skin = skin_mat(o.skin);
+        let dark = tone(&s.torso, 0.0);
+        let x0 = w / 2 - 4;
+        for (dy, row) in ["kk4554kk", ".k3443k.", "..k32k..", "...kk..."].iter().enumerate() {
+            for (dx, ch) in row.chars().enumerate() {
+                let col = match ch {
+                    'k' => dark,
+                    '2' => tone(&skin, 0.33),
+                    '3' => tone(&skin, 0.5),
+                    '4' => tone(&skin, 0.7),
+                    '5' => tone(&skin, 0.9),
+                    _ => continue,
+                };
+                b.set(x0 + dx as i32, shoulder + 4 + dy as i32, col);
+            }
+        }
+    }
+    let head = player_head(o);
+    // The chin rests on the top of the chest, as in the original (a woman's
+    // hair falls past her chin, which is on row 13).
+    let chin = if o.female { 13 } else { head.h - 1 };
+    let top = shoulder + 4 - chin;
+    b.blit(&head, w / 2 - head.w / 2, top);
+    b
 }
 
 /// Player model for the paperdoll, dressed according to equipment colours.
@@ -984,37 +1233,37 @@ pub struct Outfit {
     pub hands: Option<CMat>,
 }
 
-pub fn player_parts(o: &Outfit) -> Vec<Part> {
+fn player_spec(o: &Outfit) -> Humanoid {
     use Pattern::*;
-    let skin = match o.skin % 3 {
-        0 => m(Ramp::Flesh, 3, 12, Noise(0.08)),
-        1 => m(Ramp::Flesh, 2, 9, Noise(0.08)),
-        _ => m(Ramp::Copper, 2, 9, Noise(0.08)),
-    };
+    let skin = skin_mat(o.skin);
     let mut s = Humanoid::base(0.82, skin);
-    s.girth = if o.female { 0.88 } else { 1.0 };
+    s.girth = if o.female { 0.95 } else { 1.15 };
     s.head = 1.2;
     s.nose = 0.9;
-    let hair = match o.hair % 4 {
-        0 => m(Ramp::Earth, 1, 6, Fur),
-        1 => m(Ramp::Gold, 3, 10, Fur),
-        2 => m(Ramp::Grey, 1, 4, Fur),
-        _ => m(Ramp::Copper, 2, 8, Fur),
-    };
+    s.arm_len = 1.05;
+    let hair = hair_mat(o.hair);
     s.hair = Some(hair);
     if o.beard && !o.female {
         s.beard = Some(hair);
     }
-    s.torso = o.chest.unwrap_or(m(Ramp::Earth, 2, 7, Cloth));
-    s.sleeves = Some(o.chest.unwrap_or(m(Ramp::Earth, 2, 7, Cloth)));
-    s.legs = o.legs.unwrap_or(m(Ramp::Earth, 1, 6, Cloth));
+    // A sleeveless tunic; a leather vest leaves the arms bare too, mail and
+    // plate cover them.
+    s.torso = o.chest.unwrap_or(m(Ramp::Earth, 3, 8, Weave));
+    s.sleeves = o.chest.filter(|c| c.pattern == Chain || c.pattern == Metal);
+    if s.sleeves.is_none() {
+        s.chest = 0.78;
+    }
+    s.legs = o.legs.unwrap_or(m(Ramp::Earth, 2, 7, Weave));
     s.feet = o.feet.unwrap_or(skin);
     s.helmet = o.head;
     s.eyes = m(Ramp::Grey, 0, 2, Plain);
-    s.belt = Some(m(Ramp::Earth, 1, 5, Plain));
-    let mut parts = humanoid(&s, &Pose::default());
+    s.face = Some(Face::Human);
+    s
+}
+
+/// Gloves recolour the hands: the small ellipsoids at the wrists.
+fn player_finish(o: &Outfit, mut parts: Vec<Part>) -> Vec<Part> {
     if let Some(hm) = o.hands {
-        // Recolour hands: hands are the small ellipsoids at the wrists.
         for p in parts.iter_mut() {
             if let Prim::Ellipsoid { r, .. } = p.prim {
                 if (r.x - 0.032 * 0.82).abs() < 1e-4 {
@@ -1023,9 +1272,9 @@ pub fn player_parts(o: &Outfit) -> Vec<Part> {
             }
         }
     }
-    let _ = bx;
     parts
 }
+
 
 #[cfg(test)]
 mod tests {

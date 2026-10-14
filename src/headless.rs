@@ -13,6 +13,7 @@
 //! `goto X Z [YAW]` - teleport the player
 //! `level N X Z` - change level
 //! `give Kind` - put an item in the pack
+//! `spawn Race DIST [LOOK]` - place a peaceful creature DIST ahead, facing the player
 //! `equip Kind Slot` - equip an item
 //! `set NAME VALUE` - player attribute (vit, mana, level, exp)
 //! `runes all` - learn all runes
@@ -146,7 +147,7 @@ pub fn run(script: &str) -> Result<(), String> {
                     }
                 }
             }
-            "goto" | "level" | "give" | "equip" | "set" | "runes" | "shelf" => {
+            "goto" | "level" | "give" | "equip" | "set" | "runes" | "shelf" | "spawn" => {
                 if let Screen::Play(st) = &mut app.screen {
                     let g = &mut st.game;
                     match arg(0) {
@@ -201,6 +202,20 @@ pub fn run(script: &str) -> Result<(), String> {
                             }
                         }
                         "runes" => g.player.runes = [true; 24],
+                        "spawn" => {
+                            let race = *crate::game::creatures::ALL_RACES
+                                .iter()
+                                .find(|r| format!("{:?}", r).eq_ignore_ascii_case(arg(1)))
+                                .ok_or(format!("bad race {}", arg(1)))?;
+                            let (yaw, d) = (g.player.yaw, num(2));
+                            let (x, z) = (g.player.pos.x + yaw.sin() * d, g.player.pos.z - yaw.cos() * d);
+                            let mut n = crate::game::creatures::Npc::new(0, race, x, z);
+                            n.look = num(3) as u8;
+                            n.yaw = yaw + std::f32::consts::PI;
+                            n.ai = crate::game::creatures::AiState::Idle;
+                            n.attitude = crate::game::creatures::Attitude::Friendly;
+                            g.level_mut().add_npc(n);
+                        }
                         "shelf" => {
                             g.player.shelf = c[1..]
                                 .iter()

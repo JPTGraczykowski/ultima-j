@@ -25,19 +25,19 @@ fn near(m: (i32, i32), c: (i32, i32), r: i32) -> bool {
 
 /// Body region of the paperdoll under the mouse (armour slots).
 fn body_slot(m: (i32, i32)) -> Option<EqSlot> {
-    let (px, py) = (PAPERDOLL_C.0, 9);
+    let (px, py) = (PAPERDOLL_C.0, 12);
     if (m.0 - px).abs() > 15 {
         return None;
     }
     let y = m.1 - py;
-    if (m.0 - px).abs() > 9 && (30..44).contains(&y) {
+    if (m.0 - px).abs() > 9 && (30..42).contains(&y) {
         return Some(EqSlot::Hands);
     }
     match y {
-        0..=13 => Some(EqSlot::Head),
-        14..=35 => Some(EqSlot::Chest),
-        36..=55 => Some(EqSlot::Legs),
-        56..=72 => Some(EqSlot::Feet),
+        0..=14 => Some(EqSlot::Head),
+        15..=33 => Some(EqSlot::Chest),
+        34..=60 => Some(EqSlot::Legs),
+        61..=69 => Some(EqSlot::Feet),
         _ => None,
     }
 }
@@ -386,7 +386,7 @@ fn draw_inventory(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
     }
     // Paperdoll.
     let doll = ctx.cache.paperdoll(&st.game.player).clone();
-    fb.blit(&doll, PAPERDOLL_C.0 - doll.w / 2, 6);
+    fb.blit(&doll, PAPERDOLL_C.0 - doll.w / 2, 8);
     // Equipped items in circles.
     let eq = st.game.player.equip.clone();
     for (slot, (cx, cy)) in EQ_CIRCLES.iter() {

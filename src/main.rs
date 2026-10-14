@@ -51,6 +51,30 @@ fn dump_art(dir: &str) -> Result<(), String> {
         }
     }
     gfx::save_bitmap_png(&format!("{}/hands.png", dir), &hands, pal, 2)?;
+    // Paperdolls: no armour, then leather, chain and plate.
+    use game::items::ItemKind::*;
+    let sets = [
+        (false, true, 0, 2, [None, None, None, None, None]),
+        (false, false, 1, 1, [Some(LeatherCap), Some(LeatherVest), Some(LeatherLeggings), Some(LeatherBoots), Some(LeatherGloves)]),
+        (true, false, 0, 0, [None, None, None, None, None]),
+        (true, false, 2, 3, [Some(ChainCowl), Some(ChainShirt), Some(ChainLeggings), None, None]),
+        (false, true, 0, 0, [Some(PlateHelm), Some(Breastplate), Some(PlateLeggings), Some(PlateBoots), Some(Gauntlets)]),
+        (false, true, 2, 3, [None, Some(LeatherVest), None, None, None]),
+    ];
+    let mut dolls = Bitmap::filled(sets.len() as i32 * 50, 76, palette::c(Ramp::Copper, 7));
+    for (i, (female, beard, skin, hair, kit)) in sets.iter().enumerate() {
+        let m = |k: Option<game::items::ItemKind>| k.map(ui::sprites::armor_cmat);
+        let o = art::creatures::Outfit { female: *female, beard: *beard, skin: *skin, hair: *hair, head: m(kit[0]), chest: m(kit[1]), legs: m(kit[2]), feet: m(kit[3]), hands: m(kit[4]) };
+        dolls.blit(&art::creatures::paperdoll(&o, 46, 72, 80.0), i as i32 * 50 + 2, 2);
+    }
+    gfx::save_bitmap_png(&format!("{}/paperdolls.png", dir), &dolls, pal, 5)?;
+    // Conversation portraits.
+    let races = game::creatures::ALL_RACES;
+    let mut faces = Bitmap::filled(races.len() as i32 * 36, 36, palette::c(Ramp::Parch, 9));
+    for (i, r) in races.iter().enumerate() {
+        faces.blit(&art::creatures::portrait(*r, 1, 34), i as i32 * 36 + 1, 1);
+    }
+    gfx::save_bitmap_png(&format!("{}/portraits.png", dir), &faces, pal, 3)?;
     Ok(())
 }
 

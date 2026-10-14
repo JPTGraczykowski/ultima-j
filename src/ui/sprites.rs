@@ -105,8 +105,7 @@ impl SpriteCache {
     pub fn paperdoll(&mut self, p: &Player) -> &Bitmap {
         let key = paperdoll_key(p);
         if self.paperdoll.as_ref().map(|(k, _)| k != &key).unwrap_or(true) {
-            let parts = creatures::player_parts(&outfit(p));
-            let bmp = creatures::paperdoll(&parts, 46, 72, 82.0);
+            let bmp = creatures::paperdoll(&outfit(p), 46, 72, 80.0);
             self.paperdoll = Some((key, bmp));
         }
         &self.paperdoll.as_ref().unwrap().1
@@ -115,7 +114,6 @@ impl SpriteCache {
     pub fn player_face(&mut self, p: &Player) -> &Bitmap {
         let key = format!("{}{}{}{:?}", p.female, p.skin, p.hair, p.equip.head.as_ref().map(|i| i.kind));
         if self.player_portrait.as_ref().map(|(k, _)| k != &key).unwrap_or(true) {
-            let parts = creatures::player_parts(&outfit(p));
             let v = crate::art::sprite3d::View3 {
                 yaw: -0.25,
                 pitch: 0.05,
@@ -125,7 +123,7 @@ impl SpriteCache {
                 center: V3::new(0.0, 0.82 * 0.86, 0.0),
                 center_row: 17.0,
             };
-            let bmp = crate::art::sprite3d::render(&parts, &v, true);
+            let bmp = creatures::player_portrait(&outfit(p), &v);
             self.player_portrait = Some((key, bmp));
         }
         &self.player_portrait.as_ref().unwrap().1
@@ -137,7 +135,7 @@ fn paperdoll_key(p: &Player) -> String {
     format!("{}{}{}|{}|{}|{}|{}|{}", p.female, p.skin, p.hair, k(EqSlot::Head), k(EqSlot::Chest), k(EqSlot::Legs), k(EqSlot::Feet), k(EqSlot::Hands))
 }
 
-fn armor_cmat(kind: ItemKind) -> CMat {
+pub fn armor_cmat(kind: ItemKind) -> CMat {
     use ItemKind::*;
     match kind {
         LeatherCap | LeatherVest | LeatherLeggings | LeatherBoots | LeatherGloves => CMat::new(Ramp::Earth, 1, 8, Pattern::Noise(0.2)),

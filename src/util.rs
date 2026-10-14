@@ -16,6 +16,10 @@ impl V3 {
         V3 { x, y, z }
     }
     #[inline]
+    pub fn cross(self, o: V3) -> V3 {
+        V3::new(self.y * o.z - self.z * o.y, self.z * o.x - self.x * o.z, self.x * o.y - self.y * o.x)
+    }
+    #[inline]
     pub fn dot(self, o: V3) -> f32 {
         self.x * o.x + self.y * o.y + self.z * o.z
     }

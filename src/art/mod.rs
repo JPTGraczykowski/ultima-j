@@ -3,6 +3,7 @@
 
 pub mod canvas;
 pub mod creatures;
+pub mod faces;
 pub mod items;
 pub mod sprite3d;
 pub mod textures;

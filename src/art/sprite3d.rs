@@ -15,6 +15,10 @@ pub enum Pattern {
     Scales,
     Fur,
     Cloth,
+    /// Coarse woven cloth: a fine checker over soft vertical folds.
+    Weave,
+    /// Bark: deep grooves running along the trunk.
+    Bark,
     Wood,
     Bone,
     Metal,
@@ -45,25 +49,39 @@ pub enum Prim {
     Ellipsoid { c: V3, r: V3, rot: M3 },
     Cone { a: V3, b: V3, ra: f32, rb: f32 },
     Box { c: V3, h: V3, rot: M3 },
+    /// A flat, two-sided triangle (wing membranes).
+    Tri { a: V3, b: V3, c: V3 },
 }
 
 #[derive(Clone, Copy, Debug)]
 pub struct Part {
     pub prim: Prim,
     pub mat: CMat,
+    /// Part of a face: drawn facial features may be painted over it.
+    pub face: bool,
+}
+
+impl Part {
+    pub fn face(mut self) -> Part {
+        self.face = true;
+        self
+    }
 }
 
 pub fn ell(c: V3, r: V3, mat: CMat) -> Part {
-    Part { prim: Prim::Ellipsoid { c, r, rot: M3::IDENTITY }, mat }
+    Part { prim: Prim::Ellipsoid { c, r, rot: M3::IDENTITY }, mat, face: false }
 }
 pub fn ell_rot(c: V3, r: V3, rot: M3, mat: CMat) -> Part {
-    Part { prim: Prim::Ellipsoid { c, r, rot }, mat }
+    Part { prim: Prim::Ellipsoid { c, r, rot }, mat, face: false }
 }
 pub fn cone(a: V3, b: V3, ra: f32, rb: f32, mat: CMat) -> Part {
-    Part { prim: Prim::Cone { a, b, ra, rb }, mat }
+    Part { prim: Prim::Cone { a, b, ra, rb }, mat, face: false }
 }
 pub fn bx(c: V3, h: V3, rot: M3, mat: CMat) -> Part {
-    Part { prim: Prim::Box { c, h, rot }, mat }
+    Part { prim: Prim::Box { c, h, rot }, mat, face: false }
+}
+pub fn tri(a: V3, b: V3, c: V3, mat: CMat) -> Part {
+    Part { prim: Prim::Tri { a, b, c }, mat, face: false }
 }
 
 struct Hit {
@@ -185,11 +203,44 @@ fn hit_box(o: V3, d: V3, c0: V3, h: V3, rot: &M3) -> Option<Hit> {
     Some(Hit { t: tmin, n: rot.mul_v(V3::new(nl[0], nl[1], nl[2])), p })
 }
 
+/// Ray-triangle intersection (Moller-Trumbore); the normal faces the ray.
+fn hit_tri(o: V3, d: V3, a: V3, b: V3, c: V3) -> Option<Hit> {
+    let e1 = b - a;
+    let e2 = c - a;
+    let p = d.cross(e2);
+    let det = e1.dot(p);
+    if det.abs() < 1e-9 {
+        return None;
+    }
+    let inv = 1.0 / det;
+    let s = o - a;
+    let u = s.dot(p) * inv;
+    if !(0.0..=1.0).contains(&u) {
+        return None;
+    }
+    let q = s.cross(e1);
+    let v = d.dot(q) * inv;
+    if v < 0.0 || u + v > 1.0 {
+        return None;
+    }
+    let t = e2.dot(q) * inv;
+    if t < 0.0 {
+        return None;
+    }
+    let n = e1.cross(e2).norm();
+    let n = if n.dot(d) > 0.0 { n * -1.0 } else { n };
+    Some(Hit { t, n, p: s + d * t })
+}
+
 fn bounds(p: &Prim) -> (V3, f32) {
     match *p {
         Prim::Ellipsoid { c, r, .. } => (c, r.x.max(r.y).max(r.z)),
         Prim::Cone { a, b, ra, rb } => ((a + b) * 0.5, (b - a).len() * 0.5 + ra.max(rb)),
         Prim::Box { c, h, .. } => (c, h.len()),
+        Prim::Tri { a, b, c } => {
+            let m = (a + b + c) * (1.0 / 3.0);
+            (m, (a - m).len().max((b - m).len()).max((c - m).len()))
+        }
     }
 }
 
@@ -211,6 +262,18 @@ pub struct View3 {
 
 /// Render model parts into a palette bitmap with an outline.
 pub fn render(parts: &[Part], v: &View3, outline: bool) -> Bitmap {
+    render_lined(parts, v, outline, false)
+}
+
+/// Like `render`; `mat_lines` also draws a dark line where two different
+/// materials meet (arm against tunic, tunic against belt), as a pixel
+/// artist would.
+pub fn render_lined(parts: &[Part], v: &View3, outline: bool, mat_lines: bool) -> Bitmap {
+    render_ids(parts, v, outline, mat_lines).0
+}
+
+/// Render, also returning which part each pixel shows (`u16::MAX` = none).
+pub fn render_ids(parts: &[Part], v: &View3, outline: bool, mat_lines: bool) -> (Bitmap, Vec<u16>) {
     let w = v.w;
     let h = v.h;
     let mut img = Bitmap::new(w, h);
@@ -255,6 +318,7 @@ pub fn render(parts: &[Part], v: &View3, outline: bool) -> Bitmap {
                     Prim::Ellipsoid { c, r, rot } => hit_ellipsoid(o, d, c, r, &rot),
                     Prim::Cone { a, b, ra, rb } => hit_cone(o, d, a, b, ra, rb),
                     Prim::Box { c, h, rot } => hit_box(o, d, c, h, &rot),
+                    Prim::Tri { a, b, c } => hit_tri(o, d, a, b, c),
                 };
                 if let Some(hh) = hit {
                     if best.as_ref().map(|b| hh.t < b.0.t).unwrap_or(true) {
@@ -281,6 +345,12 @@ pub fn render(parts: &[Part], v: &View3, outline: bool) -> Bitmap {
             if pid[i] == u16::MAX {
                 continue;
             }
+            // Leave the silhouette to the outline pass: a line here would
+            // stick out of it as a notch.
+            let empty = |x: i32, y: i32| x < 0 || y < 0 || x >= w || y >= h || pid[(y * w + x) as usize] == u16::MAX;
+            if empty(x - 1, y) || empty(x + 1, y) || empty(x, y - 1) || empty(x, y + 1) {
+                continue;
+            }
             for (dx, dy) in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
                 let nx = x + dx;
                 let ny = y + dy;
@@ -288,7 +358,9 @@ pub fn render(parts: &[Part], v: &View3, outline: bool) -> Bitmap {
                     continue;
                 }
                 let j = (ny * w + nx) as usize;
-                if pid[j] != u16::MAX && pid[j] != pid[i] && depth[i] - depth[j] > 0.06 {
+                let other_mat = |a: &CMat, b: &CMat| a.ramp != b.ramp || a.pattern != b.pattern || a.lo != b.lo;
+                let seam = mat_lines && pid[j] != u16::MAX && depth[i] > depth[j] && other_mat(&parts[pid[i] as usize].mat, &parts[pid[j] as usize].mat);
+                if pid[j] != u16::MAX && pid[j] != pid[i] && (depth[i] - depth[j] > 0.06 || seam) {
                     let m = parts[pid[i] as usize].mat;
                     if !m.glow {
                         img.set(x, y, c(m.ramp, m.lo.max(1) - 1).min(src.get(x, y)).max(BLACK));
@@ -298,7 +370,19 @@ pub fn render(parts: &[Part], v: &View3, outline: bool) -> Bitmap {
             }
         }
     }
-    if outline { img.outlined(BLACK, false) } else { img }
+    (if outline { img.outlined(BLACK, false) } else { img }, pid)
+}
+
+/// Where a model-space point lands in the image (fractional pixels).
+pub fn project(v: &View3, p: V3) -> (f32, f32, V3) {
+    let cam = M3::rot_x(v.pitch).mul(&M3::rot_y(v.yaw));
+    let s = cam.mul_v(p) - cam.mul_v(v.center);
+    (v.w as f32 / 2.0 + s.x * v.scale, v.center_row - s.y * v.scale, s)
+}
+
+/// A model-space direction in camera space (+z points at the viewer).
+pub fn to_camera(v: &View3, d: V3) -> V3 {
+    M3::rot_x(v.pitch).mul(&M3::rot_y(v.yaw)).mul_v(d)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -335,6 +419,14 @@ fn shade(m: &CMat, n: V3, light: V3, to_eye: V3, p: V3, x: i32, y: i32, part: us
         Pattern::Cloth => {
             v += ((p.x * 30.0 + vnoise3(p.x * 8.0, p.y * 8.0, p.z * 8.0, seed) * 3.0).sin()) * 0.08;
             v += (hashf(x, y, part as i32, 3) - 0.5) * 0.1;
+        }
+        Pattern::Weave => {
+            v += if (x + y) & 1 == 0 { 0.07 } else { -0.07 };
+            v += (vnoise3(p.x * 30.0, p.y * 5.0, p.z * 30.0, seed) - 0.5) * 0.3;
+        }
+        Pattern::Bark => {
+            let a = p.x.atan2(p.z) * 9.0 + vnoise3(p.x * 9.0, p.y * 3.0, p.z * 9.0, seed) * 4.0;
+            v += 0.1 - (1.0 - a.sin().abs()).powi(3) * 0.7;
         }
         Pattern::Wood => {
             v += ((p.y * 50.0 + vnoise3(p.x * 6.0, p.y * 6.0, p.z * 6.0, seed) * 6.0).sin()) * 0.12;
