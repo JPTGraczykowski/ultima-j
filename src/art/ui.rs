@@ -27,6 +27,7 @@ pub enum Cursor {
 pub struct UiArt {
     pub frame: Bitmap,
     pub icons: Vec<Bitmap>,
+    pub icons_lit: Vec<Bitmap>,
     pub compass: Vec<Bitmap>,
     pub gem: Vec<Bitmap>,
     pub flask_glass: Bitmap,
@@ -211,19 +212,19 @@ fn dragon() -> Bitmap {
     let scale = cv.add_mat(Mat::new(Ramp::Green, 2, 10).noise(0.35));
     let belly = cv.add_mat(Mat::new(Ramp::Moss, 3, 11).noise(0.2));
     let claw = cv.add_mat(Mat::new(Ramp::Stone, 4, 13));
-    // A thin serpentine body: a sine wave around the frame band (canvas x ~ 10).
+    // A thin serpentine body: a sine wave around the frame band (canvas x ~ 11).
     let mut pts: Vec<(f32, f32)> = Vec::new();
     for i in 0..=48 {
         let t = i as f32 / 48.0;
         let y = 4.0 + t * 88.0;
-        let x = 10.0 + (t * 3.2 * std::f32::consts::TAU).sin() * 7.5;
+        let x = 11.5 + (t * 3.2 * std::f32::consts::TAU).sin() * 6.0;
         pts.push((x, y));
     }
     let mut visible: Vec<bool> = Vec::new();
     for i in 0..pts.len() {
         // Hide segments where the body passes behind the band (moving right to left).
         let dx = if i + 1 < pts.len() { pts[i + 1].0 - pts[i].0 } else { 1.0 };
-        let behind = dx < -0.2 && (pts[i].0 - 10.0).abs() < 4.5 && i < 44;
+        let behind = dx < -0.2 && (pts[i].0 - 11.5).abs() < 4.0 && i < 44;
         visible.push(!behind);
     }
     for i in 0..pts.len() - 1 {
@@ -272,108 +273,180 @@ fn dragon() -> Bitmap {
     b
 }
 
-fn icon_options() -> Bitmap {
-    let mut cv = HCanvas::new(ICON_W, ICON_H);
-    let m = cv.add_mat(Mat::new(Ramp::Silver, 4, 15).spec(0.4));
-    let (cx, cy) = (15.0, 9.5);
-    cv.ring(cx, cy, 9.2, 6.2, 1.5, 0.0, m);
-    cv.ring(cx, cy, 3.0, 4.4, 1.0, 0.0, m);
-    cv.ellipse(cx, cy, 1.2, 1.4, 2.0, 1.0, m);
-    let mut b = cv.render(true, true);
-    // Bright studs on either side of the inner ring.
-    for &x in &[8, 22] {
-        b.set(x, 9, WHITE);
-        b.set(x, 10, c(Ramp::Silver, 12));
+/// Command icons as pixel art: `K` black outline, `1`-`6` silver from dark to
+/// light, `W` white. Drawn at the original's scale (about 20-29 px wide).
+const ICON_ROWS: [&[&str]; 6] = [
+    // Options: a medallion with an axis through it.
+    &[
+        "......KKKKKKKKK......",
+        "....KK655555543KK....",
+        "...K6543222223443K...",
+        "..K65311KKKKK22343K..",
+        ".K6521KK65554KK3333K.",
+        ".K531KK6322344KK343K.",
+        "K65KKK642KKK343KKK33K",
+        "K5K66K53K664K53K64K2K",
+        "K4K43K53K432K52K32K1K",
+        "K34KKK344KKK642KKK31K",
+        ".K433KK3455652KK641K.",
+        ".K3443KK33322KK6521K.",
+        "..K33443KKKKK65421K..",
+        "...K2234555554311K...",
+        "....KK222222211KK....",
+        "......KKKKKKKKK......",
+    ],
+    // Talk: closed lips.
+    &[
+        ".....KKKK.....KKKK.....",
+        "...KK55666K.K66655KK...",
+        ".KK44455555K55555444KK.",
+        "K223333444444444333322K",
+        "KKKKKKKKKKKKKKKKKKKKKKK",
+        ".K2234455556555544322K.",
+        "..K12233445554433221K..",
+        "...KK1122333332211KK...",
+        ".....KKKKKKKKKKKKK.....",
+    ],
+    // Get: a hand reaching down, fingers hooked towards the thumb.
+    &[
+        ".............KKKKK.",
+        "............K55531K",
+        ".........KKKK54311K",
+        ".......KK55K55321K.",
+        "......K5555K4421K..",
+        ".....K55555K2211K..",
+        "....K5555443KKKK...",
+        "....K5554432KK1K...",
+        "...K5544332K53K....",
+        "..KK343322K543K....",
+        "..K5K22111K442K....",
+        ".KKK1K1111K3KKK....",
+        ".K64KKKKKK.K64K....",
+        ".K53K5KK..K641K....",
+        ".K343K3K..K521K....",
+        "..K42K33KK521K.....",
+        "..K31K21K.K1K......",
+        "...KK.KK...K.......",
+    ],
+    // Look: an eye.
+    &[
+        "........KKKKKKK........",
+        ".....KKK1111111KKK.....",
+        "...KK3331KKKKK1333KK...",
+        "..KK455KK22222KK554KK..",
+        ".K45666K21WKK12K66654K.",
+        "K456666K21KKK12K666654K",
+        ".K34555K22KKK22K55543K.",
+        "..KK344KK22222KK443KK..",
+        "...KK3333KKKKK3333KK...",
+        ".....KKK4444444KKK.....",
+        "........KKKKKKK........",
+    ],
+    // Fight: a fist round the grip of a sword.
+    &[
+        "..........................KK.",
+        "........................KK64K",
+        "......................KK663K.",
+        ".....................K6633K..",
+        ".........KK........KK643KK...",
+        "........K65K.....KK663KK.....",
+        "......KKK454K..KK6633K.......",
+        "...KKKKKKK444KK6643KK........",
+        "..K6666665K5K6653KK..........",
+        "..K4432222K4K533K............",
+        "..KK2KKKKKKK4KKK.............",
+        ".K55K4K34K32K54K.............",
+        ".KK4K34K32KKK442K............",
+        ".KK34K32KKK..K2K.............",
+        "K6KK32K2KK....K..............",
+        "K43KK2KK.....................",
+        "K32K.K.......................",
+        ".KK..........................",
+    ],
+    // Use: a pointing hand.
+    &[
+        "....KKKKKKKKKKKK.............",
+        "...K6K6666666654KKKKKKKKKKK..",
+        "..K66K4433222222K6666666665K.",
+        ".K6666K32KKKKKKK555555555542K",
+        "K666665KKK33222222222222222K.",
+        "K666555544KKKKKKKKKKKKKKKKK..",
+        "K5555544433222K2222222K......",
+        "K4444443332222KKKKKKKK.......",
+        ".K33333222222K222222K........",
+        "..K322222222KKKKKKKK.........",
+        "...K2222222K22222K...........",
+        "....KKKKKKKKKKKKK............",
+    ],
+];
+
+/// Oval recess behind each command icon on the panel: centre and radii.
+pub const ICON_OVALS: [(f32, f32, f32, f32); 6] = [
+    (20.0, 16.5, 11.5, 8.5),
+    (20.0, 35.0, 12.0, 7.0),
+    (19.5, 54.0, 11.5, 8.5),
+    (20.0, 71.5, 12.0, 7.0),
+    (20.0, 90.0, 11.5, 8.5),
+    (20.0, 108.5, 11.5, 7.5),
+];
+
+/// The rim of an icon's oval recess: black where it faces away from the
+/// light (upper left), a warm highlight where the lip catches it (lower
+/// right). `lit` draws the glow shown round the active command.
+pub fn oval_rim(b: &mut Bitmap, (cx, cy, rx, ry): (f32, f32, f32, f32), lit: bool) {
+    let inside = |x: i32, y: i32| {
+        let dx = (x as f32 + 0.5 - cx) / rx;
+        let dy = (y as f32 + 0.5 - cy) / ry;
+        dx * dx + dy * dy < 1.0
+    };
+    let edge = |x: i32, y: i32| !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1);
+    for y in (cy - ry) as i32 - 2..=(cy + ry) as i32 + 2 {
+        for x in (cx - rx) as i32 - 2..=(cx + rx) as i32 + 2 {
+            let (dx, dy) = ((x as f32 + 0.5 - cx) / rx, (y as f32 + 0.5 - cy) / ry);
+            // +1 where the rim faces the lower right, -1 the upper left.
+            let facing = (dx * 0.6 + dy * 0.8) / (dx * dx + dy * dy).sqrt().max(0.01);
+            if inside(x, y) {
+                if !edge(x, y) {
+                    continue;
+                }
+                let col = if lit {
+                    c(Ramp::Flesh, if facing < -0.3 { 8 } else { 10 })
+                } else if facing < 0.15 {
+                    BLACK
+                } else if facing < 0.5 {
+                    c(Ramp::Copper, 4)
+                } else {
+                    c(Ramp::Flesh, 8)
+                };
+                b.set(x, y, col);
+            } else if inside(x - 1, y) || inside(x + 1, y) || inside(x, y - 1) || inside(x, y + 1) {
+                // Just outside the rim.
+                if facing > 0.45 {
+                    b.set(x, y, c(Ramp::Flesh, if facing > 0.8 { 9 } else { 7 }));
+                }
+            }
+        }
     }
-    b
 }
 
-fn icon_talk() -> Bitmap {
-    let mut cv = HCanvas::new(ICON_W, ICON_H);
-    let m = cv.add_mat(Mat::new(Ramp::Silver, 3, 15).spec(0.3));
-    let upper = [(4.0, 9.4), (8.0, 6.8), (12.0, 5.4), (15.0, 7.0), (18.0, 5.4), (22.0, 6.8), (26.0, 9.4), (15.0, 9.6)];
-    cv.poly(&upper, 0.0, 1.5, m);
-    cv.ellipse(15.0, 11.0, 9.5, 3.0, 0.0, 0.9, m);
-    let mut b = cv.render(true, true);
-    for x in 6..25 {
-        b.set(x, 9, BLACK);
-    }
-    b
-}
-
-fn icon_get() -> Bitmap {
-    let mut cv = HCanvas::new(ICON_W, ICON_H);
-    let m = cv.add_mat(Mat::new(Ramp::Silver, 3, 15).spec(0.3));
-    // Forearm from the upper right, the back of the hand, fingers curling down.
-    cv.capsule((24.0, 2.5), (19.5, 6.0), 2.6, 2.6, 0.0, 0.8, m);
-    cv.ellipse(16.0, 8.0, 5.0, 3.8, 1.0, 0.8, m);
-    for (a, b2, c2, r) in [
-        ((12.5, 9.5), (10.0, 12.5), (11.0, 15.5), 1.3),
-        ((14.6, 10.8), (13.0, 14.5), (14.0, 17.0), 1.3),
-        ((16.8, 11.0), (16.2, 14.8), (17.2, 16.8), 1.2),
-    ] {
-        cv.capsule(a, b2, r, r * 0.9, 2.0, 1.0, m);
-        cv.capsule(b2, c2, r * 0.9, r * 0.75, 2.0, 1.0, m);
-    }
-    // Thumb on the right.
-    cv.capsule((20.0, 9.5), (21.6, 13.0), 1.3, 1.1, 3.0, 1.0, m);
-    cv.capsule((21.6, 13.0), (20.4, 15.4), 1.1, 0.9, 3.0, 1.0, m);
-    cv.render(true, true)
-}
-
-fn icon_look() -> Bitmap {
-    let mut cv = HCanvas::new(ICON_W, ICON_H);
-    let white = cv.add_mat(Mat::new(Ramp::Silver, 5, 15).spec(0.2));
-    let iris = cv.add_mat(Mat::new(Ramp::Silver, 2, 9).spec(0.5));
-    let almond = [(3.0, 9.5), (8.0, 6.4), (15.0, 5.6), (22.0, 6.4), (27.0, 9.5), (22.0, 12.6), (15.0, 13.4), (8.0, 12.6)];
-    cv.poly(&almond, 0.0, 1.4, white);
-    cv.ellipse(15.0, 9.5, 3.3, 3.3, 1.5, 0.8, iris);
-    let mut b = cv.render(true, true);
-    b.fill_circle_f(15.0, 9.5, 1.5, BLACK);
-    b.set(14, 8, WHITE);
-    // Eyelid crease.
-    for x in 7..24 {
-        let t = (x as f32 - 15.0) / 8.5;
-        let y = (4.4 + t * t * 2.2).round() as i32;
-        b.set(x, y, c(Ramp::Silver, 6));
-    }
-    b
-}
-
-fn icon_fight() -> Bitmap {
-    let mut cv = HCanvas::new(ICON_W, ICON_H);
-    let blade = cv.add_mat(Mat::new(Ramp::Silver, 7, 15).spec(0.9));
-    let hilt = cv.add_mat(Mat::new(Ramp::Silver, 3, 12).spec(0.3));
-    let skin = cv.add_mat(Mat::new(Ramp::Silver, 3, 14).spec(0.2));
-    // A long, thin blade rising to the upper right.
-    cv.poly(&[(12.5, 10.8), (27.8, 1.0), (29.2, 2.0), (14.0, 12.0)], 2.0, 0.8, blade);
-    cv.capsule((11.0, 7.8), (15.2, 13.4), 1.0, 1.0, 3.0, 1.0, hilt);
-    // Fist around the grip.
-    cv.ellipse(9.0, 12.4, 4.3, 3.8, 2.0, 0.9, skin);
-    cv.capsule((6.0, 10.0), (10.5, 9.3), 1.2, 1.2, 4.0, 1.0, skin);
-    cv.ellipse(5.0, 15.6, 1.3, 1.3, 1.0, 1.0, hilt);
-    let mut b = cv.render(true, true);
-    for &(x, y) in &[(8, 12), (9, 13), (7, 14)] {
-        b.set(x, y, c(Ramp::Silver, 3));
-    }
-    b
-}
-
-fn icon_use() -> Bitmap {
-    let mut cv = HCanvas::new(ICON_W, ICON_H);
-    let m = cv.add_mat(Mat::new(Ramp::Silver, 3, 15).spec(0.3));
-    let cuff = cv.add_mat(Mat::new(Ramp::Silver, 2, 10).spec(0.2));
-    cv.capsule((2.0, 10.5), (5.0, 10.5), 2.7, 2.7, 0.0, 0.8, cuff);
-    cv.ellipse(10.0, 10.5, 5.2, 4.0, 1.0, 0.8, m);
-    // Index finger pointing right.
-    cv.capsule((14.0, 8.6), (24.5, 8.0), 1.4, 1.1, 3.0, 1.0, m);
-    // Curled fingers stacked under it.
-    for (x, y) in [(15.2, 10.8), (14.7, 12.6), (13.6, 14.2)] {
-        cv.ellipse(x, y, 2.3, 1.15, 2.5, 1.0, m);
-    }
-    // Thumb along the top.
-    cv.capsule((9.0, 7.0), (14.0, 6.6), 1.2, 1.0, 4.0, 1.0, m);
-    cv.render(true, true)
+/// One command icon; `lit` is the brighter version shown while its mode is active.
+fn command_icon(i: usize, lit: bool) -> Bitmap {
+    let shades: [u8; 6] = if lit {
+        [c(Ramp::Silver, 7), c(Ramp::Silver, 9), c(Ramp::Silver, 11), c(Ramp::Silver, 13), c(Ramp::Silver, 14), WHITE]
+    } else {
+        [c(Ramp::Silver, 4), c(Ramp::Silver, 6), c(Ramp::Silver, 7), c(Ramp::Silver, 9), c(Ramp::Silver, 11), c(Ramp::Silver, 12)]
+    };
+    let key = [
+        ('K', BLACK),
+        ('W', WHITE),
+        ('1', shades[0]),
+        ('2', shades[1]),
+        ('3', shades[2]),
+        ('4', shades[3]),
+        ('5', shades[4]),
+        ('6', shades[5]),
+    ];
+    Bitmap::from_ascii(ICON_ROWS[i], &key)
 }
 
 /// Compass rose for one of 16 headings (index 0 = facing north).
@@ -704,29 +777,9 @@ pub fn build_frame() -> Bitmap {
     // Copper panels.
     copper_panel(&mut b, ICON_PANEL, 4, seed + 1, 6.4, false);
     copper_panel(&mut b, PANEL, 4, seed + 2, 7.6, true);
-    // Recessed oval cartouches behind the icons.
-    for &(cx, cy) in ICON_CENTERS.iter() {
-        let (fx, fy) = (cx as f32 + 0.5, cy as f32 + 0.5);
-        for y in cy - 10..=cy + 10 {
-            for x in cx - 17..=cx + 17 {
-                let dx = (x as f32 + 0.5 - fx) / 15.5;
-                let dy = (y as f32 + 0.5 - fy) / 9.0;
-                let d = dx * dx + dy * dy;
-                if d >= 1.0 {
-                    continue;
-                }
-                let upper_left = dx * 0.6 + dy < 0.0;
-                if d > 0.80 {
-                    b.set(x, y, if upper_left { c(Ramp::Copper, 3) } else { c(Ramp::Copper, 10) });
-                } else if d > 0.62 && upper_left {
-                    b.set(x, y, c(Ramp::Copper, 4));
-                } else {
-                    // Slightly darker hollow.
-                    let n = hashf(x, y, 8, seed);
-                    b.set(x, y, c(Ramp::Copper, 5 + (n > 0.7) as i32));
-                }
-            }
-        }
+    // Recessed ovals behind the icons.
+    for &oval in ICON_OVALS.iter() {
+        oval_rim(&mut b, oval, false);
     }
 
     // Lower frame panel (below the view, around the compass).
@@ -905,7 +958,8 @@ pub fn build_frame() -> Bitmap {
 impl UiArt {
     pub fn generate() -> UiArt {
         let frame = build_frame();
-        let icons = vec![icon_options(), icon_talk(), icon_get(), icon_look(), icon_fight(), icon_use()];
+        let icons = (0..6).map(|i| command_icon(i, false)).collect();
+        let icons_lit = (0..6).map(|i| command_icon(i, true)).collect();
         let compass = (0..16).map(compass_rose).collect();
         let gem = (0..5).map(gem).collect();
         let (flask_glass, flask_inside) = flask_parts();
@@ -913,6 +967,7 @@ impl UiArt {
         UiArt {
             frame,
             icons,
+            icons_lit,
             compass,
             gem,
             flask_glass,

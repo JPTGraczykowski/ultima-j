@@ -23,9 +23,9 @@ pub const VIEW: Rect = Rect::new(52, 19, 172, 109);
 /// Left column of command icons.
 pub const ICON_PANEL: Rect = Rect::new(1, 4, 38, 117);
 /// Command icon centres: options, talk, get, look, fight, use.
-pub const ICON_CENTERS: [(i32, i32); 6] = [(20, 16), (20, 35), (19, 53), (19, 72), (21, 89), (21, 108)];
-pub const ICON_W: i32 = 30;
-pub const ICON_H: i32 = 19;
+pub const ICON_CENTERS: [(i32, i32); 6] = [(20, 16), (20, 35), (19, 54), (20, 71), (24, 88), (23, 108)];
+/// Half-size of each icon's click area around its centre.
+pub const ICON_HIT: (i32, i32) = (15, 8);
 /// Character panel (inventory / stats / runes).
 pub const PANEL: Rect = Rect::new(236, 4, 83, 116);
 /// Message scroll text area.

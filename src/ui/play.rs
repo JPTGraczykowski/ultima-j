@@ -518,7 +518,7 @@ impl PlayState {
     fn click_ui(&mut self, ctx: &mut Ctx, input: &Input, m: (i32, i32)) {
         // Command icons.
         for (i, &(cx, cy)) in ICON_CENTERS.iter().enumerate() {
-            if (m.0 - cx).abs() <= ICON_W / 2 && (m.1 - cy).abs() <= ICON_H / 2 - 1 {
+            if (m.0 - cx).abs() <= ICON_HIT.0 && (m.1 - cy).abs() <= ICON_HIT.1 {
                 ctx.sounds.push(Sfx::Click);
                 if i == 0 {
                     self.overlay = Overlay::Options(0);
@@ -717,12 +717,14 @@ impl PlayState {
             Mode::Fight => Some(4),
             Mode::Use => Some(5),
         };
-        for (i, ic) in ctx.art.ui.icons.iter().enumerate() {
+        for i in 0..ICON_CENTERS.len() {
             let (cx, cy) = ICON_CENTERS[i];
-            if Some(i) == sel {
-                fb.fill_ellipse(cx as f32 + 0.5, cy as f32 + 0.5, 13.0, 7.2, c(Ramp::Copper, 11));
-                fb.fill_ellipse(cx as f32 + 0.5, cy as f32 + 0.5, 10.5, 5.6, c(Ramp::Copper, 13));
-            }
+            let ic = if Some(i) == sel {
+                crate::art::ui::oval_rim(fb, crate::art::ui::ICON_OVALS[i], true);
+                &ctx.art.ui.icons_lit[i]
+            } else {
+                &ctx.art.ui.icons[i]
+            };
             fb.blit(ic, cx - ic.w / 2, cy - ic.h / 2);
         }
     }
