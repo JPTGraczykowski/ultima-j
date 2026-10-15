@@ -1,8 +1,9 @@
 # Handoff — where the work stands
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
-original's style. Status (2026-10-12): the game is complete and playable from
-the title screen to the victory screen; work in progress is visual polish.
+original's style. Status (2026-10-15): the game is complete and playable from
+the title screen to the victory screen, and all 48 tests pass. What remains is
+mostly gameplay depth (skills that do nothing, barter) and balance.
 
 ## Done
 
@@ -21,6 +22,9 @@ the title screen to the victory screen; work in progress is visual polish.
   save/restore (`~/.ultima-j/`); title, intro, character creation, death, victory.
 - Five levels (`src/game/levels.rs`), three shard quests and the final battle,
   all verified with scripted runs.
+- Visual pass after the side-by-side review: smaller command icons with oval
+  cartouches, reworked creature models (stone golem, bat wings with membranes,
+  hunched trolls, humanoid proportions), bigger paperdoll with a face and beard.
 
 ## How to check things
 
@@ -36,15 +40,31 @@ ULTIMA_J_SELFTEST=out.png target/release/ultima-j --play   # real-window capture
 Compare screenshots against originals side by side (native 320×200 DOS
 captures are on oldgames.sk; the reference card is on mocagh.org).
 
-## Next steps (from the last side-by-side review)
+## Next steps (review of 2026-10-15), in suggested order
 
-1. Command icons: make them smaller and finer (about 24×14) and add the oval
-   cartouches the original draws behind each icon; refine the Get and Fight hands.
-2. Paperdoll: bigger head with a face (hair, beard), better torso shape; it is
-   currently a plain brown figure while the original's is detailed.
-3. Creature sprites: more hand-drawn-looking faces and detail; bat wings and the
-   troll's body shape need work.
-4. Intro vignettes could be richer.
-5. A full manual playthrough for balance on levels 2–5.
-6. Not implemented: barter screen (trading happens in dialogue), Repair, Charm
-   and Appraise skills. Save files are 3–4 MB of JSON (could be compressed).
+1. **Make the dead skills work.** 8 of the 20 skills are never read by the game
+   logic, only listed in the class tables (`PClass::skills`, `src/game/state.rs`).
+   Tinker, Bard and Druid start with points in them that do nothing.
+   - Repair: restore weapon and armour `quality`. Gear already wears down in
+     combat (`src/game/ai.rs` around lines 314 and 521), so Repair has a clear use.
+   - Appraise: show item value when you look at it; better trade prices.
+   - Charm: better trades, friendlier conversation options.
+   - Lore: identify enchanted items.
+   - Traps: spot and disarm traps. There is only one trap in the whole game
+     (`b.trap(...)` in `src/game/levels.rs`), so add more traps as well.
+   - Swimming: faster swimming, less sinking (`SWIM_SINK` in `src/game/physics.rs`).
+   - Acrobat: longer jumps, less fall damage.
+   - Sneak: shorter range at which creatures notice you (`src/game/ai.rs`).
+2. **Barter screen.** Trading only happens in dialogue. The two trade areas
+   are already drawn in the conversation screen (`barter()` in
+   `src/ui/convo.rs`) but do nothing yet. Appraise and Charm plug in here.
+3. **Balance playthrough of levels 2–5 by hand.** The scripted runs only show
+   the levels can be finished; difficulty, loot, food and light supply are
+   untested.
+4. **Smaller items:**
+   - Save files are about 3.3 MB of JSON each; compress them or save only
+     what changed.
+   - Intro vignettes could be richer.
+   - More screenshot comparisons against the original for visual polish.
+5. **Docs:** once 1–2 are done, update the README's "Not yet implemented" list
+   (it currently names only Repair, Charm and Appraise).
