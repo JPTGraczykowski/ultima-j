@@ -2,6 +2,7 @@
 
 pub mod actions;
 pub mod ai;
+pub mod barter;
 pub mod creatures;
 pub mod dialogue;
 pub mod items;

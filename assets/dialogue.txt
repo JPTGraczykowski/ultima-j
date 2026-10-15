@@ -77,47 +77,9 @@ Here and there. The dead don't need their torches, and the goblins don't count t
 * Farewell. -> end
 
 -- wares
-Torch, {buy 5} gold. Loaf of bread, {buy 3} gold. Red potion of healing, {buy 20} gold. A fine lantern, {buy 35} gold. Lockpick, {buy 10} gold.
-* A torch ({buy 5} gold). -> torch ? afford:5
-* A loaf of bread ({buy 3} gold). -> bread ? afford:3
-* A red potion ({buy 20} gold). -> potion ? afford:20
-* The lantern ({buy 35} gold). -> lantern ? afford:35
-* A lockpick ({buy 10} gold). -> pick ? afford:10
-* Nothing for now. -> end
-
--- torch
-A wise purchase. Light is life down here.
-! pay 5
-! give Torch
-* Let me see the wares again. -> wares
-* Farewell. -> end
-
--- bread
-Fresh! Well... fresh-ish.
-! pay 3
-! give Bread
-* Let me see the wares again. -> wares
-* Farewell. -> end
-
--- potion
-Drink it when the red runs low, friend.
-! pay 20
-! give RedPotion
-* Let me see the wares again. -> wares
-* Farewell. -> end
-
--- lantern
-Burns long and bright. Hang it on thy shoulder.
-! pay 35
-! give Lantern
-* Let me see the wares again. -> wares
-* Farewell. -> end
-
--- pick
-For opening doors that would rather stay closed. I ask no questions.
-! pay 10
-! give Lockpick
-* Let me see the wares again. -> wares
+! barter
+Have a look, friend. Pick what thou wouldst have and lay thine offer beside it - gold or goods, I'm not fussy. Ask me what a thing is worth if thou art unsure.
+* Where dost thou get these things? -> where
 * Farewell. -> end
 
 === rhugg
@@ -262,47 +224,9 @@ Ha! Thou hast an eye for good steel, and a smooth tongue besides. Give it here -
 * My thanks, master smith. -> start
 
 -- wares
-Chain shirt, {buy 60} gold. Gauntlets, {buy 40} gold. Broadsword, {buy 70} gold. Wooden shield, {buy 25} gold. Torch, {buy 4} gold.
-* A chain shirt ({buy 60} gold). -> shirt ? afford:60
-* Gauntlets ({buy 40} gold). -> gauntlets ? afford:40
-* A broadsword ({buy 70} gold). -> sword ? afford:70
-* A wooden shield ({buy 25} gold). -> shield ? afford:25
-* A torch ({buy 4} gold). -> torch ? afford:4
-* Nothing today. -> end
-
--- shirt
-Good links, tight weave. It'll turn a spider's fang.
-! pay 60
-! give ChainShirt
-* Show me the wares again. -> wares
-* Farewell. -> end
-
--- gauntlets
-! pay 40
-! give Gauntlets
-Steel for thy fists.
-* Show me the wares again. -> wares
-* Farewell. -> end
-
--- sword
-! pay 70
-! give Broadsword
-Balanced like a dancer, bites like a troll.
-* Show me the wares again. -> wares
-* Farewell. -> end
-
--- shield
-! pay 25
-! give WoodenShield
-Oak and iron. Keep it between thee and trouble.
-* Show me the wares again. -> wares
-* Farewell. -> end
-
--- torch
-! pay 4
-! give Torch
-There. Don't burn thy beard - oh, thou hast none.
-* Show me the wares again. -> wares
+! barter
+Steel and leather, all from my own forge. Pick what thou wilt and show me thy gold - or something worth the melting.
+* Canst thou mend my weapons and armour? -> mend
 * Farewell. -> end
 
 -- nugget

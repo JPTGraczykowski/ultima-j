@@ -11,11 +11,16 @@
 //! Conditions: `flag:NAME>=N`, `flag:NAME=N`, `!flag:NAME`, `item:Kind`,
 //! `!item:Kind`, `gold>=N`, `afford:N`, `skill:NAME>=N`. Actions: `flag NAME N`,
 //! `give Kind [data] [qty]`, `take Kind [qty]`, `pay N`, `earn N`, `exp N`,
-//! `hostile`, `heal`, `rune N`, `follow`, `mana`, `skill NAME N`, `mend`, `end`.
+//! `hostile`, `heal`, `rune N`, `follow`, `mana`, `skill NAME N`, `mend`,
+//! `barter`, `end`.
 //!
 //! Prices: `{buy N}` and `{sell N}` in text show a base price of N gold as
 //! adjusted by the player's Charm and Appraise; `afford:N`, `pay N` and
 //! `earn N` use the same adjusted prices.
+//!
+//! Bartering: a node with `! barter` opens the trade areas (the NPC's
+//! `inventory` is their stock, see `barter.rs`) and adds the trading options
+//! before its own.
 
 use super::creatures::{AiState, Attitude};
 use super::items::{Class, Item, ItemKind, Skill, ALL_SKILLS};
@@ -301,7 +306,26 @@ pub struct ConvState {
     pub text: String,
     pub options: Vec<Opt>,
     pub ended: bool,
+    /// The trade areas are open (a `barter` node has been reached).
+    pub trading: bool,
+    /// Indices of the NPC's goods the player has chosen.
+    pub picked: Vec<usize>,
+    /// The player's side of the table.
+    pub offer: [Option<Item>; super::barter::SLOTS],
+    /// Which four of the NPC's goods are shown.
+    pub goods_page: usize,
 }
+
+impl ConvState {
+    pub fn new(conv: u16, npc: u32) -> ConvState {
+        ConvState { conv, npc, node: String::new(), text: String::new(), options: Vec::new(), ended: false, trading: false, picked: Vec::new(), offer: Default::default(), goods_page: 0 }
+    }
+}
+
+/// Targets of the built-in trading options.
+pub const TRADE: &str = "@trade";
+pub const APPRAISE: &str = "@appraise";
+pub const MORE_GOODS: &str = "@more";
 
 /// Execute a node's actions and return its visible text and options.
 pub fn enter_node(g: &mut Game, db: &DialogueDb, st: &mut ConvState, node: &str) {
@@ -320,15 +344,50 @@ pub fn enter_node(g: &mut Game, db: &DialogueDb, st: &mut ConvState, node: &str)
     for a in &n.actions {
         run_action(g, st.npc, a, &mut st.ended);
     }
-    st.options = n
-        .options
-        .iter()
-        .filter(|o| o.conds.iter().all(|c| cond_ok(g, c)))
-        .map(|o| Opt { text: fill_prices(g, &o.text), ..o.clone() })
-        .collect();
+    if n.actions.iter().any(|a| a.first().map(|s| s == "barter").unwrap_or(false)) {
+        st.trading = true;
+    }
+    refresh_options(g, db, st);
     // Remember that we've talked.
     let key = format!("talked_{}", conv.name);
     g.set_flag(&key, 1);
+}
+
+/// Recompute the options shown for the current node.
+pub fn refresh_options(g: &Game, db: &DialogueDb, st: &mut ConvState) {
+    let Some(n) = db.convs[st.conv as usize].nodes.get(&st.node) else { return };
+    let opt = |text: &str, next: &str| Opt { text: text.to_string(), next: next.to_string(), conds: Vec::new() };
+    st.options.clear();
+    if n.actions.iter().any(|a| a.first().map(|s| s == "barter").unwrap_or(false)) {
+        st.options.push(opt("Let us trade.", TRADE));
+        st.options.push(opt("What is mine offer worth to thee?", APPRAISE));
+        let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
+        if stock > super::barter::SLOTS {
+            st.options.push(opt("Show me thy other goods.", MORE_GOODS));
+        }
+    }
+    st.options.extend(n.options.iter().filter(|o| o.conds.iter().all(|c| cond_ok(g, c))).map(|o| Opt { text: fill_prices(g, &o.text), ..o.clone() }));
+}
+
+/// Choose one of the built-in trading options; the reply becomes the NPC's
+/// text and the node's options stay.
+pub fn barter_choice(g: &mut Game, db: &DialogueDb, st: &mut ConvState, what: &str) {
+    use super::barter;
+    st.text = match what {
+        TRADE => barter::trade(g, st.npc, &mut st.picked, &mut st.offer),
+        APPRAISE => barter::appraise(g, st.npc, &st.picked, &st.offer),
+        _ => {
+            let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
+            let pages = stock.div_ceil(barter::SLOTS).max(1);
+            st.goods_page = (st.goods_page + 1) % pages;
+            "Have a look at these, then.".to_string()
+        }
+    };
+    let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
+    if st.goods_page * barter::SLOTS >= stock {
+        st.goods_page = 0;
+    }
+    refresh_options(g, db, st);
 }
 
 fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {

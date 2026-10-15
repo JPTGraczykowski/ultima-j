@@ -424,7 +424,7 @@ impl PlayState {
                 Event::StartConversation(id) => {
                     if let Some(n) = self.game.level().npc(id) {
                         if let Some(conv) = n.talk {
-                            let mut st = ConvState { conv, npc: id, node: String::new(), text: String::new(), options: Vec::new(), ended: false };
+                            let mut st = ConvState::new(conv, id);
                             dialogue::enter_node(&mut self.game, &ctx.db, &mut st, "start");
                             // NPC turns to face the player.
                             let eye = self.game.eye();

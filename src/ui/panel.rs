@@ -371,7 +371,7 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
     }
 }
 
-fn draw_item_at(ctx: &mut Ctx, fb: &mut Bitmap, it: &Item, cx: i32, cy: i32) {
+pub fn draw_item_at(ctx: &mut Ctx, fb: &mut Bitmap, it: &Item, cx: i32, cy: i32) {
     let b = ctx.cache.icon_mut(it).clone();
     fb.blit(&b, cx - b.w / 2, cy - b.h / 2);
     if it.qty > 1 && it.def().stack {

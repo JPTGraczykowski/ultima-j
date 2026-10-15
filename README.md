@@ -40,6 +40,7 @@ The controls follow the original's reference card.
 | Default mode | right-click looks; hold/drag the right button to get, use or talk |
 | Attack | in Fight mode hold the right button, watch the power gem, release; high bashes, middle slashes, low thrusts (keys `P`, `;`, `.`) |
 | Inventory | left-click to pick up / put down; right-click to use (eat, drink, read, light, open, repair worn gear) |
+| Barter | with a trader, click their goods (top left) to pick them, put gold or items from your inventory in your trade area (top right), then choose "Let us trade"; right-click either side to ask what a thing is worth |
 | Statistics | click the pull chain (or `F7`); spend skill points after levelling up |
 | Runes and spells | left-click the rune bag, click runes onto the shelf, click the shelf (or `F8`) to cast; right-click the shelf to clear it |
 | Map | `M` or `Tab` |
@@ -96,8 +97,6 @@ daughter.
 Some ideas are borrowed loosely, such as goblins, dwarves (the "mountain folk"),
 lizardmen and a crypt full of the dead, but the maps, conversations and quests
 were written from scratch.
-
-**Not yet implemented:** the barter screen (you trade through conversation).
 
 ## Development tools
 

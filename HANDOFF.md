@@ -2,8 +2,8 @@
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
 original's style. Status (2026-10-15): the game is complete and playable from
-the title screen to the victory screen, and all 54 tests pass. What remains is
-mostly the barter screen and balance.
+the title screen to the victory screen, and all 57 tests pass. What remains is
+mostly balance.
 
 ## Done
 
@@ -29,6 +29,15 @@ mostly the barter screen and balance.
   spots, maps and disarms traps (13 across the five levels); Swimming,
   Acrobat and Sneak tune swimming, jumping/falling and creature notice range
   (helpers on `Player` in `src/game/state.rs`).
+- Barter screen (`src/game/barter.rs`, `src/ui/convo.rs`): a dialogue node
+  with `! barter` opens the two trade areas. The NPC's `inventory` is their
+  stock (Tobin and Bodric are stocked in `levels.rs`); pick goods on the left,
+  put gold or items on the right, then "Let us trade" / "What is mine offer
+  worth?" / "Show me thy other goods". Goods cost `buy_price(value)`; offered
+  items are worth `sell_price(value) / 2`, capped at what the trader would
+  ask, so there's no buy-low/sell-high loop. Change is paid in gold, sold
+  items join the stock, and anything left on the table goes back to the
+  player when the conversation ends.
 - Visual pass after the side-by-side review: smaller command icons with oval
   cartouches, reworked creature models (stone golem, bat wings with membranes,
   hunched trolls, humanoid proportions), bigger paperdoll with a face and beard.
@@ -37,7 +46,7 @@ mostly the barter screen and balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 54 tests: level connectivity, fuzzers, save round-trip, skills
+cargo test --release                       # 57 tests: level connectivity, fuzzers, save round-trip, skills, barter
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --maps DIR         # level layouts
@@ -49,13 +58,9 @@ captures are on oldgames.sk; the reference card is on mocagh.org).
 
 ## Next steps (review of 2026-10-15), in suggested order
 
-1. **Barter screen.** Trading only happens in dialogue. The two trade areas
-   are already drawn in the conversation screen (`barter()` in
-   `src/ui/convo.rs`) but do nothing yet. Prices should come from
-   `buy_price`/`sell_price` in `src/game/dialogue.rs` (Charm and Appraise)
-   and item worth from `Item::value`.
-2. **Balance playthrough of levels 2–5 by hand.** The scripted runs only show
+1. **Balance playthrough of levels 2–5 by hand.** The scripted runs only show
    the levels can be finished; difficulty, loot, food and light supply are
-   untested.
-3. **Docs:** once the barter screen is done, remove it from the README's
-   "Not yet implemented" list.
+   untested. Barter prices are now `Item::value` (Tobin's red potion is 40
+   gold, Bodric's chain shirt 100) and gold is scarce (about 112 coins
+   placed, plus nuggets and whatever the player sells), so check that the
+   traders are worth visiting.

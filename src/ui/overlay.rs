@@ -13,7 +13,7 @@ use crate::util::V3;
 
 pub const OPTIONS: [&str; 8] = ["Save Game", "Restore Game", "Music", "Sound", "Help", "Return to Game", "Quit to Title", "Quit Game"];
 
-pub const HELP_TEXT: &str = "MOVING: W run, S walk, X back, A/D turn, Z/C sidestep (or the arrow keys). Hold the left mouse button in the view: the cursor arrow shows the direction, and further from the centre is faster. J or Space jumps. 1/3 look down/up, 2 centres the view. E/Q fly up/down when flying.\n\nCOMMANDS: click an icon on the left (or F2 Talk, F3 Get, F4 Look, F5 Fight, F6 Use), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or F7) for your statistics; spend skill points there after gaining a level.\n\nFIGHTING: select Fight (F5), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or P, ; and . keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or F8) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. F9 tracks, F10 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, F1/Esc opens the options. F11 toggles fullscreen, F12 toggles the 4:3 aspect.";
+pub const HELP_TEXT: &str = "MOVING: W run, S walk, X back, A/D turn, Z/C sidestep (or the arrow keys). Hold the left mouse button in the view: the cursor arrow shows the direction, and further from the centre is faster. J or Space jumps. 1/3 look down/up, 2 centres the view. E/Q fly up/down when flying.\n\nCOMMANDS: click an icon on the left (or F2 Talk, F3 Get, F4 Look, F5 Fight, F6 Use), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or F7) for your statistics; spend skill points there after gaining a level.\n\nBARTER: when a trader shows you their goods, click the ones you want (top left of the conversation), put gold or items from your inventory in your own trade area (top right), and choose Let us trade. Right-click either side to ask what something is worth.\n\nFIGHTING: select Fight (F5), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or P, ; and . keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or F8) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. F9 tracks, F10 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, F1/Esc opens the options. F11 toggles fullscreen, F12 toggles the 4:3 aspect.";
 
 
 /// The parchment area used for texts and conversations (over the view).
@@ -245,10 +245,33 @@ fn resurrect(st: &mut PlayState) {
     st.mesh_level = st.game.cur;
 }
 
+/// Close the conversation, handing back anything left in the trade area.
+fn end_conversation(st: &mut PlayState) {
+    if let Overlay::Conversation(mut cs, _) = std::mem::replace(&mut st.overlay, Overlay::None) {
+        crate::game::barter::return_offer(&mut st.game, &mut cs.offer);
+    }
+}
+
 fn conversation_input(st: &mut PlayState, ctx: &mut Ctx, input: &Input) {
+    let click = input.pressed[0] || input.pressed[1];
+    // The trade areas and the inventory stay in reach while talking.
+    if click && super::convo::click(st, ctx, input.mouse, input.pressed[1]) {
+        return;
+    }
+    if input.pressed[0] && (PANEL.contains(input.mouse) || CHAIN.contains(input.mouse)) {
+        if CHAIN.contains(input.mouse) {
+            st.ui.panel = if st.ui.panel == super::play::Panel::Inventory { super::play::Panel::Stats } else { super::play::Panel::Inventory };
+            ctx.sounds.push(Sfx::Click);
+        } else {
+            super::panel::click(st, ctx, input.mouse, false);
+        }
+        return;
+    }
+    if input.pressed[1] && PANEL.contains(input.mouse) {
+        return;
+    }
     let Overlay::Conversation(cs, page) = &mut st.overlay else { return };
     let ps = pages(ctx, &cs.text, TEXT_AREA);
-    let click = input.pressed[0] || input.pressed[1];
     if *page + 1 < ps.len() {
         if click || input.any_key() {
             *page += 1;
@@ -257,7 +280,7 @@ fn conversation_input(st: &mut PlayState, ctx: &mut Ctx, input: &Input) {
     }
     if cs.ended || cs.options.is_empty() {
         if click || input.any_key() {
-            st.overlay = Overlay::None;
+            end_conversation(st);
         }
         return;
     }
@@ -275,13 +298,16 @@ fn conversation_input(st: &mut PlayState, ctx: &mut Ctx, input: &Input) {
         if i < cs.options.len() {
             let opt = cs.options[i].clone();
             ctx.sounds.push(Sfx::Click);
-            let mut st2 = std::mem::replace(cs, Box::new(dialogue::ConvState { conv: 0, npc: 0, node: String::new(), text: String::new(), options: Vec::new(), ended: true }));
             st.game.messages.push(crate::game::Msg { text: opt.text.clone(), kind: crate::game::MsgKind::Speech });
-            dialogue::enter_node(&mut st.game, &ctx.db, &mut st2, &opt.next);
-            if st2.ended && st2.text.is_empty() || opt.next == "end" {
-                st.overlay = Overlay::None;
-            } else {
-                st.overlay = Overlay::Conversation(st2, 0);
+            if opt.next.starts_with('@') {
+                dialogue::barter_choice(&mut st.game, &ctx.db, cs, &opt.next);
+                *page = 0;
+                return;
+            }
+            dialogue::enter_node(&mut st.game, &ctx.db, cs, &opt.next);
+            *page = 0;
+            if cs.ended && cs.text.is_empty() || opt.next == "end" {
+                end_conversation(st);
             }
             st.handle_events(ctx);
         }

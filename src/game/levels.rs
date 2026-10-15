@@ -394,7 +394,8 @@ fn level1(db: &DialogueDb) -> Level {
     b.light(14, 40, 9, 6, 10);
     b.item(ItemKind::Campfire, 18.5, 43.0);
     b.named(Race::Human, 1, "Elsmore", "elsmore", 16.5, 42.0, 90.0);
-    b.named(Race::Human, 0, "Tobin", "tobin", 21.0, 41.0, 200.0);
+    let tobin = b.named(Race::Human, 0, "Tobin", "tobin", 21.0, 41.0, 200.0);
+    b.npc_mut(tobin).inventory = [ItemKind::Torch, ItemKind::Torch, ItemKind::Bread, ItemKind::Bread, ItemKind::RedPotion, ItemKind::Lantern, ItemKind::Lockpick, ItemKind::Candle].into_iter().map(Item::new).collect();
     b.item(ItemKind::Barrel, 14.6, 40.6);
     b.item(ItemKind::Barrel, 15.5, 40.5);
     b.item(ItemKind::Bed, 21.4, 44.6);
@@ -585,7 +586,8 @@ fn level2(db: &DialogueDb) -> Level {
     b.room(22, 42, 11, 7, 0, 11);
     b.lava(24, 47, 7, 1, -1);
     b.light(22, 42, 11, 7, 10);
-    b.named(Race::Dwarf, 3, "Bodric", "bodric", 26.5, 44.5, 0.0);
+    let bodric = b.named(Race::Dwarf, 3, "Bodric", "bodric", 26.5, 44.5, 0.0);
+    b.npc_mut(bodric).inventory = [ItemKind::ChainShirt, ItemKind::Gauntlets, ItemKind::Broadsword, ItemKind::WoodenShield, ItemKind::Torch, ItemKind::Torch].into_iter().map(Item::new).collect();
     b.item(ItemKind::Cauldron, 31.3, 43.0);
     b.item(ItemKind::Table, 29.0, 43.3);
     b.rune_stone(rune::FLAM, 29.0, 43.2);
