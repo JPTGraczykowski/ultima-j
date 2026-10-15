@@ -841,6 +841,17 @@ pub fn fixture(kind: ItemKind) -> Bitmap {
             b.set(11, 2, c(Ramp::Red, 7));
             b
         }
+        ItemKind::Ward => {
+            let mut b = Bitmap::new(26, 8);
+            b.fill_ellipse(13.0, 4.0, 12.0, 3.6, c(Ramp::Blue, 6));
+            b.fill_ellipse(13.0, 4.0, 9.0, 2.6, c(Ramp::Blue, 3));
+            b.ellipse_outline(13.0, 4.0, 12.0, 3.6, c(Ramp::Blue, 13));
+            // Rune strokes.
+            b.line(9, 4, 17, 4, c(Ramp::Blue, 14));
+            b.line(13, 2, 13, 6, c(Ramp::Blue, 14));
+            b.line(10, 2, 16, 6, c(Ramp::Blue, 11));
+            b
+        }
         ItemKind::Web => {
             let mut b = Bitmap::new(44, 44);
             let col = c(Ramp::Silver, 11);

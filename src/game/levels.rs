@@ -641,6 +641,7 @@ fn level2(db: &DialogueDb) -> Level {
     b.npc(Race::Slug, 11.5, 52.5);
     b.item(ItemKind::GoldNugget, 19.0, 57.0);
     b.item(ItemKind::Shovel, 18.0, 52.0);
+    b.rune_stone(rune::POR, 18.6, 53.4);
     b.writing(16, 49, "DANGER - the old fissure runs hot. Use the bridge.");
     b.tile(5, 54, -2, 10);
     b.slope(5, 54, Shape::SlopeE, -2, 2);
@@ -740,6 +741,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.lever(3, 38, grate);
     b.put(Item::new(ItemKind::SilverRing).enchanted(Enchant::Protection(3), 0), 20.0, 37.5);
     b.item(ItemKind::BluePotion, 19.6, 36.4);
+    b.rune_stone(rune::QUAS, 20.6, 36.7);
 
     // Southern caves and the old aqueduct to the stairs.
     b.style(Tex::Gravel, Tex::MossyStone, Tex::CeilingRock);
@@ -1008,6 +1010,27 @@ mod tests {
                     assert!(dest.point_open(x, z), "level {} stairs lead into rock on level {}", li, level);
                 }
             }
+        }
+    }
+
+    /// Every one of the 24 runes must be lying somewhere in the Abyss.
+    #[test]
+    fn every_rune_is_placed() {
+        fn collect(items: &[Item], found: &mut [bool; 24]) {
+            for it in items {
+                if it.kind == ItemKind::RuneStone {
+                    found[it.data as usize % 24] = true;
+                }
+                collect(&it.contents, found);
+            }
+        }
+        let mut found = [false; 24];
+        for lv in build_all() {
+            let items: Vec<Item> = lv.items.iter().map(|w| w.item.clone()).collect();
+            collect(&items, &mut found);
+        }
+        for (r, f) in found.iter().enumerate() {
+            assert!(f, "the {} rune is nowhere in the Abyss", super::super::magic::RUNE_NAMES[r]);
         }
     }
 }

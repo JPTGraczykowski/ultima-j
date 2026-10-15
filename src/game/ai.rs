@@ -72,8 +72,15 @@ pub fn path_step(map: &Map, from: (i32, i32), to: (i32, i32), max_nodes: usize) 
 pub fn update_npcs(g: &mut Game, dt: f32) {
     let n = g.level().npcs.len();
     let player_eye = g.eye();
-    let stealthy = g.player.has_spell(Spell::Stealth) || g.player.has_spell(Spell::Invisibility);
     let invisible = g.player.has_spell(Spell::Invisibility);
+    // Conceal hides you better than Stealth: creatures see you only up close.
+    let stealth = if g.player.has_spell(Spell::Conceal) {
+        0.2
+    } else if g.player.has_spell(Spell::Stealth) {
+        0.4
+    } else {
+        1.0
+    };
     for i in 0..n {
         let lv = g.cur;
         // Animation clocks.
@@ -128,7 +135,7 @@ pub fn update_npcs(g: &mut Game, dt: f32) {
         if hostile && !g.player.dead && !invisible {
             // Creatures already hunting you keep their full sight; others must notice you first.
             let base = if ai == AiState::Attack { SIGHT } else { g.player.notice_range(SIGHT) };
-            let range = if stealthy { base * 0.4 } else { base };
+            let range = base * stealth;
             if dist < range && physics::line_of_sight(&g.levels[lv], npc_eye, player_eye) {
                 sees = true;
             }

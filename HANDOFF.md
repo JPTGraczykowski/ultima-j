@@ -2,7 +2,7 @@
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
 original's style. Status (2026-10-15): the game is complete and playable from
-the title screen to the victory screen, and all 57 tests pass. What remains is
+the title screen to the victory screen, and all 61 tests pass. What remains is
 mostly balance.
 
 ## Done
@@ -38,6 +38,14 @@ mostly balance.
   ask, so there's no buy-low/sell-high loop. Change is paid in gold, sold
   items join the stock, and anything left on the table goes back to the
   player when the conversation ends.
+- Magic is complete: all 24 runes are placed (POR in the Level 2 deep mine,
+  QUAS in the Level 3 reliquary) and every spell does something (Conceal is
+  a stronger Stealth; Rune of Warding leaves an `ItemKind::Ward` on the floor
+  that snares the next foe, see `Game::update_wards`). Circle *c* needs
+  experience level *c* (`Player::max_circle`), and `exp_for_level` is a
+  table paced so a thorough player reaches level 8 in the Crypts.
+- `HANDBOOK.md` is the player's handbook. Keep its numbers in step with the
+  code when balancing.
 - Visual pass after the side-by-side review: smaller command icons with oval
   cartouches, reworked creature models (stone golem, bat wings with membranes,
   hunched trolls, humanoid proportions), bigger paperdoll with a face and beard.
@@ -46,7 +54,7 @@ mostly balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 57 tests: level connectivity, fuzzers, save round-trip, skills, barter
+cargo test --release                       # 61 tests: level connectivity, runes, fuzzers, save round-trip, skills, spells, barter
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --maps DIR         # level layouts

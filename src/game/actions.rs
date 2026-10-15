@@ -707,7 +707,7 @@ impl Game {
         };
         let def = spell.def();
         let cost = spell.mana_cost();
-        if (self.player.level + 1) / 2 < def.circle {
+        if self.player.max_circle() < def.circle {
             self.msg("You are not experienced enough to cast that spell.");
             return;
         }
@@ -900,7 +900,11 @@ impl Game {
                 }
                 self.msg(if n > 0 { "The nature of your enchanted belongings is revealed. Look at them to learn more." } else { "You carry nothing whose nature is hidden." });
             }
-            Spell::RuneOfWarding => self.msg("A protective rune glows briefly upon the floor."),
+            Spell::RuneOfWarding => {
+                let p = self.player.pos;
+                self.level_mut().add_item(Item::new(ItemKind::Ward), p.x, p.z);
+                self.msg("You trace a rune of warding upon the floor. It will snare the next foe to cross it.");
+            }
             _ => {
                 if def.target == Targeting::Caster && def.duration > 0.0 {
                     self.add_spell(spell);
@@ -1176,5 +1180,59 @@ mod tests {
         let mut it = Item::new(ItemKind::Longsword);
         it.quality = 30;
         assert_eq!(describe_item(&it), "a worn longsword");
+    }
+
+    /// A corridor level with the player at its west end.
+    fn corridor_game() -> Game {
+        use crate::art::textures::Tex;
+        use crate::world::map::{Map, Tile};
+        let mut g = game(PClass::Mage);
+        let mut m = Map::new();
+        for x in 1..20 {
+            m.set(x, 5, Tile::open(0, 10, Tex::Dirt, Tex::CeilingRock, Tex::RoughStone));
+        }
+        g.levels[0] = Level::new("t", m);
+        g.cur = 0;
+        g.player.pos = V3::new(2.5, 0.0, 5.5);
+        g
+    }
+
+    #[test]
+    fn conceal_hides_better_than_stealth() {
+        use crate::game::creatures::AiState;
+        // A rat 3 tiles away sees through Stealth but not Conceal.
+        for (spell, noticed) in [(Spell::Stealth, true), (Spell::Conceal, false)] {
+            let mut g = corridor_game();
+            g.add_spell(spell);
+            let id = g.level_mut().add_npc(Npc::new(0, Race::Rat, 5.5, 5.5));
+            ai::update_npcs(&mut g, 0.01);
+            assert_eq!(g.level().npc(id).unwrap().ai == AiState::Attack, noticed, "{:?}", spell);
+        }
+    }
+
+    #[test]
+    fn rune_of_warding_snares_a_foe() {
+        let mut g = corridor_game();
+        g.player.pos = V3::new(8.5, 0.0, 5.5);
+        g.apply_spell(Spell::RuneOfWarding, V3::new(1.0, 0.0, 0.0));
+        assert_eq!(g.level().items.iter().filter(|i| i.item.kind == ItemKind::Ward).count(), 1);
+        g.player.pos = V3::new(2.5, 0.0, 5.5);
+        let id = g.level_mut().add_npc(Npc::new(0, Race::Troll, 8.5, 5.5));
+        g.update(&super::super::MoveInput::default(), 0.01);
+        let n = g.level().npc(id).unwrap();
+        assert!(n.paralyzed > 0.0 && n.hp < n.max_hp, "the troll was not snared");
+        assert!(g.level().items.iter().all(|i| i.item.kind != ItemKind::Ward), "the ward should be spent");
+    }
+
+    #[test]
+    fn every_circle_is_within_reach() {
+        let mut p = Player::new("T", PClass::Mage, false);
+        for lvl in 1..=16 {
+            assert!(Player::exp_for_level(lvl + 1) > Player::exp_for_level(lvl) || lvl == 16);
+            p.level = lvl;
+            assert_eq!(p.max_circle(), lvl.min(8));
+        }
+        // The eighth circle comes at about the experience the first four levels offer.
+        assert!(Player::exp_for_level(8) <= 2000);
     }
 }

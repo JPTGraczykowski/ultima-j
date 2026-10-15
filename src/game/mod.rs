@@ -86,6 +86,7 @@ impl Game {
         self.update_player(mv, dt);
         if !frozen {
             ai::update_npcs(self, dt);
+            self.update_wards();
         }
         self.update_projectiles(dt);
         self.update_doors(dt);
@@ -474,6 +475,29 @@ impl Game {
         self.player.spells.retain(|a| a.left > 0.0);
         for s in expired {
             self.msg(format!("The {} spell has worn off.", s.def().name));
+        }
+    }
+
+    /// A hostile creature that crosses a rune of warding is hurt and held fast.
+    fn update_wards(&mut self) {
+        let casting = self.player.skill(items::Skill::Casting);
+        let wards: Vec<(u32, V3)> = self.level().items.iter().filter(|i| i.item.kind == ItemKind::Ward).map(|i| (i.id, i.pos)).collect();
+        for (ward, at) in wards {
+            let victim = self.level().npcs.iter().find(|n| {
+                n.alive() && n.attitude == creatures::Attitude::Hostile && (n.pos.x - at.x).powi(2) + (n.pos.z - at.z).powi(2) < (n.race.def().radius + 0.25).powi(2)
+            });
+            let Some(id) = victim.map(|n| n.id) else { continue };
+            let name = self.level().npc(id).unwrap().race.def().name;
+            self.level_mut().items.retain(|i| i.id != ward);
+            self.spawn_effect(V3::new(at.x, at.y + 0.2, at.z), EffectKind::Sparks);
+            self.sound(Sfx::Zap);
+            self.msg(format!("The rune of warding flares as the {} crosses it!", name));
+            ai::damage_npc(self, id, 3 + casting / 2, true);
+            if let Some(n) = self.level_mut().npc_mut(id) {
+                if n.alive() {
+                    n.paralyzed = 5.0 + casting as f32 / 3.0;
+                }
+            }
         }
     }
 

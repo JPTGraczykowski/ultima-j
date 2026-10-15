@@ -220,14 +220,17 @@ and learning things in conversation.
 
 | Level | Experience | | Level | Experience |
 | --- | --- | --- | --- | --- |
-| 1 | 0 | | 9 | 6,400 |
-| 2 | 50 | | 10 | 12,800 |
-| 3 | 100 | | 11 | 25,600 |
-| 4 | 200 | | 12 | 51,200 |
-| 5 | 400 | | 13 | 102,400 |
-| 6 | 800 | | 14 | 204,800 |
-| 7 | 1,600 | | 15 | 409,600 |
-| 8 | 3,200 | | 16 | 819,200 |
+| 1 | 0 | | 9 | 2,400 |
+| 2 | 50 | | 10 | 3,200 |
+| 3 | 140 | | 11 | 4,200 |
+| 4 | 300 | | 12 | 5,400 |
+| 5 | 600 | | 13 | 7,000 |
+| 6 | 900 | | 14 | 9,000 |
+| 7 | 1,300 | | 15 | 11,500 |
+| 8 | 1,800 | | 16 | 14,500 |
+
+An adventurer who explores everything usually reaches level 3 in the Upper
+Halls, level 5 or 6 in the Flooded Warrens, and level 8 in the Crypts.
 
 Each level gives you:
 
@@ -239,8 +242,8 @@ To spend skill points, open the statistics page (pull chain or `F7`) and
 click a skill. The page shows how many points you have left. A skill can go
 up to 30.
 
-Your level also limits which spells you can cast. See
-[Magic](#9-magic).
+Your level also limits which spells you can cast: you can cast a spell of any
+circle up to your level. See [Magic](#9-magic).
 
 ## 7. Skills
 
@@ -359,8 +362,9 @@ The runes stay on the shelf, so you can cast the same spell again and again.
 ### Rules
 
 - **Mana cost** = 3 × the spell's circle.
-- **Level needed**: you can cast circle *c* from experience level 2*c* − 1
-  (circle 1 at level 1, circle 2 at level 3, … circle 8 at level 15).
+- **Level needed**: you can cast a spell whose circle is no higher than your
+  experience level (circle 1 at level 1, circle 2 at level 2, … circle 8 at
+  level 8).
 - **Chance to succeed** = 45% + 7% × Casting + INT − 10% × circle, kept between
   10% and 98%. A spell that fizzles still costs half its mana.
 - Mana comes back by itself: 1 point every 3 to 7 seconds, faster with a
@@ -393,27 +397,27 @@ Durations are in minutes. "Area" means every creature within a few paces.
 | Resist Blows | Bet In Sanct | Creatures are 15% less likely to hit you, for 2 min |
 | Stealth | Sanct Hur | Creatures notice you at 40% of the usual range, for 2 min |
 
-**Second circle** (6 mana, level 3)
+**Second circle** (6 mana, level 2)
 
 | Spell | Runes | Effect |
 | --- | --- | --- |
 | Cause Fear | Quas Corp | Hostile creatures nearby flee |
 | Detect Monster | Wis Mani | Counts the hostile creatures within 12 tiles |
 | Lesser Heal | In Bet Mani | Heals 6–11 |
-| Rune of Warding | In Jux | No effect yet |
+| Rune of Warding | In Jux | Lays a glowing rune on the floor where you stand. The next hostile creature to cross it takes 3 + Casting/2 damage and can't move for 5 + Casting/3 seconds. |
 | Slow Fall | Rel Des Por | Fall slowly and take no falling damage, for 1 min |
 
-**Third circle** (9 mana, level 5)
+**Third circle** (9 mana, level 3)
 
 | Spell | Runes | Effect |
 | --- | --- | --- |
-| Conceal | Bet Sanct Lor | No effect yet |
+| Conceal | Bet Sanct Lor | A stronger Stealth: creatures see you only from 20% of the usual range, for 1½ min |
 | Lightning | Ort Grav | A fast bolt: 8 + Casting/2 damage |
 | Night Vision | Quas Lor | See in the dark (radius 9) for 4 min |
 | Speed | Rel Tym Por | Move 60% faster for 1 min |
 | Strengthen Door | Sanct Jux | Seals the nearest door shut |
 
-**Fourth circle** (12 mana, level 7)
+**Fourth circle** (12 mana, level 4)
 
 | Spell | Runes | Effect |
 | --- | --- | --- |
@@ -423,7 +427,7 @@ Durations are in minutes. "Area" means every creature within a few paces.
 | Remove Trap | An Jux | Disarms traps within 3 tiles |
 | Resist Fire | Sanct Flam | Lava hurts much less, for 2 min |
 
-**Fifth circle** (15 mana, level 9)
+**Fifth circle** (15 mana, level 5)
 
 | Spell | Runes | Effect |
 | --- | --- | --- |
@@ -433,7 +437,7 @@ Durations are in minutes. "Area" means every creature within a few paces.
 | Name Enchantment | Ort Wis Ylem | Identifies every enchanted item you carry |
 | Open | Ex Ylem | Opens the nearest door, even a locked one |
 
-**Sixth circle** (18 mana, level 11)
+**Sixth circle** (18 mana, level 6)
 
 | Spell | Runes | Effect |
 | --- | --- | --- |
@@ -443,7 +447,7 @@ Durations are in minutes. "Area" means every creature within a few paces.
 | Paralyze | An Ex Por | The creature you aim at can't move for 10 seconds |
 | Telekinesis | Ort Por Ylem | Pick things up from a distance, for 1 min |
 
-**Seventh circle** (21 mana, level 13)
+**Seventh circle** (21 mana, level 7)
 
 | Spell | Runes | Effect |
 | --- | --- | --- |
@@ -453,7 +457,7 @@ Durations are in minutes. "Area" means every creature within a few paces.
 | Invisibility | Vas Sanct Lor | Creatures can't see you, for 1½ min |
 | Reveal | Ort An Quas | Shows every secret door on the level |
 
-**Eighth circle** (24 mana, level 15)
+**Eighth circle** (24 mana, level 8)
 
 | Spell | Runes | Effect |
 | --- | --- | --- |
@@ -626,7 +630,8 @@ explains the IN LOR and ORT JUX spells. Light the torch.
   and 200 exp. (You must give the Hammer back, so use it while you have it.)
 - **The way down** is through the deep mine south-west of the hall. There's a
   trap at its entrance, a lava fissure to cross by the bridge, two slugs, a gold
-  nugget and a shovel.
+  nugget, a shovel, and the **POR** rune, which you need for Fireball, Levitate
+  and Fly.
 
 ### Level 3 — The Flooded Warrens
 
@@ -643,8 +648,8 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 - **The drowned temple** (south-west): there is a trap at the entrance, and
   two ghouls inside. You'll find a shrine, the **NOX** and **AN** runes, a
   yellow potion and a scroll. A **lever on the west wall** opens a hidden
-  reliquary to the east, which holds a **silver ring of Protection +3** and a
-  blue potion.
+  reliquary to the east, which holds a **silver ring of Protection +3**, a
+  blue potion and the **QUAS** rune.
 - **The southern caves**: the **GRAV**, **REL** and **TYM** runes, a trap, a
   ghoul, a bat, a lone lizardman and a red potion. The stairs down are in the
   far south.
@@ -704,8 +709,8 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 | Mani | Level 1, the box in the slug tunnel |
 | Nox | Level 3, the drowned temple |
 | Ort | Level 1, the library chest (Mages and Druids start with it) |
-| Por | Not in the game |
-| Quas | Not in the game |
+| Por | Level 2, the deep mine, near the shovel |
+| Quas | Level 3, the hidden reliquary behind the drowned temple |
 | Rel | Level 3, the southern caves |
 | Sanct | Level 2, the spider galleries |
 | Tym | Level 3, the southern caves |
@@ -713,8 +718,3 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 | Vas | Level 4, the troll den |
 | Wis | Level 3, from Ssrath, or in the lurkers' grotto |
 | Ylem | Level 4, the guardian's hall |
-
-Without **Por**, the spells that need it can't be cast, including Fireball,
-Slow Fall, Speed, Levitate and Fly. Malchor's wand is the only Fireball in the
-Abyss. Without **Quas**, Cause Fear, Night Vision and Reveal are out of
-reach. A yellow potion gives you night vision instead.

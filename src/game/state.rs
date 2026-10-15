@@ -529,9 +529,16 @@ impl Player {
             .sum()
     }
 
-    /// Experience needed for a given level.
+    /// Experience needed for a given level. Paced so that a thorough player
+    /// reaches about level 8 by the end of the Crypts.
     pub fn exp_for_level(level: i32) -> i32 {
-        if level <= 1 { 0 } else { 50 * (1 << (level - 2).min(14)) }
+        const TABLE: [i32; 16] = [0, 50, 140, 300, 600, 900, 1300, 1800, 2400, 3200, 4200, 5400, 7000, 9000, 11500, 14500];
+        TABLE[(level.clamp(1, 16) - 1) as usize]
+    }
+
+    /// Highest spell circle the player is experienced enough to cast.
+    pub fn max_circle(&self) -> i32 {
+        self.level.min(8)
     }
 
     /// The light the player carries: (radius, brightness).

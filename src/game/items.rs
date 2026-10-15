@@ -238,6 +238,8 @@ pub enum ItemKind {
     Blood,
     Stalagmite,
     Web,
+    /// A rune of warding laid on the floor by the spell.
+    Ward,
 }
 
 pub struct ItemDef {
@@ -448,6 +450,7 @@ impl ItemKind {
             Blood => fixture("bloodstain", (0.5, 0.08)),
             Stalagmite => fixture("stalagmite", (0.35, 0.6)),
             Web => fixture("spider web", (0.7, 0.7)),
+            Ward => fixture("rune of warding", (0.5, 0.08)),
         }
     }
 
