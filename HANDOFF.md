@@ -57,10 +57,5 @@ captures are on oldgames.sk; the reference card is on mocagh.org).
 2. **Balance playthrough of levels 2–5 by hand.** The scripted runs only show
    the levels can be finished; difficulty, loot, food and light supply are
    untested.
-3. **Smaller items:**
-   - Save files are about 3.3 MB of JSON each; compress them or save only
-     what changed.
-   - Intro vignettes could be richer.
-   - More screenshot comparisons against the original for visual polish.
-4. **Docs:** once the barter screen is done, remove it from the README's
+3. **Docs:** once the barter screen is done, remove it from the README's
    "Not yet implemented" list.
