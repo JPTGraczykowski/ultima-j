@@ -57,6 +57,33 @@ Valor from the mountain folk, Wisdom from the lizardmen, Mercy from the dead in
 the crypts — and carry them into the Deep Sanctum, where Malchor means to wake
 the Shadow Fiend.
 
+## Differences from the original
+
+Ultima-J copies the original's look and controls. The story, characters and
+maps are new.
+
+**Shared with the original:** the screen layout and visual style; movement,
+the look/get/use/talk/fight icons, the paperdoll inventory, rune magic, the
+automap with notes and sleeping with dream hints; and the basic setup, in which
+you are thrown into an underground abyss to rescue a nobleman's kidnapped
+daughter.
+
+**Different:**
+
+| | Ultima Underworld (1992) | Ultima-J |
+| --- | --- | --- |
+| Story | Baron Almric's daughter Arial is taken by Tyball; you have to stop the Slasher of Veils from being summoned | Baron Aldwin's daughter Lady Rowena is taken by the wizard Malchor; you have to stop him waking the Shadow Fiend |
+| Goal | Collect the eight talismans of virtue and cast them into the volcano | Collect three shards of the Lumen Stone (Valor, Wisdom and Mercy) |
+| Size | 8 levels | 5 levels: the Upper Halls, the Mines of the Mountain Folk, the Flooded Warrens, the Crypts and the Deep Sanctum |
+| Characters | The original cast | New characters, among them Elsmore, Tobin, Gnarl, Rhugg, Thorgrim, Hilda, Bodric, Hissk, Ssrath and Sir Aldric |
+
+Some ideas are borrowed loosely, such as goblins, dwarves (the "mountain folk"),
+lizardmen and a crypt full of the dead, but the maps, conversations and quests
+were written from scratch.
+
+**Not yet implemented:** the barter screen (you trade through conversation) and
+the Repair, Charm and Appraise skills.
+
 ## Development tools
 
 ```sh
