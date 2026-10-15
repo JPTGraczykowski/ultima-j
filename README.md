@@ -13,6 +13,16 @@ No original game data is used. Every texture, sprite, icon, font, sound and piec
 of music is generated procedurally at start-up, styled after screenshots of the
 original. The story and characters are original.
 
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Title screen](screenshots/title.png) | ![Character creation](screenshots/character-creation.png) |
+| ![The outcasts' camp](screenshots/outcasts-camp.png) | ![An underground lake](screenshots/underground-lake.png) |
+| ![Talking to Tobin](screenshots/conversation.png) | ![Bartering](screenshots/barter.png) |
+| ![The dwarven hall](screenshots/dwarven-hall.png) | ![Casting a fireball](screenshots/fireball.png) |
+| ![The Shadow Fiend](screenshots/shadow-fiend.png) | ![The automap](screenshots/automap.png) |
+
 ## Building and running
 
 Requires Rust (stable). From this directory:
