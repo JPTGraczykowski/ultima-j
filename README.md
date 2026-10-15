@@ -36,7 +36,9 @@ Saved games go to `~/.ultima-j/`.
 
 ## Controls
 
-The controls follow the original's reference card.
+The controls follow the original's reference card. For everything else (skills,
+spells, items, creatures, and a walkthrough) see the
+[player's handbook](HANDBOOK.md).
 
 | Action | Keys / mouse |
 | --- | --- |
