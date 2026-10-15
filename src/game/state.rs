@@ -102,6 +102,16 @@ pub struct Trigger {
     pub once: bool,
     #[serde(default)]
     pub fired: bool,
+    /// A trap the player has spotted (shown on the map, can be disarmed).
+    #[serde(default)]
+    pub found: bool,
+}
+
+impl Trigger {
+    /// An armed trap (not yet sprung or disarmed).
+    pub fn is_armed_trap(&self) -> bool {
+        matches!(self.kind, TriggerKind::Damage { .. }) && !self.fired
+    }
 }
 
 /// A lever or switch on a wall (identified by the tile in front of it).
@@ -448,6 +458,46 @@ impl Player {
 
     pub fn skill(&self, s: Skill) -> i32 {
         self.skills[s as usize]
+    }
+
+    /// Movement speed factor in water (Swimming).
+    pub fn swim_speed(&self) -> f32 {
+        (0.5 + self.skill(Skill::Swimming) as f32 * 0.03).min(0.85)
+    }
+
+    /// How far the eyes sink while swimming (Swimming keeps your head up).
+    pub fn swim_sink(&self) -> f32 {
+        super::physics::SWIM_SINK * (1.0 - self.skill(Skill::Swimming) as f32 * 0.04).max(0.4)
+    }
+
+    /// Load above which you are dragged under while swimming.
+    pub fn swim_load_limit(&self) -> i32 {
+        self.capacity() * (60 + self.skill(Skill::Swimming) * 4).min(100) / 100
+    }
+
+    /// Seconds between drowning blows when swimming overloaded.
+    pub fn drown_interval(&self) -> f32 {
+        4.0 + self.skill(Skill::Swimming) as f32 * 0.5
+    }
+
+    /// Upward speed of a jump (Acrobat jumps higher and so farther).
+    pub fn jump_speed(&self) -> f32 {
+        super::physics::JUMP_SPEED * (1.0 + (self.skill(Skill::Acrobat) as f32 * 0.015).min(0.15))
+    }
+
+    /// Damage from a fall of `drop` height units (Acrobat softens landings).
+    pub fn fall_damage(&self, drop: f32) -> i32 {
+        let acro = self.skill(Skill::Acrobat) as f32;
+        let safe = 1.4 + acro * 0.08;
+        if drop <= safe {
+            return 0;
+        }
+        ((drop - safe + 0.2) * 6.0 * (1.0 - acro * 0.04).max(0.4)) as i32
+    }
+
+    /// Distance at which creatures that have not yet seen you notice you (Sneak).
+    pub fn notice_range(&self, base: f32) -> f32 {
+        base * (1.0 - self.skill(Skill::Sneak) as f32 * 0.04).max(0.45)
     }
 
     pub fn has_spell(&self, s: Spell) -> bool {

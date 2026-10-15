@@ -4,7 +4,7 @@ use super::creatures::{AiState, Anim, Attitude, Ranged};
 use super::items::{Item, ItemKind, Skill};
 use super::magic::Spell;
 use super::physics::{self, Body, PLAYER_RADIUS};
-use super::{EffectKind, Event, Game, ProjKind, Projectile};
+use super::{EffectKind, EqSlot, Event, Game, ProjKind, Projectile};
 use crate::audio::Sfx;
 use crate::util::{wrap_angle, V3};
 use crate::world::map::{Map, MAP_SIZE};
@@ -126,7 +126,9 @@ pub fn update_npcs(g: &mut Game, dt: f32) {
         let hostile = attitude == Attitude::Hostile;
         let mut sees = false;
         if hostile && !g.player.dead && !invisible {
-            let range = if stealthy { SIGHT * 0.4 } else { SIGHT };
+            // Creatures already hunting you keep their full sight; others must notice you first.
+            let base = if ai == AiState::Attack { SIGHT } else { g.player.notice_range(SIGHT) };
+            let range = if stealthy { base * 0.4 } else { base };
             if dist < range && physics::line_of_sight(&g.levels[lv], npc_eye, player_eye) {
                 sees = true;
             }
@@ -310,8 +312,15 @@ fn melee(g: &mut Game, i: usize, dt: f32) {
         g.spawn_effect(e + fwd * 0.35 - V3::new(0.0, 0.1, 0.0), EffectKind::Blood);
         // Armour wears.
         if g.rng.chance(0.15) {
-            if let Some(it) = g.player.equip.chest.as_mut() {
-                it.quality = it.quality.saturating_sub(1);
+            let worn: Vec<EqSlot> = [EqSlot::Head, EqSlot::Chest, EqSlot::Legs, EqSlot::Feet, EqSlot::Hands, EqSlot::Shield]
+                .into_iter()
+                .filter(|s| g.player.equip.get(*s).as_ref().map(|i| i.def().armor.is_some()).unwrap_or(false))
+                .collect();
+            if !worn.is_empty() {
+                let s = worn[g.rng.range(0, worn.len() as i32) as usize];
+                if let Some(it) = g.player.equip.get_mut(s).as_mut() {
+                    it.quality = it.quality.saturating_sub(1);
+                }
             }
         }
     } else {

@@ -39,15 +39,31 @@ The controls follow the original's reference card.
 | Talk, Get, Look, Fight, Use | click an icon (or `F2`–`F6`), then right-click in the view |
 | Default mode | right-click looks; hold/drag the right button to get, use or talk |
 | Attack | in Fight mode hold the right button, watch the power gem, release; high bashes, middle slashes, low thrusts (keys `P`, `;`, `.`) |
-| Inventory | left-click to pick up / put down; right-click to use (eat, drink, read, light, open) |
+| Inventory | left-click to pick up / put down; right-click to use (eat, drink, read, light, open, repair worn gear) |
 | Statistics | click the pull chain (or `F7`); spend skill points after levelling up |
 | Runes and spells | left-click the rune bag, click runes onto the shelf, click the shelf (or `F8`) to cast; right-click the shelf to clear it |
 | Map | `M` or `Tab` |
 | Track / sleep | `F9` / `F10` |
+| Disarm a trap | once spotted, Use the floor tile it is on |
 | Status | click the compass (condition), the flasks (vitality, mana) |
 | Options, save, restore | `F1`/`Esc`; `Ctrl+S` quick-save, `Ctrl+R` restore |
 | Help | `H` |
 | Fullscreen / aspect | `F11` / `F12` (4:3 like a CRT, or square pixels) |
+
+## Skills
+
+All twenty skills do something. Besides the combat, magic and lock skills:
+
+- **Lore** names an item's enchantment when you look at it.
+- **Appraise** tells you what an item is worth and gets you better prices.
+- **Charm** lowers prices and opens friendlier lines in conversation.
+- **Repair** mends worn weapons and armour (use them from the inventory);
+  the higher the skill, the closer to new.
+- **Traps** spots hidden pressure plates as you approach (marked on the map)
+  and disarms them.
+- **Swimming** lets you swim faster, keep your head higher and carry more.
+- **Acrobat** makes you jump higher and fall farther without harm.
+- **Sneak** lets you get closer before creatures notice you.
 
 ## The quest
 
@@ -81,8 +97,7 @@ Some ideas are borrowed loosely, such as goblins, dwarves (the "mountain folk"),
 lizardmen and a crypt full of the dead, but the maps, conversations and quests
 were written from scratch.
 
-**Not yet implemented:** the barter screen (you trade through conversation) and
-the Repair, Charm and Appraise skills.
+**Not yet implemented:** the barter screen (you trade through conversation).
 
 ## Development tools
 

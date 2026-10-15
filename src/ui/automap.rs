@@ -151,6 +151,13 @@ pub fn draw(ctx: &mut Ctx, fb: &mut Bitmap, g: &Game, lvl: usize, note: Option<(
             }
         }
     }
+    // Traps the player has spotted.
+    for t in lv.triggers.iter().filter(|t| t.found && t.is_armed_trap()) {
+        let (x, y) = (px(t.tx) + cell / 2, pz(t.tz) + cell / 2);
+        let col = c(Ramp::Red, 5);
+        fb.line(x - 2, y - 2, x + 2, y + 2, col);
+        fb.line(x + 2, y - 2, x - 2, y + 2, col);
+    }
     // The player.
     if lvl == g.cur {
         let p = &g.player;

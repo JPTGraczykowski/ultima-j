@@ -2,8 +2,8 @@
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
 original's style. Status (2026-10-15): the game is complete and playable from
-the title screen to the victory screen, and all 48 tests pass. What remains is
-mostly gameplay depth (skills that do nothing, barter) and balance.
+the title screen to the victory screen, and all 54 tests pass. What remains is
+mostly the barter screen and balance.
 
 ## Done
 
@@ -22,6 +22,13 @@ mostly gameplay depth (skills that do nothing, barter) and balance.
   save/restore (`~/.ultima-j/`); title, intro, character creation, death, victory.
 - Five levels (`src/game/levels.rs`), three shard quests and the final battle,
   all verified with scripted runs.
+- All 20 skills have an effect. Lore identifies enchantments on look;
+  Appraise estimates worth; Charm and Appraise adjust prices in dialogue
+  (`{buy N}`/`{sell N}`, `afford:N`, `pay`/`earn`, `skill:NAME>=N`); Repair
+  mends gear used from the inventory (Bodric also mends for gold); Traps
+  spots, maps and disarms traps (13 across the five levels); Swimming,
+  Acrobat and Sneak tune swimming, jumping/falling and creature notice range
+  (helpers on `Player` in `src/game/state.rs`).
 - Visual pass after the side-by-side review: smaller command icons with oval
   cartouches, reworked creature models (stone golem, bat wings with membranes,
   hunched trolls, humanoid proportions), bigger paperdoll with a face and beard.
@@ -30,7 +37,7 @@ mostly gameplay depth (skills that do nothing, barter) and balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 48 tests: level connectivity, fuzzers, save round-trip
+cargo test --release                       # 54 tests: level connectivity, fuzzers, save round-trip, skills
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --maps DIR         # level layouts
@@ -42,29 +49,18 @@ captures are on oldgames.sk; the reference card is on mocagh.org).
 
 ## Next steps (review of 2026-10-15), in suggested order
 
-1. **Make the dead skills work.** 8 of the 20 skills are never read by the game
-   logic, only listed in the class tables (`PClass::skills`, `src/game/state.rs`).
-   Tinker, Bard and Druid start with points in them that do nothing.
-   - Repair: restore weapon and armour `quality`. Gear already wears down in
-     combat (`src/game/ai.rs` around lines 314 and 521), so Repair has a clear use.
-   - Appraise: show item value when you look at it; better trade prices.
-   - Charm: better trades, friendlier conversation options.
-   - Lore: identify enchanted items.
-   - Traps: spot and disarm traps. There is only one trap in the whole game
-     (`b.trap(...)` in `src/game/levels.rs`), so add more traps as well.
-   - Swimming: faster swimming, less sinking (`SWIM_SINK` in `src/game/physics.rs`).
-   - Acrobat: longer jumps, less fall damage.
-   - Sneak: shorter range at which creatures notice you (`src/game/ai.rs`).
-2. **Barter screen.** Trading only happens in dialogue. The two trade areas
+1. **Barter screen.** Trading only happens in dialogue. The two trade areas
    are already drawn in the conversation screen (`barter()` in
-   `src/ui/convo.rs`) but do nothing yet. Appraise and Charm plug in here.
-3. **Balance playthrough of levels 2–5 by hand.** The scripted runs only show
+   `src/ui/convo.rs`) but do nothing yet. Prices should come from
+   `buy_price`/`sell_price` in `src/game/dialogue.rs` (Charm and Appraise)
+   and item worth from `Item::value`.
+2. **Balance playthrough of levels 2–5 by hand.** The scripted runs only show
    the levels can be finished; difficulty, loot, food and light supply are
    untested.
-4. **Smaller items:**
+3. **Smaller items:**
    - Save files are about 3.3 MB of JSON each; compress them or save only
      what changed.
    - Intro vignettes could be richer.
    - More screenshot comparisons against the original for visual polish.
-5. **Docs:** once 1–2 are done, update the README's "Not yet implemented" list
-   (it currently names only Repair, Charm and Appraise).
+4. **Docs:** once the barter screen is done, remove it from the README's
+   "Not yet implemented" list.

@@ -176,8 +176,9 @@ fn equip_click(st: &mut PlayState, ctx: &mut Ctx, slot: EqSlot, right: bool) {
     let p = &mut st.game.player;
     if right {
         if st.ui.mode == Mode::Look {
-            if let Some(it) = p.equip.get(slot).clone() {
-                st.game.msg(format!("You see {}.", crate::game::actions::describe_item(&it)));
+            if let Some(mut it) = p.equip.get_mut(slot).take() {
+                st.game.examine(&mut it);
+                *st.game.player.equip.get_mut(slot) = Some(it);
             }
             return;
         }
@@ -238,7 +239,11 @@ fn pack_click(st: &mut PlayState, ctx: &mut Ctx, i: usize, right: bool) {
             st.ui.held = held;
             if let Some(it) = cont.contents.get(idx).cloned() {
                 if mode == Mode::Look {
-                    st.game.msg(format!("You see {}.", crate::game::actions::describe_item(&it)));
+                    let mut it = it;
+                    st.game.examine(&mut it);
+                    if let Some(c) = open_container(&mut st.game.player, &path).and_then(|c| c.contents.get_mut(idx)) {
+                        c.identified = it.identified;
+                    }
                 } else if it.def().capacity > 0 {
                     st.ui.open.push(idx);
                 } else {
@@ -284,9 +289,12 @@ fn pack_click(st: &mut PlayState, ctx: &mut Ctx, i: usize, right: bool) {
     // Plain pack slots.
     let p = &mut st.game.player;
     if right {
-        let Some(it) = p.pack[i].clone() else { return };
+        let Some(mut it) = p.pack[i].clone() else { return };
         if st.ui.mode == Mode::Look {
-            st.game.msg(format!("You see {}.", crate::game::actions::describe_item(&it)));
+            st.game.examine(&mut it);
+            if let Some(slot) = st.game.player.pack[i].as_mut() {
+                slot.identified = it.identified;
+            }
             return;
         }
         match it.def().class {

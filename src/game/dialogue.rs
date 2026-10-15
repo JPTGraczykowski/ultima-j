@@ -9,12 +9,16 @@
 //! * option text -> next_node ? condition & condition
 //! ```
 //! Conditions: `flag:NAME>=N`, `flag:NAME=N`, `!flag:NAME`, `item:Kind`,
-//! `!item:Kind`, `gold>=N`. Actions: `flag NAME N`, `give Kind [data] [qty]`,
-//! `take Kind [qty]`, `exp N`, `hostile`, `heal`, `rune N`, `follow`,
-//! `mana`, `skill NAME N`, `end`.
+//! `!item:Kind`, `gold>=N`, `afford:N`, `skill:NAME>=N`. Actions: `flag NAME N`,
+//! `give Kind [data] [qty]`, `take Kind [qty]`, `pay N`, `earn N`, `exp N`,
+//! `hostile`, `heal`, `rune N`, `follow`, `mana`, `skill NAME N`, `mend`, `end`.
+//!
+//! Prices: `{buy N}` and `{sell N}` in text show a base price of N gold as
+//! adjusted by the player's Charm and Appraise; `afford:N`, `pay N` and
+//! `earn N` use the same adjusted prices.
 
 use super::creatures::{AiState, Attitude};
-use super::items::{Item, ItemKind, ALL_SKILLS};
+use super::items::{Class, Item, ItemKind, Skill, ALL_SKILLS};
 use super::Game;
 use std::collections::HashMap;
 
@@ -26,6 +30,9 @@ pub enum Cond {
     HasItem(ItemKind),
     NoItem(ItemKind),
     GoldGe(i32),
+    /// Enough gold for a base price after haggling.
+    Afford(i32),
+    SkillGe(Skill, i32),
 }
 
 #[derive(Clone, Debug)]
@@ -93,6 +100,14 @@ fn parse_cond(s: &str) -> Option<Cond> {
     }
     if let Some(rest) = s.strip_prefix("gold>=") {
         return Some(Cond::GoldGe(rest.trim().parse().ok()?));
+    }
+    if let Some(rest) = s.strip_prefix("afford:") {
+        return Some(Cond::Afford(rest.trim().parse().ok()?));
+    }
+    if let Some(rest) = s.strip_prefix("skill:") {
+        let (n, v) = rest.split_once(">=")?;
+        let sk = ALL_SKILLS.iter().find(|k| k.name().eq_ignore_ascii_case(n.trim()))?;
+        return Some(Cond::SkillGe(*sk, v.trim().parse().ok()?));
     }
     None
 }
@@ -235,7 +250,46 @@ pub fn cond_ok(g: &Game, c: &Cond) -> bool {
         Cond::HasItem(k) => g.player.has_item(*k),
         Cond::NoItem(k) => !g.player.has_item(*k),
         Cond::GoldGe(n) => gold(g) >= *n,
+        Cond::Afford(n) => gold(g) >= buy_price(g, *n),
+        Cond::SkillGe(s, n) => g.player.skill(*s) >= *n,
     }
+}
+
+/// What the player pays for something with a base price: Charm talks the
+/// price down, Appraise knows what it is really worth.
+pub fn buy_price(g: &Game, base: i32) -> i32 {
+    let off = (g.player.skill(Skill::Charm) * 2 + g.player.skill(Skill::Appraise)).min(35);
+    ((base * (100 - off) + 50) / 100).max(1)
+}
+
+/// What the player is paid for something with a base price.
+pub fn sell_price(g: &Game, base: i32) -> i32 {
+    let up = (g.player.skill(Skill::Appraise) * 3 + g.player.skill(Skill::Charm)).min(50);
+    (base * (100 + up) + 50) / 100
+}
+
+/// Replace `{buy N}` and `{sell N}` with adjusted prices.
+pub fn fill_prices(g: &Game, s: &str) -> String {
+    let mut out = String::new();
+    let mut rest = s;
+    while let Some(k) = rest.find('{') {
+        out.push_str(&rest[..k]);
+        let tail = &rest[k..];
+        let end = tail.find('}').unwrap_or(tail.len() - 1);
+        let inner = &tail[1..end];
+        let price = match inner.split_once(' ') {
+            Some(("buy", n)) => n.trim().parse().ok().map(|n| buy_price(g, n)),
+            Some(("sell", n)) => n.trim().parse().ok().map(|n| sell_price(g, n)),
+            _ => None,
+        };
+        match price {
+            Some(p) => out.push_str(&p.to_string()),
+            None => out.push_str(&tail[..=end]),
+        }
+        rest = &tail[end + 1..];
+    }
+    out.push_str(rest);
+    out
 }
 
 /// Live state of a conversation in progress.
@@ -262,11 +316,16 @@ pub fn enter_node(g: &mut Game, db: &DialogueDb, st: &mut ConvState, node: &str)
     };
     st.node = node.to_string();
     let name = g.player.name.clone();
-    st.text = n.text.replace("{name}", &name);
+    st.text = fill_prices(g, &n.text.replace("{name}", &name));
     for a in &n.actions {
         run_action(g, st.npc, a, &mut st.ended);
     }
-    st.options = n.options.iter().filter(|o| o.conds.iter().all(|c| cond_ok(g, c))).cloned().collect();
+    st.options = n
+        .options
+        .iter()
+        .filter(|o| o.conds.iter().all(|c| cond_ok(g, c)))
+        .map(|o| Opt { text: fill_prices(g, &o.text), ..o.clone() })
+        .collect();
     // Remember that we've talked.
     let key = format!("talked_{}", conv.name);
     g.set_flag(&key, 1);
@@ -306,6 +365,30 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
                     }
                 }
             }
+        }
+        "pay" => take_gold(g, buy_price(g, num(1, 0))),
+        "earn" => {
+            let n = sell_price(g, num(1, 0));
+            let coins = Item::new(ItemKind::Coin).qty(n as u16);
+            if let Some(back) = g.player.give(coins) {
+                g.drop_item(back, None);
+            }
+            g.msg(format!("You receive {} gold.", n));
+        }
+        "mend" => {
+            for s in super::ALL_EQ {
+                if let Some(it) = g.player.equip.get_mut(s).as_mut() {
+                    if matches!(it.def().class, Class::Weapon | Class::Missile | Class::Armor) {
+                        it.quality = 100;
+                    }
+                }
+            }
+            for it in g.player.pack.iter_mut().flatten() {
+                if matches!(it.def().class, Class::Weapon | Class::Missile | Class::Armor) {
+                    it.quality = 100;
+                }
+            }
+            g.msg("Your weapons and armour are as good as new.");
         }
         "exp" => g.gain_exp(num(1, 10)),
         "heal" => {
@@ -411,6 +494,22 @@ mod tests {
         assert_eq!(c.nodes["start"].text, "Hello {name}. Second line.");
         assert_eq!(c.nodes["start"].options.len(), 2);
         assert_eq!(c.nodes["start"].options[1].conds.len(), 2);
+    }
+
+    #[test]
+    fn charm_and_appraise_haggle() {
+        use super::super::state::{PClass, Player};
+        let mut g = Game::new(Player::new("T", PClass::Fighter, false), 1);
+        assert_eq!(buy_price(&g, 20), 20);
+        assert_eq!(sell_price(&g, 30), 30);
+        assert_eq!(fill_prices(&g, "A potion, {buy 20} gold. {name}"), "A potion, 20 gold. {name}");
+        g.player.skills[Skill::Charm as usize] = 5;
+        g.player.skills[Skill::Appraise as usize] = 5;
+        assert_eq!(buy_price(&g, 20), 17);
+        assert_eq!(sell_price(&g, 30), 36);
+        assert!(cond_ok(&g, &parse_cond("skill:Charm>=5").unwrap()));
+        assert!(!cond_ok(&g, &parse_cond("skill:charm>=6").unwrap()));
+        assert!(!cond_ok(&g, &parse_cond("afford:1").unwrap()));
     }
 
     #[test]

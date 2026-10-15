@@ -61,6 +61,14 @@ Hmm. Thou hast an honest face. Take this loaf - and do not tell the others.
 Psst! Tobin's the name, and trade's the game. Even down here a man needs coin - or what coin can buy. Care to see my wares?
 * Show me what thou hast. -> wares
 * Where dost thou get these things? -> where
+* Surely a man of thy taste gives his friends a little something. -> charm ? skill:Charm>=4 & !flag:tobin_charmed
+* Farewell. -> end
+
+-- charm
+Ha! A silver tongue, and down here of all places. Thou'rt good for business. Here - a candle, on the house. And my prices are always fairer for a friend.
+! flag tobin_charmed 1
+! give Candle
+* Show me what thou hast. -> wares
 * Farewell. -> end
 
 -- where
@@ -69,45 +77,45 @@ Here and there. The dead don't need their torches, and the goblins don't count t
 * Farewell. -> end
 
 -- wares
-Torch, 5 gold. Loaf of bread, 3 gold. Red potion of healing, 20 gold. A fine lantern, 35 gold. Lockpick, 10 gold.
-* A torch (5 gold). -> torch ? gold>=5
-* A loaf of bread (3 gold). -> bread ? gold>=3
-* A red potion (20 gold). -> potion ? gold>=20
-* The lantern (35 gold). -> lantern ? gold>=35
-* A lockpick (10 gold). -> pick ? gold>=10
+Torch, {buy 5} gold. Loaf of bread, {buy 3} gold. Red potion of healing, {buy 20} gold. A fine lantern, {buy 35} gold. Lockpick, {buy 10} gold.
+* A torch ({buy 5} gold). -> torch ? afford:5
+* A loaf of bread ({buy 3} gold). -> bread ? afford:3
+* A red potion ({buy 20} gold). -> potion ? afford:20
+* The lantern ({buy 35} gold). -> lantern ? afford:35
+* A lockpick ({buy 10} gold). -> pick ? afford:10
 * Nothing for now. -> end
 
 -- torch
 A wise purchase. Light is life down here.
-! take Coin 5
+! pay 5
 ! give Torch
 * Let me see the wares again. -> wares
 * Farewell. -> end
 
 -- bread
 Fresh! Well... fresh-ish.
-! take Coin 3
+! pay 3
 ! give Bread
 * Let me see the wares again. -> wares
 * Farewell. -> end
 
 -- potion
 Drink it when the red runs low, friend.
-! take Coin 20
+! pay 20
 ! give RedPotion
 * Let me see the wares again. -> wares
 * Farewell. -> end
 
 -- lantern
 Burns long and bright. Hang it on thy shoulder.
-! take Coin 35
+! pay 35
 ! give Lantern
 * Let me see the wares again. -> wares
 * Farewell. -> end
 
 -- pick
 For opening doors that would rather stay closed. I ask no questions.
-! take Coin 10
+! pay 10
 ! give Lockpick
 * Let me see the wares again. -> wares
 * Farewell. -> end
@@ -122,14 +130,28 @@ Hrrm. Human. Rhugg is chief of gray goblins. Why you come to Rhugg's hall?
 * Farewell. -> end
 
 -- stairs
-Stairs belong to gray goblins. Nobody pass! Unless... Gnarl, the green chief, he steal from us, kill our young ones. You bring Rhugg the medallion of Gnarl, Rhugg open the gate. Or you pay. Fifty gold.
+Stairs belong to gray goblins. Nobody pass! Unless... Gnarl, the green chief, he steal from us, kill our young ones. You bring Rhugg the medallion of Gnarl, Rhugg open the gate. Or you pay. {buy 50} gold.
 * I will deal with Gnarl. -> end
-* Here is fifty gold. -> pay ? gold>=50
+* Here is the gold. -> pay ? afford:50
+* A chief as mighty as Rhugg does not need so much gold from a friend. -> haggle ? skill:Charm>=4
 * Back. -> start
+
+-- haggle
+Hrrm! Friend, you say. Rhugg is mighty, yes, mighty and generous. For friend of Rhugg... {buy 25} gold.
+* Here is the gold. -> pay_friend ? afford:25
+* I will deal with Gnarl. -> end
+* Back. -> start
+
+-- pay_friend
+Hrrm! Gold is good, friend is good. Gate is open. Go, go!
+! pay 25
+! door 55
+! flag rhugg_open 1
+* Thank thee. -> end
 
 -- pay
 Hrrm! Gold is good. Gate is open. Go, go!
-! take Coin 50
+! pay 50
 ! door 55
 ! flag rhugg_open 1
 * Thank thee. -> end
@@ -218,56 +240,75 @@ The lizard-folk live in the flooded warrens below. They hiss when they speak, bu
 Clang! Clang! What? Oh. A customer. I'm Bodric, smith of the Mountain Folk. I make the best steel in the Abyss and I'll trade it for gold.
 * Show me thy wares. -> wares
 * I have gold nuggets to sell. -> nugget ? item:GoldNugget
+* Canst thou mend my weapons and armour? -> mend
+* Thy forge-work is the finest I have ever seen, master smith. -> flatter ? skill:Charm>=3 & !flag:bodric_flattered
 * Farewell. -> end
 
+-- mend
+Aye, for {buy 15} gold I'll beat the dents out of everything thou'rt carrying. Steel wants care down here.
+* Do it. -> mended ? afford:15
+* Not now. -> start
+
+-- mended
+! pay 15
+Clang! Clang! ... There. Good as the day it left the anvil.
+! mend
+* My thanks. -> start
+
+-- flatter
+Ha! Thou hast an eye for good steel, and a smooth tongue besides. Give it here - I'll see to thy gear for nothing, this once.
+! flag bodric_flattered 1
+! mend
+* My thanks, master smith. -> start
+
 -- wares
-Chain shirt, 60 gold. Gauntlets, 40 gold. Broadsword, 70 gold. Wooden shield, 25 gold. Torch, 4 gold.
-* A chain shirt (60 gold). -> shirt ? gold>=60
-* Gauntlets (40 gold). -> gauntlets ? gold>=40
-* A broadsword (70 gold). -> sword ? gold>=70
-* A wooden shield (25 gold). -> shield ? gold>=25
-* A torch (4 gold). -> torch ? gold>=4
+Chain shirt, {buy 60} gold. Gauntlets, {buy 40} gold. Broadsword, {buy 70} gold. Wooden shield, {buy 25} gold. Torch, {buy 4} gold.
+* A chain shirt ({buy 60} gold). -> shirt ? afford:60
+* Gauntlets ({buy 40} gold). -> gauntlets ? afford:40
+* A broadsword ({buy 70} gold). -> sword ? afford:70
+* A wooden shield ({buy 25} gold). -> shield ? afford:25
+* A torch ({buy 4} gold). -> torch ? afford:4
 * Nothing today. -> end
 
 -- shirt
 Good links, tight weave. It'll turn a spider's fang.
-! take Coin 60
+! pay 60
 ! give ChainShirt
 * Show me the wares again. -> wares
 * Farewell. -> end
 
 -- gauntlets
-! take Coin 40
+! pay 40
 ! give Gauntlets
 Steel for thy fists.
 * Show me the wares again. -> wares
 * Farewell. -> end
 
 -- sword
-! take Coin 70
+! pay 70
 ! give Broadsword
 Balanced like a dancer, bites like a troll.
 * Show me the wares again. -> wares
 * Farewell. -> end
 
 -- shield
-! take Coin 25
+! pay 25
 ! give WoodenShield
 Oak and iron. Keep it between thee and trouble.
 * Show me the wares again. -> wares
 * Farewell. -> end
 
 -- torch
-! take Coin 4
+! pay 4
 ! give Torch
 There. Don't burn thy beard - oh, thou hast none.
 * Show me the wares again. -> wares
 * Farewell. -> end
 
 -- nugget
-Gold from the mountain! I'll give thee thirty coins for it.
+Gold from the mountain! I'll give thee {sell 30} coins for it.
 ! take GoldNugget
-! give Coin 0 30
+! earn 30
 * I have more nuggets. -> nugget ? item:GoldNugget
 * Show me the wares. -> wares
 * Farewell. -> end

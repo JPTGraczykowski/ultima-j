@@ -14,7 +14,7 @@
 //! `level N X Z` - change level
 //! `give Kind` - put an item in the pack
 //! `equip Kind Slot` - equip an item
-//! `set NAME VALUE` - player attribute (vit, mana, level, exp)
+//! `set NAME VALUE` - player attribute (vit, mana, level, exp) or skill (traps, lore...)
 //! `runes all` - learn all runes
 //! `shelf A B C` - put runes on the shelf
 //! `shot PATH` - save a screenshot (3x, 4:3 aspect)
@@ -196,8 +196,11 @@ pub fn run(script: &str) -> Result<(), String> {
                                 }
                                 "level" => g.player.level = v,
                                 "exp" => g.gain_exp(v),
-                                "casting" => g.player.skills[crate::game::items::Skill::Casting as usize] = v,
-                                _ => {}
+                                name => {
+                                    if let Some(sk) = crate::game::items::ALL_SKILLS.iter().find(|k| k.name().eq_ignore_ascii_case(name)) {
+                                        g.player.skills[*sk as usize] = v;
+                                    }
+                                }
                             }
                         }
                         "runes" => g.player.runes = [true; 24],

@@ -2,7 +2,7 @@
 
 use super::ai;
 use super::creatures::{AiState, Attitude};
-use super::items::{Class, Enchant, Item, ItemKind, Skill};
+use super::items::{Class, Enchant, Item, ItemKind, Skill, Slot};
 use super::magic::{Spell, Targeting};
 use super::physics;
 use super::{ActiveSpell, DoorKind, EffectKind, EqSlot, Event, Game, ProjKind, Projectile};
@@ -44,7 +44,15 @@ impl Game {
     pub fn look(&mut self, t: Target) {
         match t {
             Target::None => self.msg("You see nothing of interest."),
-            Target::Floor { tex, .. } | Target::Ceiling { tex, .. } => {
+            Target::Floor { tx, tz, tex } => {
+                self.search_for_trap(tx, tz);
+                if self.trap_at(tx, tz).map(|i| self.level().triggers[i].found).unwrap_or(false) {
+                    self.msg("You see a pressure plate set into the floor. It is a trap.");
+                } else {
+                    self.msg(format!("You see {}.", tex.describe()));
+                }
+            }
+            Target::Ceiling { tex, .. } => {
                 self.msg(format!("You see {}.", tex.describe()));
             }
             Target::Wall { tx, tz, tex } => {
@@ -58,10 +66,10 @@ impl Game {
                 self.msg(format!("You see {}.", tex.describe()));
             }
             Target::Item(id) => {
-                if let Some(wi) = self.level().items.iter().find(|i| i.id == id) {
-                    let it = &wi.item;
-                    let s = format!("You see {}{}.", if it.qty > 1 { "" } else { "" }, describe_item(it));
-                    self.msg(s);
+                if let Some(idx) = self.level().item_index(id) {
+                    let mut it = self.level().items[idx].item.clone();
+                    self.examine(&mut it);
+                    self.level_mut().items[idx].item.identified = it.identified;
                 }
             }
             Target::Npc(id) => {
@@ -256,9 +264,171 @@ impl Game {
                     }
                 }
             }
+            Target::Floor { tx, tz, .. } => match self.trap_at(tx, tz) {
+                Some(i) if self.level().triggers[i].found => {
+                    if dist > REACH + 0.4 {
+                        self.msg("That is too far away.");
+                    } else {
+                        self.disarm_trap(i);
+                    }
+                }
+                _ => self.look(t),
+            },
             Target::Npc(_) => self.msg("You cannot use that."),
             _ => self.msg("You cannot use that."),
         }
+    }
+
+    /// Index of the armed trap on a tile, if any.
+    pub fn trap_at(&self, tx: i32, tz: i32) -> Option<usize> {
+        self.level().triggers.iter().position(|t| t.tx == tx && t.tz == tz && t.is_armed_trap())
+    }
+
+    fn spot_chance(&self) -> i32 {
+        5 + self.player.skill(Skill::Traps) * 7 + self.player.int / 4
+    }
+
+    fn reveal_trap(&mut self, i: usize) {
+        self.level_mut().triggers[i].found = true;
+        self.sound(Sfx::Click);
+        self.msg("You notice a pressure plate hidden in the floor. A trap!");
+    }
+
+    /// Walking onto a tile gives a chance to notice hidden traps next to it (Traps skill).
+    pub fn spot_traps(&mut self, tx: i32, tz: i32) {
+        let near: Vec<usize> = (0..self.level().triggers.len())
+            .filter(|&i| {
+                let t = &self.level().triggers[i];
+                t.is_armed_trap() && !t.found && (t.tx - tx).abs() <= 1 && (t.tz - tz).abs() <= 1 && (t.tx, t.tz) != (tx, tz)
+            })
+            .collect();
+        for i in near {
+            if self.rng.range(0, 100) < self.spot_chance() {
+                self.reveal_trap(i);
+            }
+        }
+    }
+
+    /// Looking closely at the floor is a better chance to find a trap there.
+    fn search_for_trap(&mut self, tx: i32, tz: i32) {
+        if let Some(i) = self.trap_at(tx, tz) {
+            if !self.level().triggers[i].found && self.rng.range(0, 100) < self.spot_chance() + 15 {
+                self.reveal_trap(i);
+            }
+        }
+    }
+
+    /// The player stepped on a trap.
+    pub fn spring_trap(&mut self, tx: i32, tz: i32, dmg: i32) {
+        let why = match (tx + tz).rem_euclid(3) {
+            0 => "A dart shoots out of the wall! You are hurt.",
+            1 => "Spikes jab up from the floor! You are hurt.",
+            _ => "A blade springs from the floor! You are hurt.",
+        };
+        self.sound(Sfx::Click);
+        self.hurt_player(dmg, why);
+    }
+
+    /// Try to disarm a spotted trap (Traps skill). A bad slip sets it off.
+    fn disarm_trap(&mut self, i: usize) {
+        let skill = self.player.skill(Skill::Traps);
+        let chance = (20 + skill * 8 + self.player.dex / 2).clamp(5, 95);
+        let roll = self.rng.range(0, 100);
+        let (tx, tz) = (self.level().triggers[i].tx, self.level().triggers[i].tz);
+        if roll < chance {
+            self.level_mut().triggers[i].fired = true;
+            self.sound(Sfx::Click);
+            self.msg("You carefully disarm the trap.");
+            self.gain_exp(10);
+        } else if roll >= chance + 40 {
+            self.level_mut().triggers[i].fired = true;
+            let dmg = match self.level().triggers[i].kind {
+                super::TriggerKind::Damage { amount } => amount,
+                _ => 0,
+            };
+            self.msg("Your hand slips!");
+            self.spring_trap(tx, tz, dmg);
+        } else {
+            self.msg("You fail to disarm the trap.");
+        }
+    }
+
+    /// Describe an item the player looks at. Lore may identify its enchantment
+    /// (remembered on the item) and Appraise estimates its worth.
+    pub fn examine(&mut self, it: &mut Item) {
+        self.msg(format!("You see {}.", describe_item(it)));
+        let lore = self.player.skill(Skill::Lore);
+        if it.enchant != Enchant::None {
+            if !it.identified && lore * 6 + self.player.int / 2 >= it.enchant.difficulty() {
+                it.identified = true;
+            }
+            if it.identified {
+                let s = if it.def().class == Class::Wand {
+                    format!("It holds {} ({} charges left).", it.enchant.describe(), it.charges)
+                } else {
+                    format!("It bears {}.", it.enchant.describe())
+                };
+                self.msg(s);
+            } else if lore > 0 {
+                self.msg("It seems to be enchanted, but you cannot tell how.");
+            }
+        }
+        match self.appraise(it) {
+            Some(0) => self.msg("You judge it to be worthless."),
+            Some(v) => self.msg(format!("You judge it to be worth about {} gold.", v)),
+            None => {}
+        }
+    }
+
+    /// An Appraise estimate of an item's worth, rounded more coarsely the less
+    /// skilled you are. Unidentified enchantments go unnoticed.
+    pub fn appraise(&self, it: &Item) -> Option<i32> {
+        let skill = self.player.skill(Skill::Appraise);
+        let class = it.def().class;
+        if skill == 0 || matches!(class, Class::Fixture | Class::Quest | Class::Map | Class::RuneBag | Class::Treasure) || it.kind == ItemKind::Coin {
+            return None;
+        }
+        let v = it.value() - if it.identified { 0 } else { it.enchant.value() };
+        let step = match skill {
+            1..=2 => 25,
+            3..=5 => 10,
+            6..=9 => 5,
+            _ => 1,
+        };
+        Some(if v <= 0 { 0 } else { ((v + step / 2) / step * step).max(1) })
+    }
+
+    /// Try to mend a worn weapon or piece of armour (Repair skill). The skill
+    /// limits how good as new you can make it; a fumble damages it further.
+    fn repair(&mut self, mut item: Item) -> Item {
+        let skill = self.player.skill(Skill::Repair);
+        let cap = (30 + skill * 7).min(100);
+        let name = item.def().name;
+        if item.quality >= 100 {
+            self.msg(format!("The {} is in good condition.", name));
+            return item;
+        }
+        if item.quality as i32 >= cap {
+            self.msg(if skill == 0 { format!("You do not know how to mend the {} any better.", name) } else { format!("Your skill cannot improve the {} any further.", name) });
+            return item;
+        }
+        self.player.fatigue = (self.player.fatigue + 3.0).min(100.0);
+        self.time += 60.0;
+        let chance = (30 + skill * 7 + self.player.dex / 2).clamp(5, 95);
+        let roll = self.rng.range(0, 100);
+        if roll < chance {
+            item.quality = (item.quality as i32 + 8 + skill * 3).min(cap) as u8;
+            self.sound(Sfx::Hit);
+            let cond = item.condition_word().trim_end();
+            self.msg(if cond.is_empty() { format!("You repair the {}. It is as good as new.", name) } else { format!("You repair the {}. It is now {}.", name, cond) });
+        } else if roll >= 90 + skill.min(9) {
+            item.quality = item.quality.saturating_sub(3);
+            self.sound(Sfx::Miss);
+            self.msg(format!("You slip and damage the {} further.", name));
+        } else {
+            self.msg(format!("You fail to repair the {}.", name));
+        }
+        item
     }
 
     fn use_door(&mut self, id: u32, held: Option<&Item>) {
@@ -465,6 +635,7 @@ impl Game {
                 }
                 Some(item)
             }
+            Class::Weapon | Class::Missile | Class::Armor if !matches!(def.armor, Some((Slot::Ring, _))) => Some(self.repair(item)),
             Class::Misc if item.kind == ItemKind::Bedroll => {
                 self.sleep();
                 Some(item)
@@ -699,7 +870,7 @@ impl Game {
                         let (tx, tz) = (eye.x.floor() as i32, eye.z.floor() as i32);
                         let mut n = 0;
                         for t in self.level_mut().triggers.iter_mut() {
-                            if matches!(t.kind, super::TriggerKind::Damage { .. }) && (t.tx - tx).abs() <= 2 && (t.tz - tz).abs() <= 2 {
+                            if t.is_armed_trap() && (t.tx - tx).abs() <= 2 && (t.tz - tz).abs() <= 2 {
                                 t.fired = true;
                                 t.once = true;
                                 n += 1;
@@ -710,7 +881,25 @@ impl Game {
                     _ => self.msg("There is no door nearby."),
                 }
             }
-            Spell::NameEnchantment => self.msg("Hold an item in your hand and look at it to learn its nature."),
+            Spell::NameEnchantment => {
+                fn name_all(items: &mut [Item]) -> usize {
+                    items.iter_mut().map(|i| {
+                        let new = i.enchant != Enchant::None && !i.identified;
+                        i.identified |= new;
+                        new as usize + name_all(&mut i.contents)
+                    }).sum()
+                }
+                let mut n = 0;
+                for s in super::ALL_EQ {
+                    if let Some(it) = self.player.equip.get_mut(s).as_mut() {
+                        n += name_all(std::slice::from_mut(it));
+                    }
+                }
+                for it in self.player.pack.iter_mut().flatten() {
+                    n += name_all(std::slice::from_mut(it));
+                }
+                self.msg(if n > 0 { "The nature of your enchanted belongings is revealed. Look at them to learn more." } else { "You carry nothing whose nature is hidden." });
+            }
             Spell::RuneOfWarding => self.msg("A protective rune glows briefly upon the floor."),
             _ => {
                 if def.target == Targeting::Caster && def.duration > 0.0 {
@@ -864,6 +1053,122 @@ mod tests {
         assert_eq!(ordinal(2), "2nd");
         assert_eq!(ordinal(11), "11th");
         assert_eq!(ordinal(23), "23rd");
+    }
+
+    use crate::game::creatures::{Npc, Race};
+    use crate::game::{Level, PClass, Player};
+
+    fn game(class: PClass) -> Game {
+        Game::new(Player::new("T", class, false), 1)
+    }
+
+    #[test]
+    fn repair_is_capped_by_skill() {
+        for (class, cap) in [(PClass::Tinker, 58), (PClass::Fighter, 30)] {
+            let mut g = game(class);
+            let mut it = Item::new(ItemKind::Longsword);
+            it.quality = 10;
+            for _ in 0..200 {
+                it = g.use_item(it, None).unwrap();
+                assert!(it.quality as i32 <= cap);
+                if it.quality as i32 == cap {
+                    break;
+                }
+            }
+            assert_eq!(it.quality as i32, cap, "{:?}", class);
+            it = g.use_item(it, None).unwrap();
+            assert_eq!(it.quality as i32, cap);
+        }
+    }
+
+    #[test]
+    fn lore_identifies_and_appraise_values() {
+        let ring = Item::new(ItemKind::GoldRing).enchanted(Enchant::Protection(2), 0);
+        let mut g = game(PClass::Fighter);
+        let mut it = ring.clone();
+        g.examine(&mut it);
+        assert!(!it.identified);
+        assert_eq!(g.appraise(&Item::new(ItemKind::Longsword)), None);
+        let mut g = game(PClass::Mage);
+        let mut it = ring.clone();
+        g.examine(&mut it);
+        assert!(it.identified);
+        assert!(g.messages.iter().any(|m| m.text.contains("protection (+2)")));
+        assert_eq!(g.appraise(&it), Some(200));
+        let mut sword = Item::new(ItemKind::Longsword);
+        assert_eq!(g.appraise(&sword), Some(50));
+        sword.quality = 30;
+        assert_eq!(g.appraise(&sword), Some(20));
+    }
+
+    #[test]
+    fn traps_are_spotted_disarmed_and_sprung() {
+        let mut g = game(PClass::Tinker);
+        let (x, z, yaw) = g.levels[3].start;
+        g.change_level(3, x, z, yaw);
+        let i = g.trap_at(32, 35).expect("crypt trap");
+        g.player.skills[Skill::Traps as usize] = 0;
+        g.player.int = 0;
+        g.rng = crate::util::Rng::new(5);
+        let mut found = false;
+        for _ in 0..200 {
+            g.spot_traps(32, 34);
+            found |= g.level().triggers[i].found;
+        }
+        assert!(found, "even the unskilled notice a trap eventually");
+        g.level_mut().triggers[i].found = false;
+        g.player.skills[Skill::Traps as usize] = 30;
+        g.spot_traps(32, 34);
+        assert!(g.level().triggers[i].found);
+        for _ in 0..50 {
+            if g.trap_at(32, 35).is_none() {
+                break;
+            }
+            g.disarm_trap(i);
+        }
+        assert!(g.trap_at(32, 35).is_none());
+        let vit = g.player.vit;
+        g.check_triggers(32, 35);
+        assert_eq!(g.player.vit, vit, "a disarmed trap does nothing");
+        let j = g.trap_at(32, 18).expect("gallery trap");
+        g.check_triggers(32, 18);
+        assert!(g.player.vit < vit);
+        assert!(!g.level().triggers[j].is_armed_trap());
+    }
+
+    #[test]
+    fn movement_skills() {
+        let mut p = Player::new("T", PClass::Fighter, false);
+        let (speed, sink, jump, fall, notice) = (p.swim_speed(), p.swim_sink(), p.jump_speed(), p.fall_damage(2.0), p.notice_range(9.0));
+        assert_eq!(fall, 4);
+        for s in [Skill::Swimming, Skill::Acrobat, Skill::Sneak] {
+            p.skills[s as usize] = 10;
+        }
+        assert!(p.swim_speed() > speed && p.swim_sink() < sink && p.jump_speed() > jump);
+        assert_eq!(p.fall_damage(2.0), 0);
+        assert!(p.fall_damage(4.0) > 0);
+        assert!(p.notice_range(9.0) < notice * 0.7);
+    }
+
+    #[test]
+    fn sneaking_past_creatures() {
+        use crate::art::textures::Tex;
+        use crate::game::creatures::AiState;
+        use crate::world::map::{Map, Tile};
+        for (sneak, noticed) in [(0, true), (10, false)] {
+            let mut g = game(PClass::Ranger);
+            let mut m = Map::new();
+            for x in 1..20 {
+                m.set(x, 5, Tile::open(0, 10, Tex::Dirt, Tex::CeilingRock, Tex::RoughStone));
+            }
+            g.levels[0] = Level::new("t", m);
+            g.cur = 0;
+            g.player.pos = V3::new(2.5, 0.0, 5.5);
+            g.player.skills[Skill::Sneak as usize] = sneak;
+            let id = g.level_mut().add_npc(Npc::new(0, Race::Rat, 9.5, 5.5));
+            ai::update_npcs(&mut g, 0.01);
+            assert_eq!(g.level().npc(id).unwrap().ai == AiState::Attack, noticed, "sneak {}", sneak);
+        }
     }
 
     #[test]

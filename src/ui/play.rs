@@ -480,7 +480,7 @@ impl PlayState {
                             }
                         }
                         Target::Npc(_) => self.game.talk(t, dist),
-                        Target::Door(_) | Target::Wall { .. } => self.game.use_world(t, dist, None),
+                        Target::Door(_) | Target::Wall { .. } | Target::Floor { .. } => self.game.use_world(t, dist, None),
                         _ => self.game.look(t),
                     }
                 }

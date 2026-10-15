@@ -62,7 +62,7 @@ impl Game {
 
     pub fn eye(&self) -> V3 {
         let p = &self.player;
-        let sink = if p.swimming { SWIM_SINK } else { 0.0 };
+        let sink = if p.swimming { p.swim_sink() } else { 0.0 };
         V3::new(p.pos.x, p.pos.y + EYE_HEIGHT - sink, p.pos.z)
     }
 
@@ -107,7 +107,7 @@ impl Game {
             speed *= 1.6;
         }
         if self.player.swimming {
-            speed *= 0.55;
+            speed *= self.player.swim_speed();
         }
         if encumbered {
             speed *= 0.45;
@@ -147,7 +147,7 @@ impl Game {
             p.fall_from = p.pos.y;
         } else {
             if mv.jump && p.on_ground && !p.swimming {
-                p.vel_y = JUMP_SPEED;
+                p.vel_y = p.jump_speed();
                 p.on_ground = false;
                 p.fall_from = p.pos.y;
             }
@@ -180,10 +180,13 @@ impl Game {
                     p.pos.y = floor;
                     p.vel_y = 0.0;
                     p.on_ground = true;
-                    if drop > 1.4 && !slow_fall && liquid != Liquid::Water {
-                        let dmg = ((drop - 1.2) * 6.0) as i32;
+                    let dmg = if slow_fall || liquid == Liquid::Water { 0 } else { p.fall_damage(drop) };
+                    if dmg > 0 {
                         self.events.push(Event::Sound(Sfx::Thud));
                         self.hurt_player(dmg, "You land hard and hurt yourself.");
+                    } else if drop > 1.4 && !slow_fall && liquid != Liquid::Water {
+                        self.events.push(Event::Sound(Sfx::Thud));
+                        self.msg("You roll as you land and come up unhurt.");
                     } else if drop > 0.4 {
                         self.events.push(Event::Sound(if liquid == Liquid::Water { Sfx::Splash } else { Sfx::Step }));
                     }
@@ -201,10 +204,10 @@ impl Game {
         let p = &mut self.player;
         if p.swimming {
             // Heavy loads drag you down.
-            let heavy = p.load() > p.capacity() * 2 / 3;
+            let heavy = p.load() > p.swim_load_limit();
             if heavy {
                 p.drown += dt;
-                if p.drown > 4.0 {
+                if p.drown > p.drown_interval() {
                     p.drown = 0.0;
                     self.events.push(Event::Flash([40.0, 60.0, 220.0], 0.4));
                     self.hurt_player(2, "You are drowning!");
@@ -233,6 +236,7 @@ impl Game {
         self.explore();
         let new_tile = (self.player.pos.x.floor() as i32, self.player.pos.z.floor() as i32);
         if new_tile != old_tile {
+            self.spot_traps(new_tile.0, new_tile.1);
             self.check_triggers(new_tile.0, new_tile.1);
         }
     }
@@ -298,7 +302,7 @@ impl Game {
                     self.sound(Sfx::DoorOpen);
                 }
                 TriggerKind::Damage { amount } => {
-                    self.hurt_player(amount, "A trap! You are hurt.");
+                    self.spring_trap(tx, tz, amount);
                 }
                 TriggerKind::Flag { name, value } => self.set_flag(&name, value),
                 TriggerKind::Victory => self.events.push(Event::Victory),

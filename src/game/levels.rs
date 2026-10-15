@@ -335,15 +335,15 @@ impl<'a> B<'a> {
     }
 
     pub fn stairs(&mut self, x: i32, z: i32, level: usize, dx: f32, dz: f32, yaw_deg: f32) {
-        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Stairs { level, x: dx, z: dz, yaw: yaw_deg.to_radians() }, once: false, fired: false });
+        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Stairs { level, x: dx, z: dz, yaw: yaw_deg.to_radians() }, once: false, fired: false, found: false });
     }
 
     pub fn message(&mut self, x: i32, z: i32, text: &str) {
-        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Message { text: text.to_string() }, once: true, fired: false });
+        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Message { text: text.to_string() }, once: true, fired: false, found: false });
     }
 
     pub fn trap(&mut self, x: i32, z: i32, dmg: i32) {
-        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Damage { amount: dmg }, once: true, fired: false });
+        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Damage { amount: dmg }, once: true, fired: false, found: false });
     }
 
     pub fn writing(&mut self, wall_x: i32, wall_z: i32, text: &str) {
@@ -437,6 +437,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.style(Tex::Dirt, Tex::StoneBlocks, Tex::CeilingRock);
     b.corridor(18, 39, 18, 35, 0, 8);
     b.door(18, 37, DoorAxis::NS, DoorKind::Wood, 7);
+    b.trap(18, 36, 3);
     b.style(Tex::WoodFloor, Tex::DarkPanels, Tex::CeilingBeams);
     b.room(15, 28, 7, 6, 2, 9);
     b.tile(18, 34, 0, 10);
@@ -475,6 +476,7 @@ fn level1(db: &DialogueDb) -> Level {
     // Slug tunnel to the south-east.
     b.cave(57, 58, 3, 3, 0, 8);
     b.corridor(44, 57, 57, 57, 0, 8);
+    b.trap(52, 57, 3);
     b.npc(Race::Slug, 57.5, 58.5);
     b.container(ItemKind::Box, 58.5, 59.5, vec![Item::new(ItemKind::RuneStone).data(rune::MANI as u16), Item::new(ItemKind::Candle)]);
     b.item(ItemKind::Mushroom, 56.0, 57.0);
@@ -601,6 +603,8 @@ fn level2(db: &DialogueDb) -> Level {
     b.corridor(46, 30, 46, 44, 0, 9);
     b.corridor(46, 44, 50, 44, 0, 9);
     b.corridor(50, 44, 58, 32, 0, 9);
+    b.trap(40, 30, 5);
+    b.trap(46, 38, 5);
     for (x, z) in [(45.5, 27.5), (48.5, 29.5), (49.5, 44.5), (52.5, 46.5)] {
         b.npc(Race::Spider, x, z);
     }
@@ -626,6 +630,7 @@ fn level2(db: &DialogueDb) -> Level {
     // The deep mine and the way down, south-west of the hall.
     b.cave(16, 54, 6, 4, 0, 9);
     b.corridor(21, 36, 21, 54, 0, 8);
+    b.trap(21, 45, 5);
     b.corridor(21, 54, 16, 54, 0, 8);
     b.corridor(13, 54, 6, 54, 0, 8);
     b.lava(14, 50, 2, 9, -3);
@@ -710,6 +715,7 @@ fn level3(db: &DialogueDb) -> Level {
     // The drowned temple to the south-west (ghouls).
     b.style(Tex::Flagstones, Tex::Sandstone, Tex::CeilingRock);
     b.corridor(10, 27, 10, 33, 0, 8);
+    b.trap(10, 30, 5);
     b.room(4, 34, 14, 12, 0, 12);
     b.water(4, 40, 14, 2, -1);
     b.bridge(10, 40, 2, 2, 0);
@@ -742,6 +748,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.rune_stone(rune::GRAV, 37.0, 39.0);
     b.rune_stone(rune::REL, 31.0, 45.0);
     b.corridor(36, 45, 50, 55, 0, 8);
+    b.trap(44, 45, 5);
     b.cave(53, 57, 4, 3, 0, 10);
     b.corridor(50, 57, 53, 57, 0, 8);
     b.rune_stone(rune::TYM, 55.0, 56.0);
@@ -794,6 +801,7 @@ fn level4(db: &DialogueDb) -> Level {
     // Sir Aldric's tomb chamber (centre).
     b.style(Tex::MarbleTiles, Tex::CarvedFrieze, Tex::CeilingRock);
     b.corridor(32, 15, 32, 21, 0, 9);
+    b.trap(32, 18, 7);
     b.room(26, 22, 13, 9, 0, 13);
     b.light(26, 22, 13, 9, 5);
     b.item(ItemKind::Statue, 27.0, 23.0);
@@ -806,6 +814,7 @@ fn level4(db: &DialogueDb) -> Level {
     // West wing: ghosts and headless.
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.corridor(25, 26, 14, 26, 0, 9);
+    b.trap(19, 26, 6);
     b.room(4, 20, 10, 12, 0, 11);
     b.npc(Race::Ghost, 8.5, 24.5);
     b.npc(Race::Headless, 6.5, 29.5);
@@ -820,6 +829,7 @@ fn level4(db: &DialogueDb) -> Level {
     // East wing: the troll den, where Aldric's bones were dragged.
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.corridor(39, 26, 46, 26, 0, 9);
+    b.trap(43, 26, 6);
     b.cave(52, 26, 6, 6, 0, 12);
     b.npc(Race::Troll, 52.5, 25.5);
     b.npc(Race::Troll, 55.5, 29.5);
@@ -885,6 +895,7 @@ fn level5(db: &DialogueDb) -> Level {
     // West: Malchor's study.
     b.style(Tex::WoodFloor, Tex::DarkPanels, Tex::CeilingBeams);
     b.corridor(23, 15, 18, 15, 0, 9);
+    b.trap(20, 15, 8);
     b.room(8, 10, 10, 10, 0, 11);
     b.light(8, 10, 10, 10, 8);
     let malchor = b.named(Race::Mage, 0, "Malchor", "malchor", 12.5, 13.5, 90.0);
@@ -905,6 +916,7 @@ fn level5(db: &DialogueDb) -> Level {
     // East: Lady Rowena's cell.
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.corridor(41, 15, 47, 15, 0, 9);
+    b.trap(43, 15, 8);
     b.door(46, 15, DoorAxis::EW, DoorKind::Iron, 501);
     b.room(48, 12, 6, 6, 0, 10);
     b.light(48, 12, 6, 6, 6);
@@ -982,6 +994,12 @@ mod tests {
                 assert!(reach(it.pos.x, it.pos.z), "level {} item {:?} at ({:.1},{:.1}) unreachable", li, it.item.kind, it.pos.x, it.pos.z);
             }
             for t in &lv.triggers {
+                if let TriggerKind::Damage { .. } = t.kind {
+                    assert!(seen[idx(t.tx, t.tz)], "level {} trap at ({},{}) unreachable", li, t.tx, t.tz);
+                    assert_eq!(m.get(t.tx, t.tz).liquid, Liquid::None, "level {} trap at ({},{}) in liquid", li, t.tx, t.tz);
+                    let shared = lv.triggers.iter().filter(|o| (o.tx, o.tz) == (t.tx, t.tz)).count();
+                    assert_eq!(shared, 1, "level {} trap at ({},{}) shares its tile", li, t.tx, t.tz);
+                }
                 if let TriggerKind::Stairs { level, x, z, .. } = t.kind {
                     assert!(seen[idx(t.tx, t.tz)], "level {} stairs at ({},{}) unreachable", li, t.tx, t.tz);
                     let dest = &levels[level].map;

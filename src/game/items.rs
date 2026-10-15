@@ -465,6 +465,37 @@ pub enum Enchant {
     Spell(crate::game::magic::Spell),
 }
 
+impl Enchant {
+    /// How hard the enchantment is to identify with Lore.
+    pub fn difficulty(self) -> i32 {
+        match self {
+            Enchant::None => 0,
+            Enchant::Accuracy(n) | Enchant::Damage(n) | Enchant::Protection(n) => 10 + n as i32 * 8,
+            Enchant::Spell(sp) => 10 + sp.def().circle * 7,
+        }
+    }
+
+    /// Extra worth in gold.
+    pub fn value(self) -> i32 {
+        match self {
+            Enchant::None => 0,
+            Enchant::Accuracy(n) | Enchant::Damage(n) | Enchant::Protection(n) => n as i32 * 50,
+            Enchant::Spell(sp) => sp.def().circle * 30,
+        }
+    }
+
+    /// "an enchantment of protection (+2)", "the Fireball spell".
+    pub fn describe(self) -> String {
+        match self {
+            Enchant::None => String::new(),
+            Enchant::Accuracy(n) => format!("an enchantment of accuracy (+{})", n),
+            Enchant::Damage(n) => format!("an enchantment of damage (+{})", n),
+            Enchant::Protection(n) => format!("an enchantment of protection (+{})", n),
+            Enchant::Spell(sp) => format!("the {} spell", sp.def().name),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     pub kind: ItemKind,
@@ -568,6 +599,16 @@ impl Item {
             ItemKind::Torch | ItemKind::Candle | ItemKind::Lantern if self.lit => format!("lit {}", d.name),
             _ => d.name.to_string(),
         }
+    }
+
+    /// What the item is worth in gold: worn gear is worth less, enchantments more.
+    pub fn value(&self) -> i32 {
+        let d = self.def();
+        let mut v = d.value * self.qty as i32;
+        if matches!(d.class, Class::Weapon | Class::Missile | Class::Armor) {
+            v = v * (20 + self.quality as i32 * 4 / 5) / 100;
+        }
+        v + self.enchant.value() + self.charges as i32 * 10
     }
 
     pub fn condition_word(&self) -> &'static str {
