@@ -126,6 +126,21 @@ The screen copies the original game's layout:
 | Help | `H` |
 | Fullscreen / aspect | `F11` / `F12` |
 
+**Modern controls.** Choose *Controls* in the options menu (`F1` / `Esc`) to
+switch to a modern layout. Anything not listed here works as above, and the
+`F` keys still work.
+
+| Action | Keys / mouse |
+| --- | --- |
+| Forward / back, turn | `W`/`S` or `Up`/`Down` (hold `Shift` to walk), `A`/`D` or `Left`/`Right` |
+| Sidestep | `Q` / `E` |
+| Look up / centre / down | `Z` / `X` / `C` |
+| Fly up / down (while flying) | `R` / `T` |
+| Options, Talk, Get, Look, Fight, Use | `1`–`6` (or click an icon), then right-click in the view. |
+| Statistics / cast | `7` / `8` |
+| Attack | `V`, `B`, `N` (bash, slash, thrust), or hold the right button in Fight mode |
+| Track / sleep | `9` / `0` |
+
 **Doors, levers and chests.** Choose *Use* and right-click them. To unlock a
 door, carry its key in your pack. To pick a lock, take a lockpick on the
 cursor and use it on the door.

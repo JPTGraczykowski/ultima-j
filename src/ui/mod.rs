@@ -28,6 +28,8 @@ pub struct Ctx {
     pub time: f32,
     pub sound_on: bool,
     pub music_on: bool,
+    /// Modern key layout (WASD, number row for commands) instead of the original's.
+    pub modern_controls: bool,
 }
 
 pub enum Overlay {
@@ -83,6 +85,7 @@ impl GameApp {
             time: 0.0,
             sound_on: true,
             music_on: true,
+            modern_controls: false,
         };
         GameApp { ctx, screen: Screen::Title(menus::Title::new()), mouse: (160, 100) }
     }

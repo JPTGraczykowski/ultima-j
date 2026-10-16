@@ -11,9 +11,15 @@ use crate::layout::*;
 use crate::platform::{Input, Key};
 use crate::util::V3;
 
-pub const OPTIONS: [&str; 8] = ["Save Game", "Restore Game", "Music", "Sound", "Help", "Return to Game", "Quit to Title", "Quit Game"];
+pub const OPTIONS: [&str; 9] = ["Save Game", "Restore Game", "Music", "Sound", "Controls", "Help", "Return to Game", "Quit to Title", "Quit Game"];
 
-pub const HELP_TEXT: &str = "MOVING: W run, S walk, X back, A/D turn, Z/C sidestep (or the arrow keys). Hold the left mouse button in the view: the cursor arrow shows the direction, and further from the centre is faster. J or Space jumps. 1/3 look down/up, 2 centres the view. E/Q fly up/down when flying.\n\nCOMMANDS: click an icon on the left (or F2 Talk, F3 Get, F4 Look, F5 Fight, F6 Use), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or F7) for your statistics; spend skill points there after gaining a level.\n\nBARTER: when a trader shows you their goods, click the ones you want (top left of the conversation), put gold or items from your inventory in your own trade area (top right), and choose Let us trade. Right-click either side to ask what something is worth.\n\nFIGHTING: select Fight (F5), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or P, ; and . keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or F8) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. F9 tracks, F10 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, F1/Esc opens the options. F11 toggles fullscreen, F12 toggles the 4:3 aspect.";
+pub const HELP_TEXT: &str = "MOVING: W run, S walk, X back, A/D turn, Z/C sidestep (or the arrow keys). Hold the left mouse button in the view: the cursor arrow shows the direction, and further from the centre is faster. J or Space jumps. 1/3 look down/up, 2 centres the view. E/Q fly up/down when flying.\n\nCOMMANDS: click an icon on the left (or F2 Talk, F3 Get, F4 Look, F5 Fight, F6 Use), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or F7) for your statistics; spend skill points there after gaining a level.\n\nBARTER: when a trader shows you their goods, click the ones you want (top left of the conversation), put gold or items from your inventory in your own trade area (top right), and choose Let us trade. Right-click either side to ask what something is worth.\n\nFIGHTING: select Fight (F5), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or P, ; and . keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or F8) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. F9 tracks, F10 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, F1/Esc opens the options. F11 toggles fullscreen, F12 toggles the 4:3 aspect.\n\nThe options menu switches to modern controls.";
+
+pub const MODERN_HELP_TEXT: &str = "MOVING (modern controls): W/S or Up/Down forward and back (hold Shift to walk), A/D or Left/Right turn, Q/E sidestep. J or Space jumps. Z/C look up/down, X centres the view. R/T fly up/down when flying. Hold the left mouse button in the view to move as in the classic controls.\n\nCOMMANDS: 1 options, 2 Talk, 3 Get, 4 Look, 5 Fight, 6 Use (or click an icon on the left), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or 7) for your statistics; spend skill points there after gaining a level.\n\nBARTER: when a trader shows you their goods, click the ones you want (top left of the conversation), put gold or items from your inventory in your own trade area (top right), and choose Let us trade. Right-click either side to ask what something is worth.\n\nFIGHTING: select Fight (5), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or V, B and N keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or 8) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. 9 tracks, 0 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, Esc opens the options, where you can switch back to the classic controls. The F-keys work as in the classic layout. F11 toggles fullscreen, F12 toggles the 4:3 aspect.";
+
+pub fn help_text(modern: bool) -> &'static str {
+    if modern { MODERN_HELP_TEXT } else { HELP_TEXT }
+}
 
 
 /// The parchment area used for texts and conversations (over the view).
@@ -79,9 +85,14 @@ pub fn update(st: &mut PlayState, ctx: &mut Ctx, input: &Input, dt: f32) -> Opti
                         let s = if ctx.sound_on { "Sound effects are on." } else { "Sound effects are off." };
                         st.game.sys(s);
                     }
-                    4 => st.overlay = Overlay::Text(HELP_TEXT.to_string(), 0),
-                    5 => st.overlay = Overlay::None,
-                    6 => return Some(ScreenCmd::Title),
+                    4 => {
+                        ctx.modern_controls = !ctx.modern_controls;
+                        let s = if ctx.modern_controls { "Modern controls: WASD to move, Q/E sidestep, 1-6 for commands (H for help)." } else { "Classic controls, as in the original." };
+                        st.game.sys(s);
+                    }
+                    5 => st.overlay = Overlay::Text(help_text(ctx.modern_controls).to_string(), 0),
+                    6 => st.overlay = Overlay::None,
+                    7 => return Some(ScreenCmd::Title),
                     _ => return Some(ScreenCmd::Quit),
                 }
             }
@@ -327,7 +338,7 @@ pub fn option_lines(ctx: &Ctx, opts: &[dialogue::Opt]) -> Vec<(usize, String)> {
 }
 
 fn option_rect(i: usize) -> Rect {
-    Rect::new(TEXT_AREA.x + 30, TEXT_AREA.y + 10 + i as i32 * 9, TEXT_AREA.w - 60, 8)
+    Rect::new(TEXT_AREA.x + 30, TEXT_AREA.y + 10 + i as i32 * 8, TEXT_AREA.w - 60, 8)
 }
 
 pub fn parchment(fb: &mut Bitmap, r: Rect) {
@@ -367,6 +378,9 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
                 }
                 if i == 3 {
                     label = format!("Sound: {}", if ctx.sound_on { "On" } else { "Off" });
+                }
+                if i == 4 {
+                    label = format!("Controls: {}", if ctx.modern_controls { "Modern" } else { "Classic" });
                 }
                 f.draw_centered(fb, r.x + r.w / 2, r.y + 2, &label, INK);
             }

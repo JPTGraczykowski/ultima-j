@@ -202,19 +202,42 @@ impl PlayState {
             _ => return super::overlay::update(self, ctx, input, dt),
         }
 
+        let modern = ctx.modern_controls;
         let mut mv = MoveInput::default();
         let shift = input.shift;
-        // Keyboard movement (original layout plus arrow keys).
-        if input.key(Key::W) {
-            mv.forward = 2.0;
-        } else if input.key(Key::S) || input.key(Key::Up) {
-            mv.forward = if shift || input.key(Key::Up) && shift { 2.0 } else { 1.0 };
-        }
-        if input.key(Key::Up) {
-            mv.forward = if shift { 1.0 } else { 2.0 };
-        }
-        if input.key(Key::X) || input.key(Key::Down) {
-            mv.forward = -1.0;
+        if modern {
+            // Modern layout: WASD or the arrow keys, Q/E sidestep, Shift walks.
+            if input.key(Key::W) || input.key(Key::Up) {
+                mv.forward = if shift { 1.0 } else { 2.0 };
+            }
+            if input.key(Key::S) || input.key(Key::Down) {
+                mv.forward = -1.0;
+            }
+            if input.key(Key::Q) {
+                mv.strafe = -1.0;
+            }
+            if input.key(Key::E) {
+                mv.strafe = 1.0;
+            }
+        } else {
+            // Keyboard movement (original layout plus arrow keys).
+            if input.key(Key::W) {
+                mv.forward = 2.0;
+            } else if input.key(Key::S) || input.key(Key::Up) {
+                mv.forward = if shift || input.key(Key::Up) && shift { 2.0 } else { 1.0 };
+            }
+            if input.key(Key::Up) {
+                mv.forward = if shift { 1.0 } else { 2.0 };
+            }
+            if input.key(Key::X) || input.key(Key::Down) {
+                mv.forward = -1.0;
+            }
+            if input.key(Key::Z) {
+                mv.strafe = -1.0;
+            }
+            if input.key(Key::C) {
+                mv.strafe = 1.0;
+            }
         }
         if input.key(Key::A) || input.key(Key::Left) {
             mv.turn = -1.0;
@@ -222,52 +245,55 @@ impl PlayState {
         if input.key(Key::D) || input.key(Key::Right) {
             mv.turn = 1.0;
         }
-        if input.key(Key::Z) {
-            mv.strafe = -1.0;
-        }
-        if input.key(Key::C) {
-            mv.strafe = 1.0;
-        }
         if input.hit(Key::J) || input.hit(Key::Space) {
             mv.jump = true;
         }
-        mv.fly_up = input.key(Key::E);
-        mv.fly_down = input.key(Key::Q);
+        let (fly_up, fly_down) = if modern { (Key::R, Key::T) } else { (Key::E, Key::Q) };
+        mv.fly_up = input.key(fly_up);
+        mv.fly_down = input.key(fly_down);
         // Look up/down.
-        if input.key(Key::Num1) || input.key(Key::PageDown) {
+        let (look_up, look_centre, look_down) = if modern { (Key::Z, Key::X, Key::C) } else { (Key::Num3, Key::Num2, Key::Num1) };
+        if input.key(look_down) || input.key(Key::PageDown) {
             self.ui.pitch = (self.ui.pitch - dt * 90.0).max(-48.0);
         }
-        if input.key(Key::Num3) || input.key(Key::PageUp) {
+        if input.key(look_up) || input.key(Key::PageUp) {
             self.ui.pitch = (self.ui.pitch + dt * 90.0).min(48.0);
         }
-        if input.hit(Key::Num2) || input.hit(Key::Home) {
+        if input.hit(look_centre) || input.hit(Key::Home) {
             self.ui.pitch = 0.0;
         }
-        // Function keys.
-        if input.hit(Key::F1) || input.hit(Key::Escape) {
+        // Function keys (modern controls repeat them on the number row, 0 for F10).
+        let fkey = |f: Key, n: Key| input.hit(f) || modern && input.hit(n);
+        if fkey(Key::F1, Key::Num1) || input.hit(Key::Escape) {
             self.overlay = Overlay::Options(0);
             ctx.sounds.push(Sfx::Click);
         }
-        let mode_keys = [(Key::F2, Mode::Talk), (Key::F3, Mode::Get), (Key::F4, Mode::Look), (Key::F5, Mode::Fight), (Key::F6, Mode::Use)];
-        for (k, m) in mode_keys {
-            if input.hit(k) {
+        let mode_keys = [
+            (Key::F2, Key::Num2, Mode::Talk),
+            (Key::F3, Key::Num3, Mode::Get),
+            (Key::F4, Key::Num4, Mode::Look),
+            (Key::F5, Key::Num5, Mode::Fight),
+            (Key::F6, Key::Num6, Mode::Use),
+        ];
+        for (f, n, m) in mode_keys {
+            if fkey(f, n) {
                 self.ui.mode = if self.ui.mode == m { Mode::None } else { m };
             }
         }
-        if input.hit(Key::F7) {
+        if fkey(Key::F7, Key::Num7) {
             self.ui.panel = if self.ui.panel == Panel::Inventory { Panel::Stats } else { Panel::Inventory };
         }
-        if input.hit(Key::F8) {
+        if fkey(Key::F8, Key::Num8) {
             self.cast(ctx, input);
         }
-        if input.hit(Key::F9) {
+        if fkey(Key::F9, Key::Num9) {
             self.game.track();
         }
-        if input.hit(Key::F10) {
+        if fkey(Key::F10, Key::Num0) {
             self.game.sleep();
         }
         if input.hit(Key::H) {
-            self.overlay = Overlay::Text(super::overlay::HELP_TEXT.to_string(), 0);
+            self.overlay = Overlay::Text(super::overlay::help_text(modern).to_string(), 0);
         }
         if input.hit(Key::M) || input.hit(Key::Tab) {
             self.overlay = Overlay::Map(self.game.cur);
@@ -281,8 +307,9 @@ impl PlayState {
         if input.ctrl && input.hit(Key::Q) {
             return Some(super::ScreenCmd::Quit);
         }
-        // Keyboard attacks.
-        for (k, kind) in [(Key::P, 0usize), (Key::Semicolon, 1), (Key::Period, 2)] {
+        // Keyboard attacks: bash, slash, thrust.
+        let attack_keys = if modern { [Key::V, Key::B, Key::N] } else { [Key::P, Key::Semicolon, Key::Period] };
+        for (kind, k) in attack_keys.into_iter().enumerate() {
             if input.hit(k) && self.ui.swing <= 0.0 {
                 self.ui.mode = Mode::Fight;
                 let aim = self.camera().forward();

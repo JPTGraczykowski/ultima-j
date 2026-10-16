@@ -257,12 +257,14 @@ mod tests {
         let keys = [
             Key::W, Key::A, Key::S, Key::D, Key::X, Key::Z, Key::C, Key::J, Key::F1, Key::F2, Key::F3, Key::F4, Key::F5, Key::F6,
             Key::F7, Key::F8, Key::F9, Key::Escape, Key::Enter, Key::Num1, Key::Num2, Key::Num3, Key::M, Key::Up, Key::Down,
+            Key::Q, Key::E, Key::R, Key::T, Key::V, Key::B, Key::N, Key::Num4, Key::Num5, Key::Num6, Key::Num7, Key::Num8,
         ];
-        for start in 0..3 {
+        for start in 0..4 {
             let mut app = GameApp::new_playing(11);
             match start {
                 1 => app.screen = Screen::Title(crate::ui::menus::Title::new()),
                 2 => app.screen = Screen::CharGen(crate::ui::menus::CharGen::new()),
+                3 => app.ctx.modern_controls = true,
                 _ => {}
             }
             let mut fb = Bitmap::new(SCREEN_W, SCREEN_H);
@@ -297,5 +299,32 @@ mod tests {
                 }
             }
         }
+    }
+
+    /// Modern controls: the number row picks commands and Q/E sidestep instead of flying.
+    #[test]
+    fn modern_controls() {
+        use crate::ui::play::Mode;
+        use crate::util::V3;
+        let mut app = GameApp::new_playing(11);
+        app.ctx.modern_controls = true;
+        let key = |k: Key| Input { keys_pressed: vec![k], keys_down: vec![k], ..Default::default() };
+        let play = |app: &GameApp| match &app.screen {
+            Screen::Play(st) => (st.ui.mode, st.game.player.pos, st.game.player.yaw),
+            _ => panic!("left the game"),
+        };
+        app.update(&key(Key::Num4), 1.0 / 30.0);
+        assert_eq!(play(&app).0, Mode::Look);
+        app.update(&key(Key::Num4), 1.0 / 30.0);
+        assert_eq!(play(&app).0, Mode::None);
+
+        let (_, p0, yaw0) = play(&app);
+        for _ in 0..15 {
+            app.update(&Input { keys_down: vec![Key::E], ..Default::default() }, 1.0 / 30.0);
+        }
+        let (_, p1, yaw1) = play(&app);
+        assert_eq!(yaw0, yaw1);
+        let side = V3::new(yaw0.cos(), 0.0, yaw0.sin());
+        assert!(((p1 - p0).dot(side)).abs() > 0.1, "E should sidestep: moved {:?}", p1 - p0);
     }
 }

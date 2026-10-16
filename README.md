@@ -63,6 +63,22 @@ spells, items, creatures, and a walkthrough) see the
 | Help | `H` |
 | Fullscreen / aspect | `F11` / `F12` (4:3 like a CRT, or square pixels) |
 
+### Modern controls
+
+Choose *Controls* in the options menu (`F1`/`Esc`) to switch to a modern
+layout. Anything not listed here works as above, and the `F` keys still work.
+
+| Action | Keys / mouse |
+| --- | --- |
+| Forward / back, turn | `W`/`S` or `Up`/`Down` (hold `Shift` to walk), `A`/`D` or `Left`/`Right` |
+| Sidestep | `Q` / `E` |
+| Look up / centre / down | `Z` / `X` / `C` |
+| Fly up / down (when flying) | `R` / `T` |
+| Options, Talk, Get, Look, Fight, Use | `1`–`6` (or click an icon), then right-click in the view |
+| Statistics / cast | `7` / `8` |
+| Attack | `V`, `B`, `N` (bash, slash, thrust), or hold the right button in Fight mode |
+| Track / sleep | `9` / `0` |
+
 ## Skills
 
 All twenty skills do something. Besides the combat, magic and lock skills:
