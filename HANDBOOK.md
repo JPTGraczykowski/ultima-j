@@ -682,13 +682,20 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 
 ### Level 5 — The Deep Sanctum
 
-- **The antechamber**: two imps that throw fire, lava pools, and a red potion.
-- **Malchor's study** (west, a trap on the way): **Malchor** has 70 hits and
-  throws magic bolts. A skeleton guards him. No matter what you say, he
-  fights you. He carries the **silver key** to his soul vault, a **wand of
+Malchor's **thralls**, hollow undead that walk on his power, guard the level.
+There are seven: two skeletons and a ghoul in the antechamber, a headless in
+the corridor to the study, a skeleton and a ghost in the study, and a ghoul
+outside the soul vault. **When Malchor dies, every thrall still standing
+crumbles to dust**, so you can fight your way through them or go straight for
+Malchor.
+
+- **The antechamber**: three thralls, lava pools, and a red potion.
+- **Malchor's study** (west, a trap and a headless on the way): **Malchor**
+  has 70 hits and throws magic bolts. Two thralls guard him. No matter what
+  you say, he fights you. He carries the **silver key** to his soul vault, a **wand of
   Fireball** with 4 charges, and a blue potion. His notes are on the table.
-- **Malchor's soul vault** (east, a trap on the way, then the iron door that
-  the silver key opens): a chest with two red potions and 50 gold, and
+- **Malchor's soul vault** (east, a trap and a ghoul on the way, then the iron
+  door that the silver key opens): a chest with two red potions and 50 gold, and
   Malchor's list of the souls he meant to take.
 - **The Shard Gate** (south) opens only if you carry all three shards. Behind
   it is a shrine, so heal up there.

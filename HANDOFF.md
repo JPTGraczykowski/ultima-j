@@ -29,6 +29,8 @@ mostly balance.
   the shards sets flag `ending` = 2 (alive, out through the doors); killing
   him sets `ending` = 1 (the new Lord of Souls). The victory overlay picks its
   text from that flag. Malchor broke the Stone and is a rival for the throne.
+  His seven thralls on level 5 carry `creatures::THRALL` in `Npc::flags`; he
+  carries `MASTER`, and `ai::release_thralls` kills them when he dies.
   Conversation menus show only 5 options, so keep each node's visible choices
   at 5 or fewer.
 - All 20 skills have an effect. Lore identifies enchantments on look;

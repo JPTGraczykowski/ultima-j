@@ -355,6 +355,36 @@ fn npc_shoot(g: &mut Game, i: usize, target: V3) {
     g.sound(if kind == ProjKind::Fireball { Sfx::Fire } else { Sfx::Spell });
 }
 
+/// A master's thralls live on its power and crumble to bones when it dies.
+fn release_thralls(g: &mut Game, master: &str) {
+    let lv = g.cur;
+    let mut fallen = Vec::new();
+    for i in 0..g.levels[lv].npcs.len() {
+        let n = &g.levels[lv].npcs[i];
+        if !n.alive() || n.flags & super::creatures::THRALL == 0 {
+            continue;
+        }
+        let (id, pos) = (n.id, n.pos);
+        let floor = g.levels[lv].map.floor_at(pos.x, pos.z);
+        let n = &mut g.levels[lv].npcs[i];
+        n.hp = 0;
+        n.anim = Anim::Die;
+        n.anim_t = 0.0;
+        n.pos.y = floor;
+        fallen.push((id, pos));
+    }
+    if fallen.is_empty() {
+        return;
+    }
+    for (id, pos) in fallen {
+        g.levels[lv].add_item(Item::new(ItemKind::Bone), pos.x, pos.z);
+        if g.foe == Some(id) {
+            g.foe = None;
+        }
+    }
+    g.msg(format!("With {} gone, his thralls crumble to dust.", master));
+}
+
 /// Apply damage to a creature; handles death, loot and experience.
 pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
     let lv = g.cur;
@@ -394,6 +424,7 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
         let pos = npc.pos;
         let inv = npc.inventory.clone();
         let race = npc.race;
+        let master = npc.flags & super::creatures::MASTER != 0;
         {
             let floor = g.levels[lv].map.floor_at(pos.x, pos.z);
             let npc = &mut g.levels[lv].npcs[idx];
@@ -431,6 +462,9 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
             // Striking down the Lord of Souls is the throne ending.
             g.set_flag("ending", 1);
             g.events.push(super::Event::Victory);
+        }
+        if master {
+            release_thralls(g, &name);
         }
     } else {
         let npc = &mut g.levels[lv].npcs[idx];
@@ -587,6 +621,19 @@ mod tests {
     use super::*;
     use crate::art::textures::Tex;
     use crate::world::map::Tile;
+
+    #[test]
+    fn thralls_crumble_with_malchor() {
+        use super::super::creatures::{MASTER, THRALL};
+        use super::super::state::{PClass, Player};
+        let mut g = Game::new(Player::new("T", PClass::Fighter, false), 1);
+        g.change_level(4, 32.5, 6.5, 0.0);
+        let thralls = |g: &Game| g.level().npcs.iter().filter(|n| n.alive() && n.flags & THRALL != 0).count();
+        assert_eq!(thralls(&g), 7);
+        let malchor = g.level().npcs.iter().find(|n| n.flags & MASTER != 0).unwrap().id;
+        damage_npc(&mut g, malchor, 999, true);
+        assert_eq!(thralls(&g), 0);
+    }
 
     #[test]
     fn bfs_finds_way_around_wall() {

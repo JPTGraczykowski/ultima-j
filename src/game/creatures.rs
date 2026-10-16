@@ -205,6 +205,7 @@ pub struct Npc {
     pub poisoned: f32,
     #[serde(default)]
     pub wander_to: Option<(f32, f32)>,
+    /// `THRALL` / `MASTER` bits.
     #[serde(default)]
     pub flags: u32,
     /// Seconds since the NPC last saw the player.
@@ -214,6 +215,11 @@ pub struct Npc {
     #[serde(default)]
     pub swing: f32,
 }
+
+/// `Npc::flags`: an undead kept alive by its master's power.
+pub const THRALL: u32 = 1;
+/// `Npc::flags`: when this NPC dies, every thrall on the level crumbles.
+pub const MASTER: u32 = 2;
 
 impl Npc {
     pub fn new(id: u32, race: Race, x: f32, z: f32) -> Npc {

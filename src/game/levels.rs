@@ -2,7 +2,7 @@
 //! water and lava, and the designs of the five levels of the abyss.
 
 use super::actions::SHARD_GATE;
-use super::creatures::{AiState, Attitude, Npc, Race};
+use super::creatures::{AiState, Attitude, Npc, Race, MASTER, THRALL};
 use super::dialogue::DialogueDb;
 use super::items::{Enchant, Item, ItemKind};
 use super::magic::rune;
@@ -302,6 +302,13 @@ impl<'a> B<'a> {
         let mut n = Npc::new(0, race, x, z);
         n.yaw = self.rng.rangef(-3.1, 3.1);
         self.lv.add_npc(n)
+    }
+
+    /// An undead bound to its master's power (see `creatures::THRALL`).
+    pub fn thrall(&mut self, race: Race, x: f32, z: f32) -> u32 {
+        let id = self.npc(race, x, z);
+        self.npc_mut(id).flags |= THRALL;
+        id
     }
 
     pub fn named(&mut self, race: Race, look: u8, name: &str, conv: &str, x: f32, z: f32, yaw_deg: f32) -> u32 {
@@ -888,12 +895,14 @@ fn level5(db: &DialogueDb) -> Level {
     b.lv.start = (32.5, 6.5, 180.0);
     b.message(32, 8, "Heat rises from below. A cold voice drifts up out of the darkness: \"Come to me, my knight.\"");
 
-    // Antechamber with fire and imps.
+    // Antechamber with fire and Malchor's thralls.
     b.room(24, 11, 17, 9, 0, 13);
     b.lava(24, 15, 4, 2, -2);
     b.lava(37, 15, 4, 2, -2);
-    b.npc(Race::Imp, 28.5, 13.5);
-    b.npc(Race::Imp, 36.5, 17.5);
+    b.thrall(Race::Skeleton, 28.5, 13.5);
+    b.thrall(Race::Skeleton, 36.5, 17.5);
+    b.thrall(Race::Ghoul, 32.5, 18.5);
+    b.message(32, 11, "Hollow soldiers turn toward you, a violet light burning in their empty eyes. Some will other than their own holds them here.");
     b.item(ItemKind::Brazier, 25.0, 11.8);
     b.item(ItemKind::Brazier, 40.0, 11.8);
     b.item(ItemKind::RedPotion, 39.5, 19.0);
@@ -902,12 +911,14 @@ fn level5(db: &DialogueDb) -> Level {
     b.style(Tex::WoodFloor, Tex::DarkPanels, Tex::CeilingBeams);
     b.corridor(23, 15, 18, 15, 0, 9);
     b.trap(20, 15, 8);
+    b.thrall(Race::Headless, 22.5, 15.5);
     b.room(8, 10, 10, 10, 0, 11);
     b.light(8, 10, 10, 10, 8);
     let malchor = b.named(Race::Mage, 0, "Malchor", "malchor", 12.5, 13.5, 90.0);
     {
         let n = b.npc_mut(malchor);
         n.attitude = Attitude::Upset;
+        n.flags |= MASTER;
         n.hp = 70;
         n.max_hp = 70;
         n.inventory = vec![Item::new(ItemKind::SilverKey).data(501), Item::new(ItemKind::Wand).enchanted(Enchant::Spell(super::magic::Spell::Fireball), 4), Item::new(ItemKind::BluePotion)];
@@ -917,12 +928,14 @@ fn level5(db: &DialogueDb) -> Level {
     b.item(ItemKind::Cauldron, 16.0, 18.5);
     b.item(ItemKind::Table, 14.0, 12.0);
     b.put(Item::new(ItemKind::Book).data(8), 14.0, 12.0);
-    b.npc(Race::Skeleton, 9.5, 18.5);
+    b.thrall(Race::Skeleton, 9.5, 18.5);
+    b.thrall(Race::Ghost, 16.5, 11.5);
 
     // East: Malchor's soul vault.
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.corridor(41, 15, 47, 15, 0, 9);
     b.trap(43, 15, 8);
+    b.thrall(Race::Ghoul, 44.5, 15.5);
     b.door(46, 15, DoorAxis::EW, DoorKind::Iron, 501);
     b.room(48, 12, 6, 6, 0, 10);
     b.light(48, 12, 6, 6, 6);

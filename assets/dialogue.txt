@@ -370,8 +370,14 @@ In the western tomb lies a silver sapling, a cutting of the great tree of life. 
 -- start
 Well, well. The knight who would not stay dead. I remember thee, {name}. Thou didst take the blast that was meant for Varian. And now thou crawlest back to me... with the shards, I hope?
 * Why dost thou want the shards? -> shards
+* What are the hollows that guard thee? -> thralls
 * Thou art the one who broke the Lumen Stone. -> broke
 * I have come to stop thee. -> fight
+
+-- thralls
+My thralls. Hollow souls I snatched before Varian could take them. They walk on my power, and they will walk as long as I do. Thou couldst have been one of them, knight. Thou still mayst.
+* Never! -> fight
+* Thou art the one who broke the Lumen Stone. -> broke
 
 -- shards
 The Lord of Souls fades. When he is gone, the dead of the Abyss will need a master, and the Throne opens only to the light of the shards. Give them to me, and I shall let thee rot in peace.
