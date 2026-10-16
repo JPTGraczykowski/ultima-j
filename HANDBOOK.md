@@ -1,6 +1,6 @@
 # The Abyss Below — Player's Handbook
 
-*A guide for those thrown into the pit.*
+*A guide for those who wake in the pit.*
 
 Part One explains how the game works and has no spoilers. Part Two is a
 walkthrough of the quest, with all the spoilers. Every number in this handbook
@@ -33,13 +33,16 @@ comes from the game's code. If the two ever disagree, the code is right.
 
 Long ago Lord Varian founded a colony deep in the great Abyss, where men,
 mountain folk, goblins and lizardmen lived as one, bound together by the light
-of the **Lumen Stone**. When Varian died, the Stone was broken into three
-shards (Valor, Wisdom and Mercy), and the colony fell into ruin and war.
+of the **Lumen Stone**. Then the Stone was broken into three shards (Valor,
+Wisdom and Mercy), and the colony fell into ruin and war. Varian went down to
+the **Throne of Souls** to keep the dead of the Abyss at rest, and became the
+**Lord of Souls**.
 
-Now a wizard named **Malchor** has carried off **Lady Rowena**, daughter of
-**Baron Aldwin**, into the depths. The Baron's guards found you near the scene
-and dragged you before him. *"Thou wilt bring back my daughter,"* he roared,
-*"or rot in the Abyss!"* The great doors have closed behind you.
+Now his strength is failing, and the dead rise from their graves, hollow and
+mindless. You are one of them: you claw your way out of a shallow grave by the
+sealed great doors with no memory of who you were. Unlike the others you can
+still think, and a voice from far below is calling you. Find out who you were,
+how to live again, and how to leave the Abyss.
 
 ## 2. Making a character
 
@@ -310,7 +313,7 @@ from your pack. Shots that miss fall to the floor, so you can pick them up
 again.
 
 **Running away.** Most creatures flee when nearly dead. The undead, golems
-and the Shadow Fiend never do.
+and the Lord of Souls never do.
 
 ### Weapons
 
@@ -561,7 +564,7 @@ they would ask for it themselves.
 | Troll | 60 | 5–14 | 110 | |
 | Reaper | 70 | 5–15 | 150 | Slow |
 | Earth golem | 90 | 6–16 | 160 | Slow, very hard to hit, never flees |
-| Shadow fiend | 220 | 8–22 | 1000 | **Throws fire.** See Part Two. |
+| Lord of souls | 220 | 8–22 | 1000 | **Throws fire** once angered. See Part Two. |
 
 The undead feel no fear and leave bones when destroyed.
 
@@ -575,8 +578,10 @@ The undead feel no fear and leave bones when destroyed.
 ## 13. Walkthrough
 
 To win, you need the three shards of the Lumen Stone, one from each of the
-three peoples, and then you must slay the Shadow Fiend with all three in your
-pack. Malchor and Lady Rowena are on the last level.
+three peoples. Carry them through the Shard Gate on the last level to the Lord
+of Souls and choose an ending: give him the shards and he gives you back your
+life and opens the great doors, or strike him down and take his throne.
+Malchor waits on the last level too.
 
 ### Level 1 — The Upper Halls
 
@@ -584,9 +589,9 @@ You begin in the entrance hall. The great doors behind you won't open. On the
 floor are a **torch**, a **map**, a loaf of **bread**, and a scroll that
 explains the IN LOR and ORT JUX spells. Light the torch.
 
-- **The outcasts' camp** (west): **Elsmore** tells you about the colony and
-  the shards, and which way the wizard went. Ask him for food and he gives you
-  bread. **Tobin** sells torches, bread, a red potion, a lantern, a lockpick and
+- **The outcasts' camp** (west): **Elsmore** tells you about the colony, the
+  shards and the Lord of Souls, and how to go down. Ask him for food and he
+  gives you bread. **Tobin** sells torches, bread, a red potion, a lantern, a lockpick and
   a candle. With Charm 4 or more he gives you a candle and lower prices. There
   is a **bedroll** here.
 - **The shrine** (south of the corridor): heals you and reminds you about
@@ -640,7 +645,8 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 - **Ssrath the Sage** (the pool of thinking, north of the village): ask him
   to teach you magic and he gives you the **WIS** rune. Ask about the shard
   and he tells you that lurkers have stolen the clutch of eggs. Ask about the
-  wizard to learn what Malchor plans.
+  Lord of Souls to learn what Malchor wants, and about your past to be sent
+  to Sir Aldric.
 - **The lurkers' grotto** (deep water, far east): two lurkers guard the
   **clutch of lizard eggs**. The **WIS** rune is also here, in case you didn't
   get it from Ssrath. Don't swim with a heavy pack.
@@ -659,7 +665,9 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 - **The gallery of tombs**: two skeletons and the **CORP** rune.
 - **Sir Aldric's tomb** (centre; there is a trap on the way in): the
   ghost of **Sir Aldric** is friendly. Trolls have stolen his bones. Ask him
-  for advice and he tells you about the silver sapling.
+  for advice and he tells you about the silver sapling. Ask whether he knows
+  you and he tells you who you were (100 exp): a Knight of the Lumen, killed
+  shielding Lord Varian when Malchor broke the Stone.
 - **The west wing** (a trap at the entrance): a ghost and two headless. Here
   you'll find the **DES** and **EX** runes, a chest with a **plate helm, 60
   gold and a blue potion**, and the **silver sapling**. Plant it somewhere safe
@@ -677,18 +685,23 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 - **The antechamber**: two imps that throw fire, lava pools, and a red potion.
 - **Malchor's study** (west, a trap on the way): **Malchor** has 70 hits and
   throws magic bolts. A skeleton guards him. No matter what you say, he
-  fights you. He carries the **silver key** to Rowena's cell, a **wand of
+  fights you. He carries the **silver key** to his soul vault, a **wand of
   Fireball** with 4 charges, and a blue potion. His notes are on the table.
-- **Lady Rowena's cell** (east, a trap on the way, then the iron door that the
-  silver key opens). Talk to her for 50 exp. She can follow you or stay in
-  her cell.
+- **Malchor's soul vault** (east, a trap on the way, then the iron door that
+  the silver key opens): a chest with two red potions and 50 gold, and
+  Malchor's list of the souls he meant to take.
 - **The Shard Gate** (south) opens only if you carry all three shards. Behind
   it is a shrine, so heal up there.
-- **The Shadow Fiend's pit**: the Fiend (220 hits, throws fire) waits among
-  lava pools with two imps. **Your blows pass through it unless you carry all
-  three shards.** Use red potions and the Fireball wand, and fight it away
-  from the lava. When it dies, the Lumen Stone shines whole again, and you
-  climb back to daylight with Lady Rowena.
+- **The Throne of Souls**: **Varian, the Lord of Souls**, waits among the
+  lava pools. He is peaceful and tells you who you were. Ask him to make you
+  live again to choose your ending:
+  - **Live again.** Give him the shards and he makes you alive again and
+    opens the great doors. You climb out into daylight.
+  - **Take his throne.** He fights you (220 hits, throws fire). **Your blows
+    pass through him unless you carry all three shards.** Use red potions and
+    the Fireball wand, and fight him away from the lava. When he dies, you
+    become the new Lord of Souls and stay undead in the Abyss for ever.
+  If you attack him before choosing, you have chosen the throne.
 
 ## 14. Where the runes are
 

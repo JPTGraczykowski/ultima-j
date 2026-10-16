@@ -386,6 +386,8 @@ fn level1(db: &DialogueDb) -> Level {
     b.item(ItemKind::Bread, 29.2, 57.3);
     b.put(Item::new(ItemKind::Scroll).data(3), 31.7, 53.2);
     b.item(ItemKind::BonePile, 32.4, 57.4);
+    b.item(ItemKind::Gravestone, 28.6, 57.4);
+    b.message(29, 56, "Beside you gapes a shallow, empty grave. The earth inside still holds the shape of a body - your body.");
 
     // West corridor to the outcasts' camp.
     b.style(Tex::Dirt, Tex::StoneBlocks, Tex::CeilingRock);
@@ -884,7 +886,7 @@ fn level5(db: &DialogueDb) -> Level {
     b.stairs(32, 2, 3, 32.5, 56.5, 0.0);
     b.corridor(32, 5, 32, 10, 0, 9);
     b.lv.start = (32.5, 6.5, 180.0);
-    b.message(32, 8, "Heat rises from below. Something vast breathes in the darkness.");
+    b.message(32, 8, "Heat rises from below. A cold voice drifts up out of the darkness: \"Come to me, my knight.\"");
 
     // Antechamber with fire and imps.
     b.room(24, 11, 17, 9, 0, 13);
@@ -917,18 +919,19 @@ fn level5(db: &DialogueDb) -> Level {
     b.put(Item::new(ItemKind::Book).data(8), 14.0, 12.0);
     b.npc(Race::Skeleton, 9.5, 18.5);
 
-    // East: Lady Rowena's cell.
+    // East: Malchor's soul vault.
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.corridor(41, 15, 47, 15, 0, 9);
     b.trap(43, 15, 8);
     b.door(46, 15, DoorAxis::EW, DoorKind::Iron, 501);
     b.room(48, 12, 6, 6, 0, 10);
     b.light(48, 12, 6, 6, 6);
-    b.named(Race::Human, 4, "Lady Rowena", "rowena", 51.5, 14.5, 270.0);
-    b.item(ItemKind::Bed, 52.5, 16.8);
-    b.item(ItemKind::WaterFlask, 49.0, 17.0);
+    b.item(ItemKind::BonePile, 52.5, 16.8);
+    b.item(ItemKind::Skull, 49.0, 13.0);
+    b.container(ItemKind::Chest, 52.6, 12.8, vec![Item::new(ItemKind::RedPotion), Item::new(ItemKind::RedPotion), Item::new(ItemKind::Coin).qty(50).data(50)]);
+    b.put(Item::new(ItemKind::Scroll).data(12), 49.5, 16.5);
 
-    // South: the Shard Gate and the Fiend's pit.
+    // South: the Shard Gate and the Throne of Souls.
     b.style(Tex::Flagstones, Tex::RedBricks, Tex::CeilingRock);
     b.corridor(32, 20, 32, 27, 0, 10);
     b.door(32, 25, DoorAxis::NS, DoorKind::Iron, SHARD_GATE);
@@ -940,10 +943,10 @@ fn level5(db: &DialogueDb) -> Level {
     b.lava(36, 34, 8, 4, -3);
     b.lava(26, 48, 14, 3, -3);
     b.light(18, 28, 30, 24, 8);
-    let fiend = b.npc(Race::Demon, 32.5, 41.5);
-    b.npc_mut(fiend).name = Some("the Shadow Fiend".into());
-    b.npc(Race::Imp, 26.5, 34.5);
-    b.npc(Race::Imp, 38.5, 44.5);
+    let lord = b.named(Race::Demon, 0, "Varian", "lord", 32.5, 41.5, 0.0);
+    b.npc_mut(lord).attitude = Attitude::Mellow;
+    b.item(ItemKind::BonePile, 30.0, 43.0);
+    b.item(ItemKind::BonePile, 35.0, 42.5);
     b.item(ItemKind::Shrine, 32.5, 30.0);
     b.item(ItemKind::Stalagmite, 22.0, 33.0);
     b.item(ItemKind::Stalagmite, 42.0, 40.0);

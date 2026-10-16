@@ -366,7 +366,7 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
     if g.levels[lv].npcs[idx].race == super::creatures::Race::Demon && !g.has_all_shards() {
         dmg = 0;
         if by_player {
-            g.msg("Your blow passes harmlessly through the shadow! Only the Lumen Stone can harm it.");
+            g.msg("Your blow passes harmlessly through the Lord of Souls! Only the light of the Lumen Stone can touch him.");
         }
     }
     {
@@ -428,7 +428,8 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
             g.foe = None;
         }
         if race == super::creatures::Race::Demon {
-            g.set_flag("fiend_slain", 1);
+            // Striking down the Lord of Souls is the throne ending.
+            g.set_flag("ending", 1);
             g.events.push(super::Event::Victory);
         }
     } else {

@@ -141,7 +141,7 @@ impl Race {
             Lurker => RaceDef { name: "lurker", hp: 45, attack: 14, defense: 10, dmg: (4, 12), speed: 0.8, exp: 90, swims: true, radius: 0.35, height: 0.69, ..base },
             Imp => RaceDef { name: "imp", hp: 18, attack: 12, defense: 10, dmg: (2, 6), speed: 1.5, exp: 50, flies: true, ranged: Ranged::Fire, height: 0.62, hover: 0.44, ..base },
             Reaper => RaceDef { name: "reaper", hp: 70, attack: 17, defense: 14, dmg: (5, 15), speed: 0.6, exp: 150, radius: 0.3, height: 1.38, ..base },
-            Demon => RaceDef { name: "shadow fiend", hp: 220, attack: 24, defense: 20, dmg: (8, 22), speed: 1.0, exp: 1000, ranged: Ranged::Fire, radius: 0.35, height: 1.69, ..base },
+            Demon => RaceDef { name: "lord of souls", hp: 220, attack: 24, defense: 20, dmg: (8, 22), speed: 1.0, exp: 1000, ranged: Ranged::Fire, radius: 0.35, height: 1.69, ..base },
         }
     }
 

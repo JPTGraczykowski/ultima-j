@@ -947,12 +947,12 @@ impl Game {
             "The lizard folk of the flooded warrens grieve for their stolen young. Their Sage holds the shard of Wisdom."
         } else if !has(ItemKind::ShardOfMercy) && self.flag("aldric_done") == 0 {
             "In the crypts a knight cannot rest. Return to him what was taken, and Mercy shall be thine."
-        } else if self.flag("fiend_slain") == 0 {
-            "The three shards are thine. Descend to the Deep Sanctum, open the sealed gate, and face the Shadow before it wakes."
+        } else if self.flag("ending") == 0 {
+            "The three shards are thine. Descend to the Deep Sanctum, open the sealed gate, and come to me. Beware Malchor."
         } else {
-            "Thy task is done. Rest, hero."
+            "Thy choice is made. Rest, my knight."
         };
-        format!("You dream. A purple-cloaked spirit appears before you and speaks: \"{}\"", hint)
+        format!("You dream. A pale, crowned figure upon a throne of bones speaks to you: \"{}\"", hint)
     }
 
     /// Use the Track skill: report the nearest creature's direction.

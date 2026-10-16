@@ -422,7 +422,11 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
         }
         Overlay::Victory(t) => {
             parchment(fb, TEXT_AREA);
-            let text = "The Shadow Fiend is banished, and the Lumen Stone shines whole once more. As its light floods the abyss, the great doors above grind open. With Lady Rowena at your side, you climb toward the daylight - a hero of the Abyss.";
+            let text = if st.game.flag("ending") == 2 {
+                "The Lord of Souls closes his hand about the shards. Light floods your cold limbs, and for the first time in an age your heart beats. Far above, the great doors grind open. You climb toward the daylight, alive - and behind you, in the dark, an old lord's flame burns low."
+            } else {
+                "The Lord of Souls falls, and the light of the shards pours into you. You take your seat upon the Throne of Souls. The hollows of the Abyss kneel, and their wandering ends. You will never see the sun again, nor die - you are the new Lord of Souls."
+            };
             let lines = f.wrap(text, TEXT_AREA.w - 10);
             for (i, l) in lines.iter().enumerate() {
                 f.draw(fb, TEXT_AREA.x + 5, TEXT_AREA.y + 5 + i as i32 * 6, l, INK);

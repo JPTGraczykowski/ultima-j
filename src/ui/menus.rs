@@ -178,12 +178,12 @@ pub struct Intro {
 }
 
 const INTRO: [(&str, Ramp); 6] = [
-    ("Hear me, traveller. I speak to thee from beyond the veil of death...", Ramp::Purple),
+    ("Awaken. I speak to thee from beyond the veil of death...", Ramp::Purple),
     ("Long ago, Lord Varian founded a colony deep within the great Abyss, where all peoples might live as one, bound by the light of the Lumen Stone.", Ramp::Gold),
-    ("When Varian died, the Stone was broken into three shards, and the colony fell into ruin and war.", Ramp::Gold),
-    ("Now a wizard named Malchor has stolen away Lady Rowena, daughter of Baron Aldwin, and carried her into the depths.", Ramp::Red),
-    ("Found near the scene, you are seized by the Baron's guards and dragged before him. \"Thou wilt bring back my daughter,\" he roars, \"or rot in the Abyss!\"", Ramp::Copper),
-    ("The great doors grind shut behind you. Darkness surrounds you. Your quest begins...", Ramp::Silver),
+    ("Then the Stone was broken into three shards, and the colony fell into ruin and war. Varian went down to the Throne of Souls, to keep the dead of the Abyss at rest.", Ramp::Gold),
+    ("But the Lord of Souls grows weak. The dead no longer rest. One by one they rise from their graves - hollow, nameless, lost.", Ramp::Red),
+    ("You open your eyes in cold earth. You remember nothing: not your name, not your death. Only a voice, calling from far below.", Ramp::Copper),
+    ("The great doors above are sealed. Find out who you were, and how to live again. The Abyss is waiting...", Ramp::Silver),
 ];
 
 fn framed(pic: &Bitmap) -> Bitmap {
@@ -257,32 +257,55 @@ fn scene(page: usize) -> Bitmap {
             }
         }
         3 => {
-            // Night chamber, empty bed, open window with moon.
-            b.fill(c(Ramp::Blue, 1));
-            b.fill_rect(140, 15, 40, 50, c(Ramp::Blue, 3));
-            b.fill_circle_f(165.0, 32.0, 8.0, c(Ramp::Silver, 13));
-            b.rect(140, 15, 40, 50, c(Ramp::Grey, 4));
-            b.vline(160, 15, 64, c(Ramp::Grey, 4));
-            b.fill_rect(30, 75, 90, 25, c(Ramp::Earth, 3));
-            b.fill_rect(30, 70, 90, 8, c(Ramp::Red, 4));
-            b.fill_rect(28, 55, 6, 45, c(Ramp::Earth, 4));
-            b.fill_ellipse(45.0, 68.0, 12.0, 5.0, c(Ramp::Parch, 9));
+            // The Lord of Souls upon a throne of bones.
+            b.fill(c(Ramp::Purple, 1));
+            b.fill_rect(80, 20, 60, 90, c(Ramp::Parch, 5));
+            b.fill_rect(85, 25, 50, 80, c(Ramp::Purple, 2));
             b.fill_rect(0, 100, w, 20, c(Ramp::Grey, 2));
+            for k in 0..9 {
+                let x = 84.0 + k as f32 * 6.5;
+                b.fill_circle_f(x, 19.0, 3.5, c(Ramp::Parch, 9));
+                b.set(x as i32 - 1, 19, BLACK);
+                b.set(x as i32 + 1, 19, BLACK);
+            }
+            let mut lord = render(&creatures::model(Race::Demon, 0, &Pose::default()), &View3 { yaw: 0.0, pitch: 0.05, scale: 70.0, w: 80, h: 100, center: V3::ZERO, center_row: 98.0 }, true);
+            // A faded, ghostly grey.
+            for p in lord.px.iter_mut() {
+                if *p != 0 {
+                    let s = crate::gfx::palette::ramp_of(*p).map(|(_, s)| s).unwrap_or(4);
+                    *p = c(Ramp::Grey, (s as f32 * 0.8) as i32 + 2);
+                }
+            }
+            b.blit(&lord, 70, 8);
+            for (x, y) in [(20, 104), (34, 108), (178, 106), (194, 103), (60, 110), (150, 110)] {
+                b.fill_circle_f(x as f32, y as f32, 4.0, c(Ramp::Parch, 8));
+                b.set(x - 1, y, BLACK);
+                b.set(x + 1, y, BLACK);
+            }
         }
         4 => {
-            // The Baron on his throne between two guards.
-            b.fill(c(Ramp::Red, 1));
-            b.fill_rect(80, 20, 60, 90, c(Ramp::Gold, 4));
-            b.fill_rect(85, 25, 50, 80, c(Ramp::Red, 3));
-            b.fill_rect(0, 100, w, 20, c(Ramp::Grey, 3));
-            let baron = creatures::model(Race::Mage, 1, &Pose::default());
-            let v = View3 { yaw: 0.0, pitch: 0.05, scale: 110.0, w: 80, h: 100, center: V3::ZERO, center_row: 98.0 };
-            b.blit(&render(&baron, &v, true), 70, 10);
-            let guard = creatures::model(Race::Human, 3, &Pose::default());
-            for (x, yaw) in [(5, 0.6f32), (145, -0.6)] {
-                let v = View3 { yaw, pitch: 0.05, scale: 100.0, w: 70, h: 100, center: V3::ZERO, center_row: 98.0 };
-                b.blit(&render(&guard, &v, true), x, 14);
+            // An open grave among the headstones.
+            b.fill(c(Ramp::Grey, 1));
+            for y in 60..h {
+                for x in 0..w {
+                    let v = fbm2(x as f32, y as f32, 256.0, 16, 3, 5);
+                    b.set(x, y, c(Ramp::Earth, (1.0 + v * 3.0) as i32));
+                }
             }
+            for (x, hh) in [(18, 34), (52, 28), (160, 30), (196, 36)] {
+                b.fill_rect(x, 66 - hh, 16, hh, c(Ramp::Stone, 6));
+                b.fill_circle_f(x as f32 + 7.5, 66.0 - hh as f32, 8.0, c(Ramp::Stone, 6));
+                b.fill_rect(x + 13, 66 - hh, 3, hh, c(Ramp::Stone, 3));
+                b.hline(x + 4, x + 11, 70 - hh, c(Ramp::Stone, 3));
+            }
+            b.fill_ellipse(110.0, 92.0, 46.0, 16.0, BLACK);
+            b.fill_ellipse(110.0, 90.0, 44.0, 13.0, c(Ramp::Earth, 1));
+            // A grey hand reaching out of the earth.
+            b.fill_rect(104, 74, 9, 14, c(Ramp::Grey, 8));
+            for k in 0..4 {
+                b.fill_rect(103 + k * 3, 66 + (k % 2) * 2, 2, 9, c(Ramp::Grey, 9));
+            }
+            b.fill_rect(113, 76, 3, 6, c(Ramp::Grey, 7));
         }
         _ => {
             // The great doors closing.

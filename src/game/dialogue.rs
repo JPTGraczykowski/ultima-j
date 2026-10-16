@@ -518,7 +518,7 @@ pub const SCROLLS: &[&str] = &[
     // 3
     "Runes of power: IN means create, LOR means light. Speak them together upon the rune shelf, and darkness shall be driven back. ORT is magic, JUX is danger; together they make a bolt of force.",
     // 4
-    "The Lumen Stone was broken into three shards: Valor, Wisdom and Mercy. Only when they are joined at the altar of the deep can the Shadow be bound again. - from the journal of Lord Varian",
+    "The Lumen Stone was broken into three shards: Valor, Wisdom and Mercy. I cannot make it whole. I go down to the Throne of Souls, to keep the dead of the Abyss until another can bear the light. - from the journal of Lord Varian",
     // 5
     "Mountain folk mining log, day 312: The spiders have overrun the lower galleries. King Thorgrim has sealed the eastern shaft. The hammer of our fathers lies beyond it still.",
     // 6
@@ -526,13 +526,15 @@ pub const SCROLLS: &[&str] = &[
     // 7
     "Here lies Sir Aldric, knight of the Lumen. He swore to guard the shard of Mercy until his bones were laid to rest in consecrated ground.",
     // 8
-    "Malchor's notes: The girl's blood is noble; it will serve. Once the three shards are kept apart, the Fiend's prison weakens. In the deep sanctum I shall finish what Varian could not.",
+    "Malchor's notes: Varian weakens. The hollows wake by the hundred. The gate to his Throne burns me, but it will open to the three shards - so let some fool of a corpse gather them and carry them here. I will take them, and his throne, and finish what I began the night the Stone broke.",
     // 9
     "IN MANI heals the body. AN NOX cures poison. POR FLAM hurls fire. VAS means great; with it, many spells grow mighty.",
     // 10
     "A child's drawing of the sun, labelled 'what the sky looks like'. Someone was born down here.",
     // 11
     "Recipe: mushrooms from the lower caves, boiled thrice, are safe to eat. Boiled once, you will see colours that do not exist.",
+    // 12
+    "A list in Malchor's hand, every line crossed out but the last: 'Aldric - the bones taken, the ghost bound. Corwin - drunk. Elsmore - too thin to bother. The knight who took the blast - risen, and walking. Save for last.'",
 ];
 
 #[cfg(test)]

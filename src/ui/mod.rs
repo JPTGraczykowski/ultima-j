@@ -101,7 +101,7 @@ impl GameApp {
     fn start_messages(&mut self) {
         if let Screen::Play(st) = &mut self.screen {
             st.game.sys("Welcome to the Abyss.");
-            st.game.msg("The great doors have closed behind you. There is no way back.");
+            st.game.msg("You claw your way out of a shallow grave. You are cold, and grey, and dead.");
             st.game.sys("(Press H for help on the controls.)");
             st.game.explore();
         }
