@@ -77,6 +77,7 @@ struct Humanoid {
     hair: Option<CMat>,
     beard: Option<CMat>,
     helmet: Option<CMat>,
+    crown: Option<CMat>,
     robe: Option<CMat>,
     weapon: Weapon,
     weapon_mat: CMat,
@@ -113,6 +114,7 @@ impl Humanoid {
             hair: None,
             beard: None,
             helmet: None,
+            crown: None,
             robe: None,
             weapon: Weapon::None,
             weapon_mat: m(Ramp::Silver, 4, 14, Pattern::Metal),
@@ -261,6 +263,18 @@ fn humanoid(s: &Humanoid, pose: &Pose) -> Vec<Part> {
         }
         if let Some(helm) = s.helmet {
             upper.push(ell(head_c + V3::new(0.0, hr * 0.3, -hr * 0.05), V3::new(hr * 1.05, hr * 0.8, hr * 1.02), helm));
+        }
+        if let Some(crown) = s.crown {
+            // A band with a ring of spikes, tallest at the front.
+            let top = head_c + V3::new(0.0, hr * 0.72, -hr * 0.05);
+            upper.push(ell(top, V3::new(hr * 0.92, hr * 0.16, hr * 0.92), crown));
+            for k in 0..8 {
+                let a = k as f32 * PI / 4.0;
+                let (sx, cz) = (a.sin(), a.cos());
+                let tall = 0.35 + 0.25 * cz.max(0.0);
+                let base = top + V3::new(sx * hr * 0.85, hr * 0.08, cz * hr * 0.85);
+                upper.push(cone(base, base + V3::new(sx * hr * 0.08, hr * tall, cz * hr * 0.08), 0.014 * h, 0.003 * h, crown));
+            }
         }
         if let Some(horn) = s.horns {
             for side in [-1.0f32, 1.0] {
@@ -871,21 +885,26 @@ fn spec_for(race: Race, look: u8) -> Option<Humanoid> {
             s
         }
         Race::Demon => {
-            let skin = m(Red, 1, 8, Scales);
+            // The Lord of Souls: a gaunt, ashen king in tattered robes.
+            let skin = m(Grey, 3, 10, Noise(0.3));
+            let robe = m(Purple, 1, 9, Cloth);
             let mut s = Humanoid::base(1.35, skin);
-            s.girth = 1.3;
-            s.horns = Some(m(Stone, 3, 12, Plain));
-            s.wings = Some(m(Purple, 1, 6, Noise(0.25)));
-            s.tail = Some(skin);
-            s.torso = skin;
-            s.legs = m(Grey, 0, 4, Fur);
-            s.feet = m(Grey, 1, 5, Plain);
-            s.eyes = m(Fire, 10, 15, Plain).glow();
+            s.girth = 0.92;
+            s.head = 1.0;
+            s.robe = Some(robe);
+            s.sleeves = Some(robe);
+            s.torso = m(Slate, 2, 9, Metal);
+            s.belt = Some(m(Gold, 2, 8, Metal));
+            s.feet = m(Grey, 0, 4, Plain);
+            s.hair = Some(m(Silver, 7, 15, Fur));
+            s.beard = Some(m(Silver, 7, 15, Fur));
+            s.crown = Some(m(Gold, 5, 14, Metal));
+            s.eyes = m(Purple, 11, 15, Plain).glow();
+            s.nose = 1.1;
             s.weapon = Weapon::Sword;
-            s.weapon_mat = m(Fire, 6, 13, Metal);
-            s.hunch = 0.2;
-            s.muscular = 1.0;
-            s.fangs = true;
+            s.weapon_mat = m(Fire, 8, 15, Metal).glow();
+            s.hunch = 0.15;
+            s.arm_len = 1.05;
             s
         }
         _ => return None,

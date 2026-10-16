@@ -268,15 +268,8 @@ fn scene(page: usize) -> Bitmap {
                 b.set(x as i32 - 1, 19, BLACK);
                 b.set(x as i32 + 1, 19, BLACK);
             }
-            let mut lord = render(&creatures::model(Race::Demon, 0, &Pose::default()), &View3 { yaw: 0.0, pitch: 0.05, scale: 70.0, w: 80, h: 100, center: V3::ZERO, center_row: 98.0 }, true);
-            // A faded, ghostly grey.
-            for p in lord.px.iter_mut() {
-                if *p != 0 {
-                    let s = crate::gfx::palette::ramp_of(*p).map(|(_, s)| s).unwrap_or(4);
-                    *p = c(Ramp::Grey, (s as f32 * 0.8) as i32 + 2);
-                }
-            }
-            b.blit(&lord, 70, 8);
+            let lord = render(&creatures::model(Race::Demon, 0, &Pose::default()), &View3 { yaw: 0.0, pitch: 0.05, scale: 62.0, w: 80, h: 100, center: V3::ZERO, center_row: 98.0 }, true);
+            b.blit(&lord, 70, 6);
             for (x, y) in [(20, 104), (34, 108), (178, 106), (194, 103), (60, 110), (150, 110)] {
                 b.fill_circle_f(x as f32, y as f32, 4.0, c(Ramp::Parch, 8));
                 b.set(x - 1, y, BLACK);

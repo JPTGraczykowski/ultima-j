@@ -25,7 +25,8 @@ mostly balance.
 - Story (2026-10-16), inspired by Dark Souls: the player rises from a grave as
   one of the undead, learns who they were (Sir Aldric and the Lord of Souls
   tell them), and brings the three shards to Varian, the Lord of Souls
-  (`=== lord` in `assets/dialogue.txt`, a peaceful `Race::Demon`). Giving him
+  (`=== lord` in `assets/dialogue.txt`, a peaceful `Race::Demon` drawn as a
+  crowned, ashen king; `Humanoid::crown` in `src/art/creatures.rs`). Giving him
   the shards sets flag `ending` = 2 (alive, out through the doors); killing
   him sets `ending` = 1 (the new Lord of Souls). The victory overlay picks its
   text from that flag. Malchor broke the Stone and is a rival for the throne.
