@@ -596,7 +596,14 @@ To win, you need the three shards of the Lumen Stone, one from each of the
 three peoples. Carry them through the Shard Gate on the last level to the Lord
 of Souls and choose an ending: give him the shards and he gives you back your
 life and opens the great doors, or strike him down and try to take his throne.
-Malchor waits on the last level too.
+
+The shards are what open the way: the gate to the Throne of Souls answers
+only to the light of the Lumen Stone, and the three shards are all that is
+left of it. That is also why someone woke you. The voice in your grave and in
+your dreams says it is the Lord of Souls, but it belongs to **Malchor**, who
+broke the Stone. The gate burns him and the peoples would never give him
+their shards, so he raised one of Varian's own knights to fetch them. Read
+his notes on level 5 and you can see it coming.
 
 ### Level 1 — The Upper Halls
 
@@ -682,7 +689,8 @@ explains the IN LOR and ORT JUX spells. Light the torch.
   ghost of **Sir Aldric** is friendly. Trolls have stolen his bones. Ask him
   for advice and he tells you about the silver sapling. Ask whether he knows
   you and he tells you who you were (100 exp): a Knight of the Lumen, killed
-  shielding Lord Varian when Malchor broke the Stone.
+  shielding Lord Varian when Malchor broke the Stone. Tell him a voice woke
+  you and he warns you about Malchor's silver tongue.
 - **The west wing** (a trap at the entrance): a ghost and two headless. Here
   you'll find the **DES** and **EX** runes, a chest with a **plate helm, 60
   gold and a blue potion**, and the **silver sapling**. Plant it somewhere safe
@@ -701,21 +709,24 @@ Malchor's **thralls**, hollow undead that walk on his power, guard the level.
 There are seven: two skeletons and a ghoul in the antechamber, a headless in
 the corridor to the study, a skeleton and a ghost in the study, and a ghoul
 outside the soul vault. **When Malchor dies, every thrall still standing
-crumbles to dust**, so you can fight your way through them or go straight for
-Malchor.
+crumbles to dust.** Malchor himself is nowhere to be seen until you open the
+Shard Gate.
 
 - **The antechamber**: three thralls, lava pools, and a red potion.
-- **Malchor's study** (west, a trap and a headless on the way): **Malchor**
-  has 70 hits and throws magic bolts. Two thralls guard him. No matter what
-  you say, he fights you. He carries the **silver key** to his soul vault, a **wand of
-  Fireball** with 4 charges, and a blue potion. His notes are on the table.
-- **Malchor's soul vault** (east, a trap and a ghoul on the way, then the iron
-  door that the silver key opens): a chest with two red potions and 50 gold, and
-  Malchor's list of the souls he meant to take.
-- **The Shard Gate** (south) opens only if you carry all three shards. Behind
-  it is a shrine, so heal up there.
+- **Malchor's study** (west, a trap and a headless on the way): two thralls,
+  and Malchor's notes on the table, which give his plan away.
+- **Malchor's soul vault** (east, a trap and a ghoul on the way, then an iron
+  door that only Malchor's silver key opens): a chest with two red potions and
+  50 gold, and Malchor's list of the souls he meant to take.
+- **The Shard Gate** (south) opens only if you carry all three shards; the
+  Open spell won't work on it. As it opens, **Malchor** steps out behind you.
+  He admits that the voice was his and demands the shards. No matter what
+  you say, he fights you (70 hits, magic bolts). He carries the **silver
+  key** to his soul vault, a **wand of Fireball** with 4 charges, and a blue
+  potion. Heal at the shrine behind the gate before you face him or Varian.
 - **The Throne of Souls**: **Varian, the Lord of Souls**, waits among the
-  lava pools. He is peaceful and tells you who you were. Ask him to make you
+  lava pools. He is peaceful and tells you who you were, and that he never
+  called you. Ask him to make you
   live again to choose your ending:
   - **Live again.** Give him the shards and he makes you alive again and
     opens the great doors. You climb out into daylight.

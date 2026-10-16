@@ -27,6 +27,24 @@ pub const REACH: f32 = 1.7;
 pub const SHARD_GATE: u16 = 900;
 
 impl Game {
+    /// The voice that woke the player was Malchor's. Once the shards open the
+    /// gate he could not pass, he steps out behind the player to claim them.
+    pub fn malchor_appears(&mut self) {
+        if self.flag("malchor_revealed") != 0 {
+            return;
+        }
+        self.set_flag("malchor_revealed", 1);
+        // Games saved before he hid already have him in his study.
+        if self.level().npcs.iter().any(|n| n.flags & super::creatures::MASTER != 0) {
+            return;
+        }
+        let npc = super::levels::malchor(&super::dialogue::DialogueDb::load(), 32.5, 21.5);
+        let id = self.level_mut().add_npc(npc);
+        self.events.push(Event::Flash([140.0, 60.0, 200.0], 0.5));
+        self.msg("Behind you, someone laughs softly - and you know the voice.");
+        self.events.push(Event::StartConversation(id));
+    }
+
     pub fn has_all_shards(&self) -> bool {
         self.player.has_item(ItemKind::ShardOfValor) && self.player.has_item(ItemKind::ShardOfWisdom) && self.player.has_item(ItemKind::ShardOfMercy)
     }
@@ -448,6 +466,7 @@ impl Game {
                 self.sound(Sfx::Spell);
                 self.events.push(Event::Flash([255.0, 240.0, 160.0], 0.5));
                 self.msg("The three shards blaze with light! The great gate grinds open.");
+                self.malchor_appears();
             } else {
                 self.sound(Sfx::Locked);
                 self.msg("The gate is sealed by a powerful magic. Three hollows in its surface glow faintly: red, blue and green.");
@@ -855,6 +874,9 @@ impl Game {
             Spell::Open | Spell::StrengthenDoor | Spell::RemoveTrap => {
                 let door = self.level().doors.iter().filter(|d| ((d.tx as f32 + 0.5 - eye.x).powi(2) + (d.tz as f32 + 0.5 - eye.z).powi(2)).sqrt() < 3.0).map(|d| d.id).next();
                 match (spell, door) {
+                    (Spell::Open, Some(id)) if self.level().doors.iter().any(|d| d.id == id && d.key == SHARD_GATE && d.locked) => {
+                        self.msg("The gate's light swallows your spell. Only the three shards will open it.");
+                    }
                     (Spell::Open, Some(id)) => {
                         let d = self.level_mut().doors.iter_mut().find(|d| d.id == id).unwrap();
                         d.locked = false;
@@ -941,18 +963,19 @@ impl Game {
     /// A dream vision hinting at the next step of the quest.
     pub fn dream(&mut self) -> String {
         let has = |k| self.player.has_item(k);
+        if self.flag("malchor_revealed") != 0 {
+            return "You dream of nothing at all. The voice that woke you is silent now.".into();
+        }
         let hint = if !has(ItemKind::ShardOfValor) && self.flag("thorgrim_done") == 0 {
             "Seek the mountain folk below. Their king keeps the shard of Valor, and he will test thy courage."
         } else if !has(ItemKind::ShardOfWisdom) && self.flag("ssrath_done") == 0 {
             "The lizard folk of the flooded warrens grieve for their stolen young. Their Sage holds the shard of Wisdom."
         } else if !has(ItemKind::ShardOfMercy) && self.flag("aldric_done") == 0 {
             "In the crypts a knight cannot rest. Return to him what was taken, and Mercy shall be thine."
-        } else if self.flag("ending") == 0 {
-            "The three shards are thine. Descend to the Deep Sanctum, open the sealed gate, and come to me. Beware Malchor."
         } else {
-            "Thy choice is made. Rest, my knight."
+            "The three shards are thine, my knight. Bring them down to the Deep Sanctum and lay them upon my gate. I am waiting."
         };
-        format!("You dream. A pale, crowned figure upon a throne of bones speaks to you: \"{}\"", hint)
+        format!("You dream. A crowned figure on a throne of bones, its face in shadow, speaks with the voice that woke you: \"{}\"", hint)
     }
 
     /// Use the Track skill: report the nearest creature's direction.

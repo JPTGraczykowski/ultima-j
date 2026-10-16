@@ -31,8 +31,14 @@ mostly balance.
   the victory overlay. Killing him sets `ending` = 1: the view fades to black
   and `menus::Story::fall()` tells the rest in five pictures, like the intro
   (the throne gives the player nothing, the great doors open, and the
-  goblins, mountain folk and lizardmen fight over the way to the surface). Malchor broke the Stone and is a rival for the throne.
-  His seven thralls on level 5 carry `creatures::THRALL` in `Npc::flags`; he
+  goblins, mountain folk and lizardmen fight over the way to the surface).
+  Malchor broke the Stone and is the voice that woke the player: the Shard
+  Gate burns him, so he posed as Varian (intro, dreams) to get one of
+  Varian's knights to bring the shards. He is not on the map at first;
+  opening the gate calls `Game::malchor_appears`, which spawns him
+  (`levels::malchor`) behind the player, sets flag `malchor_revealed` and
+  starts his conversation. The Open spell can't open the gate. His seven
+  thralls on level 5 carry `creatures::THRALL` in `Npc::flags`; he
   carries `MASTER`, and `ai::release_thralls` kills them when he dies.
   Conversation menus show only 5 options, so keep each node's visible choices
   at 5 or fewer.

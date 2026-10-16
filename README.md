@@ -100,10 +100,12 @@ All twenty skills do something. Besides the combat, magic and lock skills:
 You wake up dead. You claw your way out of a shallow grave at the top of the
 Abyss, one of the hollow dead who have begun to rise since the Lord of Souls
 grew weak, but you can still think. You don't know who you were, and the great
-doors above are sealed. To find out who you were and to live again, you must win
-the three shards of the Lumen Stone (Valor from the mountain folk, Wisdom from
-the lizardmen, Mercy from the dead in the crypts) and carry them down to the
-Lord of Souls. There you choose: give him the shards and walk out into the
+doors above are sealed. A voice that calls itself the Lord of Souls promises
+you your life if you win the three shards of the Lumen Stone (Valor from the
+mountain folk, Wisdom from the lizardmen, Mercy from the dead in the crypts)
+and carry them down to his throne, behind a gate that only the shards can
+open. Not everyone who wants them there is who they say they are. At the
+throne you choose: give the Lord of Souls the shards and walk out into the
 daylight alive, or strike him down and try to take his throne.
 
 ## Differences from the original

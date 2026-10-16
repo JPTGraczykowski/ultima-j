@@ -181,12 +181,12 @@ pub struct Story {
 }
 
 const INTRO: [(&str, Ramp); 6] = [
-    ("Awaken. I speak to thee from beyond the veil of death...", Ramp::Purple),
+    ("Awaken, my knight. I am the Lord of Souls, and I speak to thee from beyond the veil of death...", Ramp::Purple),
     ("Long ago, Lord Varian founded a colony deep within the great Abyss, where all peoples might live as one, bound by the light of the Lumen Stone.", Ramp::Gold),
     ("Then the Stone was broken into three shards, and the colony fell into ruin and war. Varian went down to the Throne of Souls, to keep the dead of the Abyss at rest.", Ramp::Gold),
     ("But the Lord of Souls grows weak. The dead no longer rest. One by one they rise from their graves - hollow, nameless, lost.", Ramp::Red),
     ("You open your eyes in cold earth. You remember nothing: not your name, not your death. Only a voice, calling from far below.", Ramp::Copper),
-    ("The great doors above are sealed. Find out who you were, and how to live again. The Abyss is waiting...", Ramp::Silver),
+    ("The great doors above are sealed. \"Bring me the three shards of the Lumen Stone,\" the voice whispers, \"and I shall give thee back thy life.\" The Abyss is waiting...", Ramp::Silver),
 ];
 
 /// The throne ending: nobody takes the throne, and the peoples go to war.

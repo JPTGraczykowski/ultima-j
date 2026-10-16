@@ -630,7 +630,15 @@ mod tests {
         g.change_level(4, 32.5, 6.5, 0.0);
         let thralls = |g: &Game| g.level().npcs.iter().filter(|n| n.alive() && n.flags & THRALL != 0).count();
         assert_eq!(thralls(&g), 7);
-        let malchor = g.level().npcs.iter().find(|n| n.flags & MASTER != 0).unwrap().id;
+        // Malchor hides until the shards open the gate, then steps out to talk.
+        assert!(g.level().npcs.iter().all(|n| n.flags & MASTER == 0));
+        g.malchor_appears();
+        g.malchor_appears();
+        assert_eq!(g.level().npcs.iter().filter(|n| n.flags & MASTER != 0).count(), 1);
+        let malchor = g.level().npcs.iter().find(|n| n.flags & MASTER != 0).unwrap();
+        assert!(g.level().map.point_open(malchor.pos.x, malchor.pos.z));
+        assert!(g.events.iter().any(|e| matches!(e, crate::game::Event::StartConversation(id) if *id == malchor.id)));
+        let malchor = malchor.id;
         damage_npc(&mut g, malchor, 999, true);
         assert_eq!(thralls(&g), 0);
     }

@@ -880,6 +880,22 @@ fn level4(db: &DialogueDb) -> Level {
 
 // ------------------------------------------------------------------ level 5
 
+/// Malchor, master of the thralls. He is not on the map at the start: the
+/// gate's light burns him, so he hides until the player opens it with the
+/// shards, then steps out behind them (`Game::malchor_appears`).
+pub fn malchor(db: &DialogueDb, x: f32, z: f32) -> Npc {
+    let mut n = Npc::new(0, Race::Mage, x, z);
+    n.name = Some("Malchor".into());
+    n.talk = db.find("malchor");
+    n.attitude = Attitude::Hostile;
+    n.ai = AiState::Idle;
+    n.flags |= MASTER;
+    n.hp = 70;
+    n.max_hp = 70;
+    n.inventory = vec![Item::new(ItemKind::SilverKey).data(501), Item::new(ItemKind::Wand).enchanted(Enchant::Spell(super::magic::Spell::Fireball), 4), Item::new(ItemKind::BluePotion)];
+    n
+}
+
 fn level5(db: &DialogueDb) -> Level {
     let mut b = B::new("the Deep Sanctum", 505, db);
     b.lv.ambient = 2.0;
@@ -914,15 +930,7 @@ fn level5(db: &DialogueDb) -> Level {
     b.thrall(Race::Headless, 22.5, 15.5);
     b.room(8, 10, 10, 10, 0, 11);
     b.light(8, 10, 10, 10, 8);
-    let malchor = b.named(Race::Mage, 0, "Malchor", "malchor", 12.5, 13.5, 90.0);
-    {
-        let n = b.npc_mut(malchor);
-        n.attitude = Attitude::Upset;
-        n.flags |= MASTER;
-        n.hp = 70;
-        n.max_hp = 70;
-        n.inventory = vec![Item::new(ItemKind::SilverKey).data(501), Item::new(ItemKind::Wand).enchanted(Enchant::Spell(super::magic::Spell::Fireball), 4), Item::new(ItemKind::BluePotion)];
-    }
+    // Malchor himself is not here: he waits unseen by the Shard Gate (see `malchor`).
     b.item(ItemKind::Bookshelf, 8.8, 10.6);
     b.item(ItemKind::Bookshelf, 10.4, 10.6);
     b.item(ItemKind::Cauldron, 16.0, 18.5);

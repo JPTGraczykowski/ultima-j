@@ -526,7 +526,7 @@ pub const SCROLLS: &[&str] = &[
     // 7
     "Here lies Sir Aldric, knight of the Lumen. He swore to guard the shard of Mercy until his bones were laid to rest in consecrated ground.",
     // 8
-    "Malchor's notes: Varian weakens. The hollows wake by the hundred. The gate to his Throne burns me, but it will open to the three shards - so let some fool of a corpse gather them and carry them here. I will take them, and his throne, and finish what I began the night the Stone broke.",
+    "Malchor's notes: Varian weakens. The gate to his Throne burns me, but it will open to the three shards in the hands of one of his own knights - and the peoples would give their shards to a knight, never to me. The one who took my blast lies in the old graves by the doors. Wake it. Speak to it in Varian's voice. Wait by the gate.",
     // 9
     "IN MANI heals the body. AN NOX cures poison. POR FLAM hurls fire. VAS means great; with it, many spells grow mighty.",
     // 10

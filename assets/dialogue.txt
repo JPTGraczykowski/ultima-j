@@ -40,7 +40,7 @@ How should I know? Thou climbed out of a grave by the sealed doors, grey as ash.
 * Back to other matters. -> start
 
 -- out
-Out? Ha! The great doors have not opened since the Stone broke. Only the Lord of Souls holds their key - and only he, they say, can give a dead man back his life. If thou wouldst find him, go down. The way down lies beyond the hall of the gray goblins, to the north-east.
+Out? Ha! The great doors have not opened since the Stone broke. Only the Lord of Souls holds their key - and only he, they say, can give a dead man back his life. But his throne lies behind a gate sealed by the light of the Stone, and only the three shards together will open it. If thou wouldst find him, go down. The way down lies beyond the hall of the gray goblins, to the north-east.
 ! flag elsmore_out 1
 ! exp 20
 * How do I get past the gray goblins? -> goblins
@@ -348,7 +348,13 @@ My bones... at last. Thou hast shown true mercy to the dead. Take the Shard of M
 Thy face is grey and thine eyes are hollow, and yet... {name}! By the Lumen, it is thee! We stood together as Knights of the Lumen, sworn shields of Lord Varian. On the night the Stone was broken, the court mage Malchor struck at it to seize its power. Thou didst throw thyself between them. The blast that shattered the Stone killed thee. I buried thee myself, by the great doors.
 ! flag know_self 1
 ! exp 100
+* A voice woke me from my grave. -> voice
 * What became of Lord Varian? -> varian
+* What became of Malchor? -> malchor
+* Back. -> start
+
+-- voice
+Varian's? Perhaps. Thine was the soul he held most dear. But be wary, {name}. Malchor has a silver tongue, and he knows the dead better than any living man.
 * What became of Malchor? -> malchor
 * Back. -> start
 
@@ -357,7 +363,7 @@ He could not mend the Stone. So he went down to the Throne of Souls, to hold the
 * Back. -> start
 
 -- malchor
-The blast unmade him too, but Malchor did not die as other men die. He clings to his ruined flesh by drinking souls. He waits in the Deep Sanctum, before the Lord's sealed gate, for someone foolish enough to bring him the shards.
+The blast unmade him too, but Malchor did not die as other men die. He clings to his ruined flesh by drinking souls. He haunts the Deep Sanctum, before the Lord's sealed gate. The gate's light remembers what he did, and it will not let him pass.
 * Back. -> start
 
 -- advice
@@ -368,42 +374,63 @@ In the western tomb lies a silver sapling, a cutting of the great tree of life. 
 
 === malchor
 -- start
-Well, well. The knight who would not stay dead. I remember thee, {name}. Thou didst take the blast that was meant for Varian. And now thou crawlest back to me... with the shards, I hope?
-* Why dost thou want the shards? -> shards
+Thank thee, {name}. Twenty years that gate has burned me, and thou hast opened it with a touch. Didst thou truly believe the Lord of Souls woke thee? Varian has had no voice for years. It was mine.
+* The voice in my grave was thine? -> voice
+* Why didst thou need me? -> why
 * What are the hollows that guard thee? -> thralls
 * Thou art the one who broke the Lumen Stone. -> broke
-* I have come to stop thee. -> fight
+* I will never give thee the shards. -> fight
+
+-- voice
+Mine in thy grave, and mine in thy dreams. I wore his crown in them and called thee my knight, and thou didst crawl all the way down with the shards, as loyal in death as in life. The dead are so very trusting.
+* Why didst thou need me? -> why
+* I will never give thee the shards. -> fight
+
+-- why
+The shards are the Lumen Stone, and the Stone sealed this gate behind Varian. Its light remembers what I did, and it burns me. But it would open for thee, a Knight of the Lumen who died for it. The peoples would never give their shards to me. To thee they gave them gladly.
+* And now thou wouldst take them. -> shards
+* Thou art the one who broke the Lumen Stone. -> broke
+
+-- shards
+Give them to me and go. I shall take the throne, and thou mayst rot wherever thou likest.
+* Never! -> fight
+* Thou art the one who broke the Lumen Stone. -> broke
 
 -- thralls
 My thralls. Hollow souls I snatched before Varian could take them. They walk on my power, and they will walk as long as I do. Thou couldst have been one of them, knight. Thou still mayst.
 * Never! -> fight
-* Thou art the one who broke the Lumen Stone. -> broke
-
--- shards
-The Lord of Souls fades. When he is gone, the dead of the Abyss will need a master, and the Throne opens only to the light of the shards. Give them to me, and I shall let thee rot in peace.
-* Never! -> fight
-* Thou art the one who broke the Lumen Stone. -> broke
+* Why didst thou need me? -> why
 
 -- broke
 Broke it? I freed it! Varian hoarded that light like a miser. I would have made us gods. Thy soul is old and strong, knight. It will make a fine meal.
 * Then come and take it! -> fight
 
 -- fight
-Thy soul is mine!
+Then I shall take the shards from thy bones!
 ! hostile
 * (Draw your weapon.) -> end
 
 === lord
 -- start
-Thou art come at last, {name}, bearing the light of the Lumen. It was my voice that woke thee in thy grave, and my dreams that led thee here. I am the Lord of Souls.
+Who comes to the Throne of Souls, bearing the light of the Lumen? ... {name}. My knight. I thought thee long at rest. I am the Lord of Souls. What has dragged thee from thy grave?
+* A voice woke me. It said it was thine. -> voice
 * Who am I? -> who
 * Who art thou? -> what
 * Canst thou make me live again? -> live
 * Farewell. -> end
 
 -- who
-Thou wert my knight, and my shield. When Malchor struck at the Lumen Stone, thou didst stand before me, and the blast that broke the Stone took thy life instead of mine. Of all the dead in my keeping, thine was the soul I held most dear. When my strength began to fail, it was thee I called.
+Thou wert my knight, and my shield. When Malchor struck at the Lumen Stone, thou didst stand before me, and the blast that broke the Stone took thy life instead of mine. Of all the dead in my keeping, thine was the soul I held most dear.
 ! flag know_self 1
+* Back. -> start
+
+-- voice
+Not mine. I have not had the strength to call anyone for years; it is all I can do to hold the dead. Someone wanted the shards carried to my door - someone the gate would not let pass.
+* It was Malchor. -> malchor
+* Back. -> start
+
+-- malchor
+Malchor. Of course. The gate remembers what he did to the Stone, and it burns him. But it would open for one of my own knights, carrying the shards. He used thee, {name}, as he once tried to use the Stone. I am sorry.
 * Back. -> start
 
 -- what
