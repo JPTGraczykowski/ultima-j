@@ -20,7 +20,7 @@ original. The story and characters are original.
 | ![Title screen](screenshots/title.png) | ![Character creation](screenshots/character-creation.png) |
 | ![The outcasts' camp](screenshots/outcasts-camp.png) | ![An underground lake](screenshots/underground-lake.png) |
 | ![Talking to Tobin](screenshots/conversation.png) | ![Bartering](screenshots/barter.png) |
-| ![The dwarven hall](screenshots/dwarven-hall.png) | ![Casting a fireball](screenshots/fireball.png) |
+| ![The dwarven hall](screenshots/dwarven-hall.png) | ![A fireball against Malchor's thralls](screenshots/fireball.png) |
 | ![The Lord of Souls](screenshots/lord-of-souls.png) | ![The automap](screenshots/automap.png) |
 
 ## Building and running
