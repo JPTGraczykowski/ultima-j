@@ -422,7 +422,7 @@ The three shards are the Lumen Stone, and the Stone is life. Lay them in my hand
 * Back. -> start
 
 -- throne_info
-Then thou knowest the oldest law of the dead. The Throne of Souls is not given; it is taken. Strike me down with the light of the shards and sit in my place - never living, never dying, lord of every soul that falls in the dark. Choose, my knight. I will not blame thee either way.
+Then thou knowest the oldest law of the dead, as it was told to me. The Throne of Souls is not given; it is taken. Strike me down with the light of the shards and sit in my place - never living, never dying, lord of every soul that falls in the dark. Choose, my knight. I will not blame thee either way.
 * Then I will take thy throne. -> throne ? item:ShardOfValor & item:ShardOfWisdom & item:ShardOfMercy
 * Give me back my life instead. -> kindle ? item:ShardOfValor & item:ShardOfWisdom & item:ShardOfMercy
 * Back. -> start

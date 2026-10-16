@@ -25,6 +25,9 @@ pub fn help_text(modern: bool) -> &'static str {
 /// The parchment area used for texts and conversations (over the view).
 pub const TEXT_AREA: Rect = Rect::new(52, 46, 172, 84);
 
+/// Seconds the view takes to fade to black after the Lord of Souls falls.
+const FADE: f32 = 2.5;
+
 fn number_key(input: &Input) -> Option<usize> {
     let keys = [Key::Num1, Key::Num2, Key::Num3, Key::Num4, Key::Num5, Key::Num6, Key::Num7, Key::Num8, Key::Num9];
     keys.iter().position(|k| input.hit(*k))
@@ -230,7 +233,12 @@ pub fn update(st: &mut PlayState, ctx: &mut Ctx, input: &Input, dt: f32) -> Opti
         }
         Overlay::Victory(t) => {
             *t += dt;
-            if *t > 2.0 && (click || input.any_key()) {
+            // Striking down the Lord fades to the ending's scenes.
+            if st.game.flag("ending") == 1 {
+                if *t > FADE {
+                    return Some(ScreenCmd::Ending);
+                }
+            } else if *t > 2.0 && (click || input.any_key()) {
                 return Some(ScreenCmd::Credits);
             }
         }
@@ -439,13 +447,19 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
                 f.draw_centered(fb, VIEW.x + VIEW.w / 2, VIEW.y + 80, "(Esc returns to the title)", c(Ramp::Parch, 9));
             }
         }
+        Overlay::Victory(t) if st.game.flag("ending") == 1 => {
+            let k = (*t / FADE).min(1.0);
+            for y in VIEW.y..VIEW.y + VIEW.h {
+                for x in VIEW.x..VIEW.x + VIEW.w {
+                    if crate::util::hashf(x, y, 2, 8) < k {
+                        fb.set(x, y, BLACK);
+                    }
+                }
+            }
+        }
         Overlay::Victory(t) => {
             parchment(fb, TEXT_AREA);
-            let text = if st.game.flag("ending") == 2 {
-                "The Lord of Souls closes his hand about the shards. Light floods your cold limbs, and for the first time in an age your heart beats. Far above, the great doors grind open. You climb toward the daylight, alive - and behind you, in the dark, an old lord's flame burns low."
-            } else {
-                "The Lord of Souls falls, and the light of the shards pours into you. You take your seat upon the Throne of Souls. The hollows of the Abyss kneel, and their wandering ends. You will never see the sun again, nor die - you are the new Lord of Souls."
-            };
+            let text = "The Lord of Souls closes his hand about the shards. Light floods your cold limbs, and for the first time in an age your heart beats. Far above, the great doors grind open. You climb toward the daylight, alive - and behind you, in the dark, an old lord's flame burns low.";
             let lines = f.wrap(text, TEXT_AREA.w - 10);
             for (i, l) in lines.iter().enumerate() {
                 f.draw(fb, TEXT_AREA.x + 5, TEXT_AREA.y + 5 + i as i32 * 6, l, INK);

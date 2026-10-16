@@ -58,12 +58,14 @@ pub enum ScreenCmd {
     LoadSlot(usize),
     CharGen,
     Intro,
+    /// The story told after the Lord of Souls is struck down.
+    Ending,
     Credits,
 }
 
 pub enum Screen {
     Title(menus::Title),
-    Intro(menus::Intro),
+    Story(menus::Story),
     CharGen(menus::CharGen),
     Credits(f32),
     Play(Box<PlayState>),
@@ -126,7 +128,8 @@ impl GameApp {
             ScreenCmd::Quit => return AppCmd::Quit,
             ScreenCmd::Title => self.screen = Screen::Title(menus::Title::new()),
             ScreenCmd::CharGen => self.screen = Screen::CharGen(menus::CharGen::new()),
-            ScreenCmd::Intro => self.screen = Screen::Intro(menus::Intro::new()),
+            ScreenCmd::Intro => self.screen = Screen::Story(menus::Story::intro()),
+            ScreenCmd::Ending => self.screen = Screen::Story(menus::Story::fall()),
             ScreenCmd::Credits => self.screen = Screen::Credits(0.0),
             ScreenCmd::NewGame(p) => {
                 let seed = (self.ctx.time * 1000.0) as u64 ^ 0x5EED;
@@ -171,7 +174,7 @@ impl App for GameApp {
         }
         let cmd = match &mut self.screen {
             Screen::Title(t) => t.update(&mut self.ctx, input, dt),
-            Screen::Intro(i) => i.update(&mut self.ctx, input, dt),
+            Screen::Story(i) => i.update(&mut self.ctx, input, dt),
             Screen::CharGen(c) => c.update(&mut self.ctx, input, dt),
             Screen::Credits(t) => {
                 *t += dt;
@@ -192,7 +195,7 @@ impl App for GameApp {
     fn draw(&mut self, fb: &mut Bitmap) -> Option<([f32; 3], f32)> {
         match &mut self.screen {
             Screen::Title(t) => t.draw(&mut self.ctx, fb, self.mouse),
-            Screen::Intro(i) => i.draw(&mut self.ctx, fb),
+            Screen::Story(i) => i.draw(&mut self.ctx, fb),
             Screen::CharGen(c) => c.draw(&mut self.ctx, fb, self.mouse),
             Screen::Credits(t) => menus::draw_credits(&mut self.ctx, fb, *t),
             Screen::Play(st) => {

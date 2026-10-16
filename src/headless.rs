@@ -78,7 +78,8 @@ pub fn run(script: &str) -> Result<(), String> {
         match arg(0) {
             "title" => app.screen = Screen::Title(crate::ui::menus::Title::new()),
             "chargen" => app.screen = Screen::CharGen(crate::ui::menus::CharGen::new()),
-            "intro" => app.screen = Screen::Intro(crate::ui::menus::Intro::new()),
+            "intro" => app.screen = Screen::Story(crate::ui::menus::Story::intro()),
+            "ending" => app.screen = Screen::Story(crate::ui::menus::Story::fall()),
             "play" => app = GameApp::new_playing(7),
             "wait" => {
                 for _ in 0..num(1) as i32 {
@@ -294,11 +295,44 @@ mod tests {
                 let cmd = app.update(&inp, 1.0 / 30.0);
                 let _ = cmd;
                 app.draw(&mut fb);
-                if !matches!(app.screen, Screen::Play(_) | Screen::Title(_) | Screen::CharGen(_) | Screen::Intro(_) | Screen::Credits(_)) {
+                if !matches!(app.screen, Screen::Play(_) | Screen::Title(_) | Screen::CharGen(_) | Screen::Story(_) | Screen::Credits(_)) {
                     break;
                 }
             }
         }
+    }
+
+    /// Striking down the Lord of Souls fades out of the game into the ending's
+    /// scenes, and clicking through them reaches the credits.
+    #[test]
+    fn throne_ending_scenes() {
+        use crate::game::creatures::Race;
+        use crate::game::items::{Item, ItemKind};
+        let mut app = GameApp::new_playing(11);
+        let Screen::Play(st) = &mut app.screen else { unreachable!() };
+        let g = &mut st.game;
+        g.change_level(4, 31.5, 41.5, 0.0);
+        for k in [ItemKind::ShardOfValor, ItemKind::ShardOfWisdom, ItemKind::ShardOfMercy] {
+            assert!(g.player.give(Item::new(k)).is_none(), "no room for the shards");
+        }
+        let lord = g.level().npcs.iter().find(|n| n.race == Race::Demon).unwrap().id;
+        crate::game::ai::damage_npc(g, lord, 10_000, true);
+        assert_eq!(g.flag("ending"), 1);
+        let idle = Input::default();
+        let click = Input { pressed: [true, false, false], ..Default::default() };
+        for _ in 0..30 * 3 {
+            app.update(&idle, 1.0 / 30.0);
+        }
+        assert!(matches!(app.screen, Screen::Story(_)), "the ending should follow the fade");
+        let mut fb = Bitmap::new(SCREEN_W, SCREEN_H);
+        for _ in 0..5 {
+            for _ in 0..15 {
+                app.update(&idle, 1.0 / 30.0);
+            }
+            app.draw(&mut fb);
+            app.update(&click, 1.0 / 30.0);
+        }
+        assert!(matches!(app.screen, Screen::Credits(_)), "five scenes, then the credits");
     }
 
     /// Modern controls: the number row picks commands and Q/E sidestep instead of flying.

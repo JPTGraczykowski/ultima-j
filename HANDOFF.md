@@ -2,7 +2,7 @@
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
 original's style. Status (2026-10-15): the game is complete and playable from
-the title screen to the victory screen, and all 61 tests pass. What remains is
+the title screen to the victory screen, and all 65 tests pass. What remains is
 mostly balance.
 
 ## Done
@@ -27,9 +27,11 @@ mostly balance.
   tell them), and brings the three shards to Varian, the Lord of Souls
   (`=== lord` in `assets/dialogue.txt`, a peaceful `Race::Demon` drawn as a
   crowned, ashen king; `Humanoid::crown` in `src/art/creatures.rs`). Giving him
-  the shards sets flag `ending` = 2 (alive, out through the doors); killing
-  him sets `ending` = 1 (the new Lord of Souls). The victory overlay picks its
-  text from that flag. Malchor broke the Stone and is a rival for the throne.
+  the shards sets flag `ending` = 2 (alive, out through the doors) and shows
+  the victory overlay. Killing him sets `ending` = 1: the view fades to black
+  and `menus::Story::fall()` tells the rest in five pictures, like the intro
+  (the throne gives the player nothing, the great doors open, and the
+  goblins, mountain folk and lizardmen fight over the way to the surface). Malchor broke the Stone and is a rival for the throne.
   His seven thralls on level 5 carry `creatures::THRALL` in `Npc::flags`; he
   carries `MASTER`, and `ai::release_thralls` kills them when he dies.
   Conversation menus show only 5 options, so keep each node's visible choices
@@ -66,7 +68,7 @@ mostly balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 61 tests: level connectivity, runes, fuzzers, save round-trip, skills, spells, barter
+cargo test --release                       # 65 tests: level connectivity, runes, fuzzers, save round-trip, skills, spells, barter
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --maps DIR         # level layouts

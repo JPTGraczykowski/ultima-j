@@ -595,7 +595,7 @@ The undead feel no fear and leave bones when destroyed.
 To win, you need the three shards of the Lumen Stone, one from each of the
 three peoples. Carry them through the Shard Gate on the last level to the Lord
 of Souls and choose an ending: give him the shards and he gives you back your
-life and opens the great doors, or strike him down and take his throne.
+life and opens the great doors, or strike him down and try to take his throne.
 Malchor waits on the last level too.
 
 ### Level 1 — The Upper Halls
@@ -721,8 +721,10 @@ Malchor.
     opens the great doors. You climb out into daylight.
   - **Take his throne.** He fights you (220 hits, throws fire). **Your blows
     pass through him unless you carry all three shards.** Use red potions and
-    the Fireball wand, and fight him away from the lava. When he dies, you
-    become the new Lord of Souls and stay undead in the Abyss for ever.
+    the Fireball wand, and fight him away from the lava. When he dies, the
+    game ends and the rest of the story is told in pictures: the throne gives
+    you nothing, the great doors open, and the peoples of the Abyss go to war
+    over the way out.
   If you attack him before choosing, you have chosen the throne.
 
 ## 14. Where the runes are

@@ -169,9 +169,12 @@ pub fn draw_title_logo(ctx: &Ctx, fb: &mut Bitmap, y: i32) {
     ctx.art.font_big.draw_fancy(fb, 160 - w2 / 2, y + 30, sub, &reds, BLACK, Some(c(Ramp::Purple, 1)));
 }
 
-// ------------------------------------------------------------------ intro
+// ------------------------------------------------------- intro and ending
 
-pub struct Intro {
+/// A story told in pictures: the introduction, or the ending after the
+/// Lord of Souls is struck down.
+pub struct Story {
+    ending: bool,
     page: usize,
     t: f32,
     pics: Vec<Bitmap>,
@@ -184,6 +187,15 @@ const INTRO: [(&str, Ramp); 6] = [
     ("But the Lord of Souls grows weak. The dead no longer rest. One by one they rise from their graves - hollow, nameless, lost.", Ramp::Red),
     ("You open your eyes in cold earth. You remember nothing: not your name, not your death. Only a voice, calling from far below.", Ramp::Copper),
     ("The great doors above are sealed. Find out who you were, and how to live again. The Abyss is waiting...", Ramp::Silver),
+];
+
+/// The throne ending: nobody takes the throne, and the peoples go to war.
+const FALL: [(&str, Ramp); 5] = [
+    ("The Lord of Souls falls. His crown rings once upon the stone. \"So be it, my knight,\" he breathes, and the old king is still.", Ramp::Purple),
+    ("You climb onto the Throne of Souls and wait for its power. Nothing comes. The shards flicker in your hand and go dark. There was no law - only an old man's will, and it is spent.", Ramp::Silver),
+    ("Far above, the great doors groan. Their seal was Varian's, and it has died with him. For the first time since the Stone broke, daylight falls into the Abyss.", Ramp::Gold),
+    ("The Stone is dead, the doors are open, and no one rules the Abyss. The mountain folk march up from the mines, the lizardmen rise from the warrens, the goblins hold the upper halls. Old neighbours kill each other in the ruins of the colony.", Ramp::Red),
+    ("At the great doors the three peoples meet, weapons drawn, in the first daylight any of them has seen. Whoever holds the doorway will take the world above - and none of them will let the others go first.", Ramp::Copper),
 ];
 
 fn framed(pic: &Bitmap) -> Bitmap {
@@ -258,23 +270,10 @@ fn scene(page: usize) -> Bitmap {
         }
         3 => {
             // The Lord of Souls upon a throne of bones.
-            b.fill(c(Ramp::Purple, 1));
-            b.fill_rect(80, 20, 60, 90, c(Ramp::Parch, 5));
-            b.fill_rect(85, 25, 50, 80, c(Ramp::Purple, 2));
-            b.fill_rect(0, 100, w, 20, c(Ramp::Grey, 2));
-            for k in 0..9 {
-                let x = 84.0 + k as f32 * 6.5;
-                b.fill_circle_f(x, 19.0, 3.5, c(Ramp::Parch, 9));
-                b.set(x as i32 - 1, 19, BLACK);
-                b.set(x as i32 + 1, 19, BLACK);
-            }
+            throne_room(&mut b);
             let lord = render(&creatures::model(Race::Demon, 0, &Pose::default()), &View3 { yaw: 0.0, pitch: 0.05, scale: 62.0, w: 80, h: 100, center: V3::ZERO, center_row: 98.0 }, true);
             b.blit(&lord, 70, 6);
-            for (x, y) in [(20, 104), (34, 108), (178, 106), (194, 103), (60, 110), (150, 110)] {
-                b.fill_circle_f(x as f32, y as f32, 4.0, c(Ramp::Parch, 8));
-                b.set(x - 1, y, BLACK);
-                b.set(x + 1, y, BLACK);
-            }
+            skulls(&mut b);
         }
         4 => {
             // An open grave among the headstones.
@@ -303,12 +302,7 @@ fn scene(page: usize) -> Bitmap {
         _ => {
             // The great doors closing.
             b.fill(BLACK);
-            let door = crate::art::textures::generate(crate::art::textures::Tex::DoorIron, 0);
-            b.blit_scaled(&door, 30, 0, 80, 120);
-            b.blit_scaled(&door, 110, 0, 80, 120);
-            for x in 108..112 {
-                b.vline(x, 0, h - 1, BLACK);
-            }
+            great_doors(&mut b, 30, 0, 160, 120, 0);
             for y in 0..h {
                 for x in 0..w {
                     if (x < 30 || x >= 190) && hashf(x, y, 1, 1) > 0.97 {
@@ -321,21 +315,236 @@ fn scene(page: usize) -> Bitmap {
     framed(&b)
 }
 
-impl Intro {
-    pub fn new() -> Intro {
-        Intro { page: 0, t: 0.0, pics: (0..INTRO.len()).map(scene).collect() }
+/// A throne of bones in a purple gloom.
+fn throne_room(b: &mut Bitmap) {
+    b.fill(c(Ramp::Purple, 1));
+    b.fill_rect(80, 20, 60, 90, c(Ramp::Parch, 5));
+    b.fill_rect(85, 25, 50, 80, c(Ramp::Purple, 2));
+    b.fill_rect(0, 100, b.w, 20, c(Ramp::Grey, 2));
+    for k in 0..9 {
+        let x = 84.0 + k as f32 * 6.5;
+        b.fill_circle_f(x, 19.0, 3.5, c(Ramp::Parch, 9));
+        b.set(x as i32 - 1, 19, BLACK);
+        b.set(x as i32 + 1, 19, BLACK);
+    }
+}
+
+/// Skulls scattered on the throne room floor.
+fn skulls(b: &mut Bitmap) {
+    for (x, y) in [(20, 104), (34, 108), (178, 106), (194, 103), (60, 110), (150, 110)] {
+        b.fill_circle_f(x as f32, y as f32, 4.0, c(Ramp::Parch, 8));
+        b.set(x - 1, y, BLACK);
+        b.set(x + 1, y, BLACK);
+    }
+}
+
+/// The two leaves of the great doors in the rectangle, `gap` pixels apart,
+/// with daylight between them when they are open.
+fn great_doors(b: &mut Bitmap, x: i32, y: i32, w: i32, h: i32, gap: i32) {
+    let door = crate::art::textures::generate(crate::art::textures::Tex::DoorIron, 0);
+    let leaf = (w - gap) / 2;
+    b.blit_scaled(&door, x, y, leaf, h);
+    b.blit_scaled(&door, x + leaf + gap, y, leaf, h);
+    if gap == 0 {
+        for xx in x + leaf - 2..x + leaf + 2 {
+            b.vline(xx, y, y + h - 1, BLACK);
+        }
+        return;
+    }
+    let mid = x + w / 2;
+    for xx in x + leaf..x + leaf + gap {
+        let d = (xx - mid).abs() as f32 / (gap as f32 / 2.0);
+        b.vline(xx, y, y + h - 1, c(Ramp::Gold, (15.0 - d * 3.0) as i32));
+    }
+}
+
+/// A creature from the game, rendered for a vignette with its feet at the
+/// bottom centre of the bitmap. `yaw` turns it (0 faces the viewer).
+fn figure(race: Race, look: u8, yaw: f32, pose: &Pose, scale: f32) -> Bitmap {
+    let w = (scale * 2.0) as i32;
+    let h = (scale * 1.5) as i32;
+    render(&creatures::model(race, look, pose), &View3 { yaw, pitch: 0.08, scale, w, h, center: V3::ZERO, center_row: h as f32 - 2.0 }, true)
+}
+
+/// Blit a figure so that its feet stand at (x, y).
+fn stand(b: &mut Bitmap, fig: &Bitmap, x: i32, y: i32) {
+    b.blit(fig, x - fig.w / 2, y - fig.h);
+}
+
+/// Darken a figure to a silhouette against firelight.
+fn silhouette(fig: &Bitmap) -> Bitmap {
+    let mut s = fig.clone();
+    for p in s.px.iter_mut() {
+        if *p != 0 {
+            *p = c(Ramp::Red, 1);
+        }
+    }
+    s
+}
+
+fn fall_scene(page: usize) -> Bitmap {
+    let w = 220;
+    let h = 120;
+    let mut b = Bitmap::filled(w, h, c(Ramp::Grey, 1));
+    let side = std::f32::consts::FRAC_PI_2;
+    match page {
+        0 => {
+            // The old king dead at the foot of his throne.
+            throne_room(&mut b);
+            skulls(&mut b);
+            let pose = Pose { death: 1.0, ..Default::default() };
+            let v = View3 { yaw: 0.0, pitch: 0.45, scale: 40.0, w: 150, h: 50, center: V3::ZERO, center_row: 44.0 };
+            let dead = render(&creatures::model(Race::Demon, 0, &pose), &v, true);
+            stand(&mut b, &dead, 104, 116);
+        }
+        1 => {
+            // Three dead shards in a grey, open hand.
+            b.fill(c(Ramp::Purple, 1));
+            for y in 0..h {
+                for x in 0..w {
+                    if hashf(x, y, 3, 7) > 0.985 {
+                        b.set(x, y, c(Ramp::Purple, 3));
+                    }
+                }
+            }
+            let (skin, lit) = (c(Ramp::Grey, 6), c(Ramp::Grey, 8));
+            b.fill_rect(94, 92, 34, 28, skin);
+            b.fill_rect(98, 92, 26, 28, lit);
+            for (k, len) in [14.0f32, 18.0, 17.0, 13.0].into_iter().enumerate() {
+                let x = 78.0 + k as f32 * 15.0;
+                let top = 46.0 - len + (k as f32 - 1.5).abs() * 4.0;
+                b.fill_ellipse(x, top + len / 2.0 + 4.0, 7.0, len / 2.0 + 6.0, skin);
+                b.fill_ellipse(x + 1.0, top + len / 2.0 + 4.0, 5.0, len / 2.0 + 4.0, lit);
+                b.hline(x as i32 - 4, x as i32 + 4, (top + len * 0.6) as i32 + 4, skin);
+            }
+            b.fill_ellipse(150.0, 82.0, 20.0, 8.0, skin);
+            b.fill_ellipse(151.0, 81.0, 17.0, 6.0, lit);
+            b.fill_ellipse(110.0, 76.0, 38.0, 24.0, skin);
+            b.fill_ellipse(111.0, 74.0, 33.0, 19.0, lit);
+            b.line(84, 68, 136, 64, skin);
+            b.line(88, 84, 130, 90, skin);
+            for (dx, dy) in [(-18.0, 4.0), (0.0, -4.0), (18.0, 4.0)] {
+                let (x, y) = (111.0 + dx, 76.0 + dy);
+                b.fill_polygon(&[(x, y - 13.0), (x + 7.0, y), (x, y + 9.0), (x - 7.0, y)], c(Ramp::Slate, 3));
+                b.fill_polygon(&[(x, y - 11.0), (x + 5.0, y), (x, y + 7.0), (x - 2.0, y - 1.0)], c(Ramp::Slate, 5));
+                b.line(x as i32 - 2, y as i32 - 5, x as i32 + 2, y as i32 + 3, c(Ramp::Grey, 1));
+            }
+        }
+        2 => {
+            // The great doors opening on daylight.
+            b.fill(BLACK);
+            for y in 96..h {
+                let spread = (y - 96) as f32 * 1.6 + 12.0;
+                for x in 0..w {
+                    let d = (x as f32 - 110.0).abs();
+                    if d < spread {
+                        let s = 9.0 - d / spread * 6.0 - (y - 96) as f32 * 0.12;
+                        b.set(x, y, c(Ramp::Gold, s as i32));
+                    } else {
+                        b.set(x, y, c(Ramp::Stone, 1 + (hashf(x, y, 4, 2) * 2.0) as i32));
+                    }
+                }
+            }
+            great_doors(&mut b, 34, 0, 152, 96, 24);
+            // Dust in the light.
+            for k in 0..40 {
+                let x = 98 + (hashf(k, 1, 6, 1) * 24.0) as i32;
+                let y = (hashf(k, 2, 6, 1) * 110.0) as i32;
+                b.set(x, y, c(Ramp::Gold, 15));
+            }
+        }
+        3 => {
+            // The colony burns; its peoples fight in the ruins.
+            for y in 0..h {
+                for x in 0..w {
+                    let v = fbm2(x as f32, y as f32, 256.0, 16, 3, 9);
+                    let glow = (y as f32 / h as f32).powf(1.5) * 9.0;
+                    b.set(x, y, c(Ramp::Fire, (v * 4.0 + glow) as i32 - 2));
+                }
+            }
+            for (k, x) in [12, 64, 150, 196].into_iter().enumerate() {
+                let top = if k % 2 == 0 { 14 } else { 34 };
+                b.fill_rect(x, top, 12, 110 - top, c(Ramp::Stone, 1));
+                b.fill_polygon(&[(x as f32, top as f32), (x as f32 + 12.0, top as f32 + 5.0), (x as f32 + 6.0, top as f32 - 6.0)], c(Ramp::Stone, 1));
+            }
+            b.fill_rect(0, 108, w, 12, c(Ramp::Red, 1));
+            let attack = Pose { attack: 0.6, ..Default::default() };
+            let fighters = [
+                (Race::Dwarf, 0, side, 40),
+                (Race::GreenGoblin, 0, -side, 66),
+                (Race::Lizardman, 0, side, 112),
+                (Race::GrayGoblin, 0, -side, 138),
+                (Race::Dwarf, 1, side, 168),
+                (Race::Lizardman, 1, -side, 194),
+            ];
+            for (race, look, yaw, x) in fighters {
+                let f = silhouette(&figure(race, look, yaw, &attack, 40.0));
+                stand(&mut b, &f, x, 112);
+            }
+            // Embers.
+            for k in 0..30 {
+                let x = (hashf(k, 3, 5, 1) * w as f32) as i32;
+                let y = (hashf(k, 4, 5, 1) * 90.0) as i32;
+                b.set(x, y, c(Ramp::Fire, 14));
+            }
+        }
+        _ => {
+            // The three peoples at the open doors, ready to fight their way out.
+            b.fill(BLACK);
+            for y in 80..h {
+                for x in 0..w {
+                    let d = (x as f32 - 110.0).abs();
+                    let spread = 10.0 + (y - 80) as f32 * 1.2;
+                    let s = if d < spread { 7.0 - d / spread * 4.0 } else { 1.0 + hashf(x, y, 4, 2) * 2.0 };
+                    b.set(x, y, if d < spread { c(Ramp::Gold, s as i32) } else { c(Ramp::Stone, s as i32) });
+                }
+            }
+            great_doors(&mut b, 60, 0, 100, 80, 20);
+            let ready = Pose { attack: 0.25, ..Default::default() };
+            // Mountain folk on the left, lizardmen on the right, both turned
+            // toward the goblins who hold the doorway.
+            for (i, (x, y)) in [(16, 108), (36, 116), (24, 96)].into_iter().enumerate() {
+                let f = figure(Race::Dwarf, i as u8, side * 0.7, &ready, 44.0);
+                stand(&mut b, &f, x, y);
+            }
+            for (i, (x, y)) in [(204, 108), (184, 116), (196, 96)].into_iter().enumerate() {
+                let f = figure(Race::Lizardman, i as u8, -side * 0.7, &ready, 40.0);
+                stand(&mut b, &f, x, y);
+            }
+            for (race, x, y) in [(Race::GrayGoblin, 92, 98), (Race::GreenGoblin, 128, 98), (Race::GrayGoblin, 110, 114)] {
+                let f = figure(race, 0, std::f32::consts::PI, &ready, 44.0);
+                stand(&mut b, &f, x, y);
+            }
+        }
+    }
+    framed(&b)
+}
+
+impl Story {
+    pub fn intro() -> Story {
+        Story { ending: false, page: 0, t: 0.0, pics: (0..INTRO.len()).map(scene).collect() }
+    }
+
+    /// The ending after the Lord of Souls is struck down.
+    pub fn fall() -> Story {
+        Story { ending: true, page: 0, t: 0.0, pics: (0..FALL.len()).map(fall_scene).collect() }
+    }
+
+    fn pages(&self) -> &'static [(&'static str, Ramp)] {
+        if self.ending { &FALL } else { &INTRO }
     }
 
     pub fn update(&mut self, _ctx: &mut Ctx, input: &Input, dt: f32) -> Option<ScreenCmd> {
         self.t += dt;
+        let done = if self.ending { ScreenCmd::Credits } else { ScreenCmd::CharGen };
         if input.hit(Key::Escape) {
-            return Some(ScreenCmd::Title);
+            return Some(if self.ending { done } else { ScreenCmd::Title });
         }
         if (self.t > 0.4 && (input.any_click() || input.any_key())) || self.t > 12.0 {
             self.page += 1;
             self.t = 0.0;
-            if self.page >= INTRO.len() {
-                return Some(ScreenCmd::CharGen);
+            if self.page >= self.pages().len() {
+                return Some(done);
             }
         }
         None
@@ -343,13 +552,17 @@ impl Intro {
 
     pub fn draw(&mut self, ctx: &mut Ctx, fb: &mut Bitmap) {
         fb.fill(BLACK);
-        let p = self.page.min(INTRO.len() - 1);
+        let pages = self.pages();
+        let p = self.page.min(pages.len() - 1);
         let pic = &self.pics[p];
         fb.blit(pic, 160 - pic.w / 2, 18);
-        let (text, ramp) = INTRO[p];
+        let (text, ramp) = pages[p];
         let lines = ctx.art.font.wrap(text, 260);
         for (i, l) in lines.iter().enumerate() {
-            ctx.art.font.draw_centered(fb, 160, 150 + i as i32 * 8, l, c(ramp, 12));
+            ctx.art.font.draw_centered(fb, 160, 146 + i as i32 * 8, l, c(ramp, 12));
+        }
+        if self.ending && p == pages.len() - 1 && self.t > 1.0 {
+            ctx.art.font.draw_centered(fb, 160, 192, "- The End -", c(Ramp::Red, 10));
         }
     }
 }
