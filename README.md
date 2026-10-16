@@ -22,6 +22,8 @@ original. The story and characters are original.
 | ![Talking to Tobin](screenshots/conversation.png) | ![Bartering](screenshots/barter.png) |
 | ![The dwarven hall](screenshots/dwarven-hall.png) | ![A fireball against Malchor's thralls](screenshots/fireball.png) |
 | ![The Lord of Souls](screenshots/lord-of-souls.png) | ![The automap](screenshots/automap.png) |
+| ![Malchor steps out at the Shard Gate](screenshots/malchor-reveal.png) | ![The ending: the Lord of Souls falls](screenshots/ending-fallen-king.png) |
+| ![The ending: the colony burns](screenshots/ending-war.png) | ![The ending: three peoples at the great doors](screenshots/ending-three-peoples.png) |
 
 ## Building and running
 
