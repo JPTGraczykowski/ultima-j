@@ -1,6 +1,8 @@
 //! Ultima-J: a clone of the 1992 first-person dungeon RPG Ultima Underworld,
 //! with a software renderer and procedurally generated art in its style.
 
+#[macro_use]
+mod lang;
 mod art;
 mod audio;
 mod game;
@@ -150,7 +152,7 @@ fn main() {
             Ok(())
         }
         "--play" => {
-            platform::run_window(Box::new(ui::GameApp::new_playing(1).with_saved_settings()));
+            platform::run_window(Box::new(ui::GameApp::new_playing_in(1, ui::save::load_settings().language).with_saved_settings()));
             Ok(())
         }
         _ => {

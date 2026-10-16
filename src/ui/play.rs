@@ -102,6 +102,7 @@ pub struct PlayState {
 
 impl PlayState {
     pub fn new(game: Game) -> PlayState {
+        crate::lang::set_female(game.player.female);
         let mesh = LevelMesh::build(&game.level().map);
         let lvl = game.cur;
         PlayState { game, mesh, mesh_level: lvl, ui: Ui::new(), overlay: Overlay::None }
@@ -186,6 +187,7 @@ impl PlayState {
     }
 
     pub fn update(&mut self, ctx: &mut Ctx, input: &Input, dt: f32) -> Option<super::ScreenCmd> {
+        crate::lang::set_female(self.game.player.female);
         // Decay presentation effects.
         if let Some((col, a)) = self.ui.flash {
             let na = a - dt * 1.2;
@@ -517,7 +519,7 @@ impl PlayState {
 
     fn do_get(&mut self, t: Target, dist: f32) {
         if self.ui.held.is_some() {
-            self.game.msg("You are already holding something.");
+            self.game.msg(t!("You are already holding something."));
             return;
         }
         if let Some(it) = self.game.get(t, dist) {
@@ -534,7 +536,7 @@ impl PlayState {
         if let Some(sp) = Spell::from_runes(&shelf) {
             if sp.def().target != Targeting::Caster && Self::view_mouse(input).is_none() {
                 self.ui.targeting = Some(sp);
-                self.game.msg("Select a target for the spell.");
+                self.game.msg(t!("Select a target for the spell."));
                 return;
             }
         }
@@ -587,13 +589,13 @@ impl PlayState {
         let mana = Rect::new(FLASK_MANA.0 - 12, FLASK_MANA.1 - 30, 24, 32);
         if vit.contains(m) {
             let p = &self.game.player;
-            let s = format!("Your current vitality is {} out of {}.", p.vit, p.max_vit);
+            let s = t!("Your current vitality is {} out of {}.", p.vit, p.max_vit);
             self.game.msg(s);
             return;
         }
         if mana.contains(m) {
             let p = &self.game.player;
-            let s = format!("Your current mana points are {} out of {}.", p.mana, p.max_mana);
+            let s = t!("Your current mana points are {} out of {}.", p.mana, p.max_mana);
             self.game.msg(s);
             return;
         }

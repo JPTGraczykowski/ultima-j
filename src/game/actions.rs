@@ -8,6 +8,7 @@ use super::physics;
 use super::{ActiveSpell, DoorKind, EffectKind, EqSlot, Event, Game, ProjKind, Projectile};
 use crate::art::textures::Tex;
 use crate::audio::Sfx;
+use crate::lang::Noun;
 use crate::util::V3;
 
 /// What the cursor points at in the 3D view.
@@ -41,7 +42,7 @@ impl Game {
         let npc = super::levels::malchor(&super::dialogue::DialogueDb::load(), 32.5, 21.5);
         let id = self.level_mut().add_npc(npc);
         self.events.push(Event::Flash([140.0, 60.0, 200.0], 0.5));
-        self.msg("Behind you, someone laughs softly - and you know the voice.");
+        self.msg(t!("Behind you, someone laughs softly - and you know the voice."));
         self.events.push(Event::StartConversation(id));
     }
 
@@ -61,27 +62,27 @@ fn cap(s: &str) -> String {
 impl Game {
     pub fn look(&mut self, t: Target) {
         match t {
-            Target::None => self.msg("You see nothing of interest."),
+            Target::None => self.msg(t!("You see nothing of interest.")),
             Target::Floor { tx, tz, tex } => {
                 self.search_for_trap(tx, tz);
                 if self.trap_at(tx, tz).map(|i| self.level().triggers[i].found).unwrap_or(false) {
-                    self.msg("You see a pressure plate set into the floor. It is a trap.");
+                    self.msg(t!("You see a pressure plate set into the floor. It is a trap."));
                 } else {
-                    self.msg(format!("You see {}.", tex.describe()));
+                    self.msg(t!("You see {}.", tex.describe()));
                 }
             }
             Target::Ceiling { tex, .. } => {
-                self.msg(format!("You see {}.", tex.describe()));
+                self.msg(t!("You see {}.", tex.describe()));
             }
             Target::Wall { tx, tz, tex } => {
                 if tex == Tex::Plaque {
                     if let Some((_, _, text)) = self.level().writings.iter().find(|w| (w.0 - tx).abs() <= 1 && (w.1 - tz).abs() <= 1) {
                         let text = text.clone();
-                        self.msg(format!("The writing reads: {}", text));
+                        self.msg(t!("The writing reads: {}", crate::lang::tr_dyn(&text)));
                         return;
                     }
                 }
-                self.msg(format!("You see {}.", tex.describe()));
+                self.msg(t!("You see {}.", tex.describe()));
             }
             Target::Item(id) => {
                 if let Some(idx) = self.level().item_index(id) {
@@ -93,13 +94,15 @@ impl Game {
             Target::Npc(id) => {
                 if let Some(n) = self.level().npc(id) {
                     let s = if n.alive() {
-                        let mut d = format!("You see {}.", n.describe());
                         if n.hp < n.max_hp {
-                            d = format!("You see {} ({}).", n.describe(), n.health_word());
+                            let d = n.noun();
+                            let h = crate::lang::agree(n.health_word(), &d);
+                            t!("You see {} ({}).", d, h)
+                        } else {
+                            t!("You see {}.", n.noun())
                         }
-                        d
                     } else {
-                        format!("You see the corpse of a {}.", n.race.def().name)
+                        t!("You see the corpse of a {}.", n.race_noun())
                     };
                     self.msg(s);
                 }
@@ -107,11 +110,11 @@ impl Game {
             Target::Door(id) => {
                 if let Some(d) = self.level().doors.iter().find(|d| d.id == id) {
                     let s = if d.kind == DoorKind::Secret && !d.found {
-                        "You see a stone wall.".to_string()
+                        t!("You see a stone wall.").to_string()
                     } else if d.is_open() {
-                        format!("You see {} (open).", d.name())
+                        t!("You see {} (open).", d.name())
                     } else {
-                        format!("You see {}.", d.name())
+                        t!("You see {}.", d.name())
                     };
                     self.msg(s);
                 }
@@ -124,13 +127,13 @@ impl Game {
         match t {
             Target::Item(id) => {
                 if dist > REACH && !self.player.has_spell(Spell::Telekinesis) {
-                    self.msg("That is too far away to take.");
+                    self.msg(t!("That is too far away to take."));
                     return None;
                 }
                 let idx = self.level().item_index(id)?;
                 let it = &self.level().items[idx].item;
                 if it.kind.is_fixture() {
-                    self.msg("You cannot pick that up.");
+                    self.msg(t!("You cannot pick that up."));
                     return None;
                 }
                 let wi = self.level_mut().items.remove(idx);
@@ -139,7 +142,7 @@ impl Game {
             }
             Target::None => None,
             _ => {
-                self.msg("You cannot pick that up.");
+                self.msg(t!("You cannot pick that up."));
                 None
             }
         }
@@ -168,7 +171,7 @@ impl Game {
             self.set_flag("sapling_level", self.cur as i32);
             self.set_flag("sapling_x", (q.x * 100.0) as i32);
             self.set_flag("sapling_z", (q.z * 100.0) as i32);
-            self.msg("You plant the silver sapling. Should you fall, it will call you back.");
+            self.msg(t!("You plant the silver sapling. Should you fall, it will call you back."));
         }
         self.level_mut().add_item(item, q.x, q.z);
         self.sound(Sfx::Drop);
@@ -179,25 +182,24 @@ impl Game {
             Target::Npc(id) => {
                 let Some(n) = self.level().npc(id) else { return };
                 if !n.alive() {
-                    self.msg("The dead tell no tales.");
+                    self.msg(t!("The dead tell no tales."));
                     return;
                 }
                 if dist > 3.0 {
-                    self.msg("You are too far away to talk.");
+                    self.msg(t!("You are too far away to talk."));
                     return;
                 }
                 if n.talk.is_some() && n.attitude != Attitude::Hostile {
                     self.events.push(Event::StartConversation(id));
                 } else if n.talk.is_some() && n.attitude == Attitude::Hostile {
-                    let name = n.race.def().name;
-                    self.msg(format!("The {} is in no mood to talk.", name));
+                    self.msg(t!("The {} is in no mood to talk.", n.race_noun()));
                 } else {
-                    self.msg("You get no response.");
+                    self.msg(t!("You get no response."));
                 }
             }
-            Target::Door(_) => self.msg("The door does not reply."),
-            Target::None => self.msg("There is no one there to talk to."),
-            _ => self.msg("You cannot talk to that."),
+            Target::Door(_) => self.msg(t!("The door does not reply.")),
+            Target::None => self.msg(t!("There is no one there to talk to.")),
+            _ => self.msg(t!("You cannot talk to that.")),
         }
     }
 
@@ -206,14 +208,14 @@ impl Game {
         match t {
             Target::Door(id) => {
                 if dist > REACH + 0.4 {
-                    self.msg("That is too far away.");
+                    self.msg(t!("That is too far away."));
                     return;
                 }
                 self.use_door(id, held);
             }
             Target::Wall { tx, tz, tex } => {
                 if dist > REACH + 0.4 {
-                    self.msg("That is too far away.");
+                    self.msg(t!("That is too far away."));
                     return;
                 }
                 if tex == Tex::WallLever {
@@ -221,12 +223,12 @@ impl Game {
                 } else if tex == Tex::Plaque {
                     self.look(t);
                 } else {
-                    self.msg("You cannot use that.");
+                    self.msg(t!("You cannot use that."));
                 }
             }
             Target::Item(id) => {
                 if dist > REACH {
-                    self.msg("That is too far away.");
+                    self.msg(t!("That is too far away."));
                     return;
                 }
                 let Some(idx) = self.level().item_index(id) else { return };
@@ -240,16 +242,16 @@ impl Game {
                         self.heal_player(5);
                         self.player.hunger = (self.player.hunger + 3.0).min(100.0);
                         self.sound(Sfx::Drink);
-                        self.msg("You drink from the fountain. The cool water refreshes you.");
+                        self.msg(t!("You drink from the fountain. The cool water refreshes you."));
                     }
                     ItemKind::Bed => self.sleep(),
                     ItemKind::Shrine => {
                         self.sound(Sfx::Spell);
                         self.heal_player(10);
                         if self.player.skill_points > 0 {
-                            self.msg("You kneel at the shrine. You feel able to improve your skills (see the statistics panel).");
+                            self.msg(t!("You kneel at the shrine. You feel able to improve your skills (see the statistics panel)."));
                         } else {
-                            self.msg("You kneel at the shrine and feel at peace.");
+                            self.msg(t!("You kneel at the shrine and feel at peace."));
                         }
                     }
                     ItemKind::Chest | ItemKind::Corpse | ItemKind::Box => {
@@ -257,9 +259,9 @@ impl Game {
                         let contents = std::mem::take(&mut wi.item.contents);
                         let pos = wi.pos;
                         if contents.is_empty() {
-                            self.msg("It is empty.");
+                            self.msg(t!("It is empty."));
                         } else {
-                            self.msg("You open it. Its contents spill out.");
+                            self.msg(t!("You open it. Its contents spill out."));
                             for (k, it) in contents.into_iter().enumerate() {
                                 let a = k as f32 * 1.7;
                                 self.level_mut().add_item(it, pos.x + a.sin() * 0.25, pos.z + a.cos() * 0.25);
@@ -269,15 +271,15 @@ impl Game {
                     }
                     ItemKind::MoonOrb => {
                         self.events.push(Event::ReadText(
-                            "Peering into the orb, you glimpse the deepest hall of the abyss: a pit of fire, and something vast stirring within it. A voice whispers: 'Bring the three shards together, and the way shall open.'".into(),
+                            t!("Peering into the orb, you glimpse the deepest hall of the abyss: a pit of fire, and something vast stirring within it. A voice whispers: 'Bring the three shards together, and the way shall open.'").into(),
                         ));
                     }
-                    ItemKind::Campfire | ItemKind::Brazier => self.msg("The fire crackles warmly."),
+                    ItemKind::Campfire | ItemKind::Brazier => self.msg(t!("The fire crackles warmly.")),
                     _ => {
                         if kind.is_fixture() {
-                            self.msg("You cannot use that.");
+                            self.msg(t!("You cannot use that."));
                         } else {
-                            self.msg("You must pick that up to use it.");
+                            self.msg(t!("You must pick that up to use it."));
                         }
                     }
                 }
@@ -285,15 +287,15 @@ impl Game {
             Target::Floor { tx, tz, .. } => match self.trap_at(tx, tz) {
                 Some(i) if self.level().triggers[i].found => {
                     if dist > REACH + 0.4 {
-                        self.msg("That is too far away.");
+                        self.msg(t!("That is too far away."));
                     } else {
                         self.disarm_trap(i);
                     }
                 }
                 _ => self.look(t),
             },
-            Target::Npc(_) => self.msg("You cannot use that."),
-            _ => self.msg("You cannot use that."),
+            Target::Npc(_) => self.msg(t!("You cannot use that.")),
+            _ => self.msg(t!("You cannot use that.")),
         }
     }
 
@@ -309,7 +311,7 @@ impl Game {
     fn reveal_trap(&mut self, i: usize) {
         self.level_mut().triggers[i].found = true;
         self.sound(Sfx::Click);
-        self.msg("You notice a pressure plate hidden in the floor. A trap!");
+        self.msg(t!("You notice a pressure plate hidden in the floor. A trap!"));
     }
 
     /// Walking onto a tile gives a chance to notice hidden traps next to it (Traps skill).
@@ -339,9 +341,9 @@ impl Game {
     /// The player stepped on a trap.
     pub fn spring_trap(&mut self, tx: i32, tz: i32, dmg: i32) {
         let why = match (tx + tz).rem_euclid(3) {
-            0 => "A dart shoots out of the wall! You are hurt.",
-            1 => "Spikes jab up from the floor! You are hurt.",
-            _ => "A blade springs from the floor! You are hurt.",
+            0 => t!("A dart shoots out of the wall! You are hurt."),
+            1 => t!("Spikes jab up from the floor! You are hurt."),
+            _ => t!("A blade springs from the floor! You are hurt."),
         };
         self.sound(Sfx::Click);
         self.hurt_player(dmg, why);
@@ -356,7 +358,7 @@ impl Game {
         if roll < chance {
             self.level_mut().triggers[i].fired = true;
             self.sound(Sfx::Click);
-            self.msg("You carefully disarm the trap.");
+            self.msg(t!("You carefully disarm the trap."));
             self.gain_exp(10);
         } else if roll >= chance + 40 {
             self.level_mut().triggers[i].fired = true;
@@ -364,17 +366,17 @@ impl Game {
                 super::TriggerKind::Damage { amount } => amount,
                 _ => 0,
             };
-            self.msg("Your hand slips!");
+            self.msg(t!("Your hand slips!"));
             self.spring_trap(tx, tz, dmg);
         } else {
-            self.msg("You fail to disarm the trap.");
+            self.msg(t!("You fail to disarm the trap."));
         }
     }
 
     /// Describe an item the player looks at. Lore may identify its enchantment
     /// (remembered on the item) and Appraise estimates its worth.
     pub fn examine(&mut self, it: &mut Item) {
-        self.msg(format!("You see {}.", describe_item(it)));
+        self.msg(t!("You see {}.", describe_item(it)));
         let lore = self.player.skill(Skill::Lore);
         if it.enchant != Enchant::None {
             if !it.identified && lore * 6 + self.player.int / 2 >= it.enchant.difficulty() {
@@ -382,18 +384,18 @@ impl Game {
             }
             if it.identified {
                 let s = if it.def().class == Class::Wand {
-                    format!("It holds {} ({} charges left).", it.enchant.describe(), it.charges)
+                    t!("It holds {} ({} charges left).", it.enchant.describe(), it.charges)
                 } else {
-                    format!("It bears {}.", it.enchant.describe())
+                    t!("It bears {}.", it.enchant.describe())
                 };
                 self.msg(s);
             } else if lore > 0 {
-                self.msg("It seems to be enchanted, but you cannot tell how.");
+                self.msg(t!("It seems to be enchanted, but you cannot tell how."));
             }
         }
         match self.appraise(it) {
-            Some(0) => self.msg("You judge it to be worthless."),
-            Some(v) => self.msg(format!("You judge it to be worth about {} gold.", v)),
+            Some(0) => self.msg(t!("You judge it to be worthless.")),
+            Some(v) => self.msg(t!("You judge it to be worth about {}.", crate::lang::gold(v))),
             None => {}
         }
     }
@@ -421,13 +423,13 @@ impl Game {
     fn repair(&mut self, mut item: Item) -> Item {
         let skill = self.player.skill(Skill::Repair);
         let cap = (30 + skill * 7).min(100);
-        let name = item.def().name;
+        let name = item.bare();
         if item.quality >= 100 {
-            self.msg(format!("The {} is in good condition.", name));
+            self.msg(t!("The {} is in good condition.", name));
             return item;
         }
         if item.quality as i32 >= cap {
-            self.msg(if skill == 0 { format!("You do not know how to mend the {} any better.", name) } else { format!("Your skill cannot improve the {} any further.", name) });
+            self.msg(if skill == 0 { t!("You do not know how to mend the {} any better.", &name) } else { t!("Your skill cannot improve the {} any further.", &name) });
             return item;
         }
         self.player.fatigue = (self.player.fatigue + 3.0).min(100.0);
@@ -438,13 +440,13 @@ impl Game {
             item.quality = (item.quality as i32 + 8 + skill * 3).min(cap) as u8;
             self.sound(Sfx::Hit);
             let cond = item.condition_word().trim_end();
-            self.msg(if cond.is_empty() { format!("You repair the {}. It is as good as new.", name) } else { format!("You repair the {}. It is now {}.", name, cond) });
+            self.msg(if cond.is_empty() { t!("You repair the {}. It is as good as new.", &name) } else { t!("You repair the {}. It is now {}.", &name, crate::lang::agree(cond, &name)) });
         } else if roll >= 90 + skill.min(9) {
             item.quality = item.quality.saturating_sub(3);
             self.sound(Sfx::Miss);
-            self.msg(format!("You slip and damage the {} further.", name));
+            self.msg(t!("You slip and damage the {} further.", &name));
         } else {
-            self.msg(format!("You fail to repair the {}.", name));
+            self.msg(t!("You fail to repair the {}.", name));
         }
         item
     }
@@ -465,11 +467,11 @@ impl Game {
                 dm.opening = true;
                 self.sound(Sfx::Spell);
                 self.events.push(Event::Flash([255.0, 240.0, 160.0], 0.5));
-                self.msg("The three shards blaze with light! The great gate grinds open.");
+                self.msg(t!("The three shards blaze with light! The great gate grinds open."));
                 self.malchor_appears();
             } else {
                 self.sound(Sfx::Locked);
-                self.msg("The gate is sealed by a powerful magic. Three hollows in its surface glow faintly: red, blue and green.");
+                self.msg(t!("The gate is sealed by a powerful magic. Three hollows in its surface glow faintly: red, blue and green."));
             }
             return;
         }
@@ -477,14 +479,14 @@ impl Game {
             let chance = 30 + self.player.skill(Skill::Search) * 6 + self.player.int;
             if self.rng.range(0, 100) < chance {
                 self.level_mut().doors.iter_mut().find(|x| x.id == id).unwrap().found = true;
-                self.msg("You found a secret door!");
+                self.msg(t!("You found a secret door!"));
             } else {
-                self.msg("You see nothing unusual about the wall.");
+                self.msg(t!("You see nothing unusual about the wall."));
                 return;
             }
         }
         if d.remote && !d.opening {
-            self.msg("The door will not budge. Perhaps it is opened by some mechanism.");
+            self.msg(t!("The door will not budge. Perhaps it is opened by some mechanism."));
             return;
         }
         if d.locked {
@@ -493,20 +495,20 @@ impl Game {
                 dm.locked = false;
                 dm.opening = true;
                 self.sound(Sfx::DoorOpen);
-                self.msg("You unlock the door with your key.");
+                self.msg(t!("You unlock the door with your key."));
             } else if held.map(|h| h.kind == ItemKind::Lockpick).unwrap_or(false) {
                 let chance = 20 + self.player.skill(Skill::Picklock) * 6 + self.player.dex;
                 if self.rng.range(0, 100) < chance {
                     self.level_mut().doors.iter_mut().find(|x| x.id == id).unwrap().locked = false;
-                    self.msg("You succeed in picking the lock.");
+                    self.msg(t!("You succeed in picking the lock."));
                     self.sound(Sfx::Click);
                 } else {
-                    self.msg("You fail to pick the lock.");
+                    self.msg(t!("You fail to pick the lock."));
                     self.sound(Sfx::Locked);
                 }
             } else {
                 self.sound(Sfx::Locked);
-                self.msg("The door is locked.");
+                self.msg(t!("The door is locked."));
             }
             return;
         }
@@ -516,7 +518,7 @@ impl Game {
         // Do not close the door on the player.
         if !opening && physics::door_blocks_point(self.level(), id, self.player.pos, physics::PLAYER_RADIUS) {
             self.level_mut().doors.iter_mut().find(|x| x.id == id).unwrap().opening = true;
-            self.msg("You are in the way.");
+            self.msg(t!("You are in the way."));
             return;
         }
         self.sound(if opening { Sfx::DoorOpen } else { Sfx::DoorClose });
@@ -527,7 +529,7 @@ impl Game {
         let sw = self.levels[lvl].switches.iter_mut().find(|s| (s.tx - tx).abs() <= 1 && (s.tz - tz).abs() <= 1);
         let Some(sw) = sw else {
             self.sound(Sfx::Lever);
-            self.msg("You pull the lever, but nothing seems to happen.");
+            self.msg(t!("You pull the lever, but nothing seems to happen."));
             return;
         };
         sw.on = !sw.on;
@@ -538,7 +540,7 @@ impl Game {
             d.opening = on;
             d.locked = false;
             self.sound(if on { Sfx::DoorOpen } else { Sfx::DoorClose });
-            self.msg("You pull the lever. You hear a grinding noise.");
+            self.msg(t!("You pull the lever. You hear a grinding noise."));
         }
     }
 
@@ -548,19 +550,19 @@ impl Game {
         match def.class {
             Class::Food => {
                 if self.player.hunger > 92.0 {
-                    self.msg("You are too full to eat that now.");
+                    self.msg(t!("You are too full to eat that now."));
                     return Some(item);
                 }
                 self.player.hunger = (self.player.hunger + def.nutrition as f32).min(100.0);
                 self.sound(Sfx::Eat);
                 let taste = match item.kind {
-                    ItemKind::Mushroom => "That mushroom tasted rather odd.",
-                    ItemKind::Meat => "That meat was tough, but filling.",
-                    _ => "That was delicious.",
+                    ItemKind::Mushroom => t!("That mushroom tasted rather odd."),
+                    ItemKind::Meat => t!("That meat was tough, but filling."),
+                    _ => t!("That was delicious."),
                 };
                 self.msg(taste);
                 if item.kind == ItemKind::Mushroom && self.rng.chance(0.3) {
-                    self.msg("You feel a bit light-headed.");
+                    self.msg(t!("You feel a bit light-headed."));
                 }
                 consume(item)
             }
@@ -568,10 +570,10 @@ impl Game {
                 self.player.hunger = (self.player.hunger + def.nutrition as f32).min(100.0);
                 self.sound(Sfx::Drink);
                 if item.kind == ItemKind::Wine {
-                    self.msg("The wine warms you. You feel a little drunk.");
+                    self.msg(t!("The wine warms you. You feel a little drunk."));
                     self.heal_player(2);
                 } else {
-                    self.msg("You drink the water. It is refreshing.");
+                    self.msg(t!("You drink the water. It is refreshing."));
                     self.player.fatigue = (self.player.fatigue - 5.0).max(0.0);
                 }
                 consume(item)
@@ -582,44 +584,44 @@ impl Game {
                     ItemKind::RedPotion => {
                         let amt = self.rng.range(12, 24);
                         self.heal_player(amt);
-                        self.msg("You feel much better.");
+                        self.msg(t!("You feel much better."));
                     }
                     ItemKind::BluePotion => {
                         self.player.mana = (self.player.mana + 12).min(self.player.max_mana);
-                        self.msg("Your mind feels clear and powerful.");
+                        self.msg(t!("Your mind feels clear and powerful."));
                     }
                     ItemKind::GreenPotion => {
                         self.player.poison = 0.0;
-                        self.msg("You feel the poison leave your body.");
+                        self.msg(t!("You feel the poison leave your body."));
                     }
                     _ => {
                         self.add_spell(Spell::NightVision);
-                        self.msg("Your eyes tingle. The darkness seems to recede.");
+                        self.msg(t!("Your eyes tingle. The darkness seems to recede."));
                     }
                 }
                 consume(item)
             }
             Class::Light => {
                 if item.fuel <= 0.0 && def.light.map(|l| l.2 > 0.0).unwrap_or(false) {
-                    self.msg(format!("The {} is burnt out.", def.name));
+                    self.msg(t!("The {} is burnt out.", item.bare()));
                     return Some(item);
                 }
                 item.lit = !item.lit;
                 if item.lit {
-                    self.msg(format!("You light the {}.", def.name));
+                    self.msg(t!("You light the {}.", Noun::new(def.name, def.name)));
                     if equipped_slot.is_none() {
                         // Lights only shine when carried in a hand or on a shoulder.
                         for s in [EqSlot::ShoulderL, EqSlot::ShoulderR] {
                             if self.player.equip.get(s).is_none() {
                                 *self.player.equip.get_mut(s) = Some(item);
-                                self.msg("You place it on your shoulder.");
+                                self.msg(t!("You place it on your shoulder."));
                                 return None;
                             }
                         }
-                        self.msg("Place it in a hand or on a shoulder for it to light your way.");
+                        self.msg(t!("Place it in a hand or on a shoulder for it to light your way."));
                     }
                 } else {
-                    self.msg(format!("You put out the {}.", def.name));
+                    self.msg(t!("You put out the {}.", Noun::new(def.name, def.name)));
                 }
                 Some(item)
             }
@@ -631,26 +633,26 @@ impl Game {
             Class::Rune => {
                 let r = item.data as usize % 24;
                 if self.player.runes[r] {
-                    self.msg(format!("You already have the {} rune.", super::magic::RUNE_NAMES[r]));
+                    self.msg(t!("You already have the {} rune.", super::magic::RUNE_NAMES[r]));
                     Some(item)
                 } else {
                     self.player.runes[r] = true;
                     self.sound(Sfx::Spell);
-                    self.msg(format!("You place the {} rune in your rune bag.", super::magic::RUNE_NAMES[r]));
+                    self.msg(t!("You place the {} rune in your rune bag.", super::magic::RUNE_NAMES[r]));
                     None
                 }
             }
             Class::Wand => {
                 if let Enchant::Spell(sp) = item.enchant {
                     if item.charges == 0 {
-                        self.msg("The wand is out of charges.");
+                        self.msg(t!("The wand is out of charges."));
                         return Some(item);
                     }
                     item.charges -= 1;
                     let aim = V3::new(self.player.yaw.sin(), 0.0, -self.player.yaw.cos());
                     self.apply_spell(sp, aim);
                 } else {
-                    self.msg("Nothing happens.");
+                    self.msg(t!("Nothing happens."));
                 }
                 Some(item)
             }
@@ -661,16 +663,16 @@ impl Game {
             }
             Class::Treasure => {
                 let v = def.value * item.qty as i32;
-                self.msg(format!("{} worth about {} gold.", cap(&item.name_with_article()), v.max(1)));
+                self.msg(t!("{} worth about {}.", Noun::new(cap(&item.name_with_article()), def.name).qty(item.qty as u32), crate::lang::gold(v.max(1))));
                 Some(item)
             }
             _ => {
                 if let Enchant::Spell(sp) = item.enchant {
                     if item.identified {
-                        self.msg(format!("This item holds the power of {}.", sp.def().name));
+                        self.msg(t!("This item holds the power of {}.", sp.label()));
                     }
                 }
-                self.msg("Nothing happens.");
+                self.msg(t!("Nothing happens."));
                 Some(item)
             }
         }
@@ -682,11 +684,11 @@ impl Game {
             n.alive() && n.attitude == Attitude::Hostile && (n.pos - eye).len() < 7.0 && physics::line_of_sight(self.level(), V3::new(n.pos.x, n.pos.y + 0.4, n.pos.z), eye)
         });
         if danger {
-            self.msg("You cannot rest with enemies nearby!");
+            self.msg(t!("You cannot rest with enemies nearby!"));
             return;
         }
         if self.player.fatigue < 15.0 && self.player.vit == self.player.max_vit {
-            self.msg("You are not tired.");
+            self.msg(t!("You are not tired."));
             return;
         }
         let hungry = self.player.hunger < 25.0;
@@ -700,7 +702,7 @@ impl Game {
         self.events.push(Event::ReadText(String::from("@sleep")));
         let dream = self.dream();
         self.events.push(Event::ReadText(dream));
-        self.msg(if hungry { "You wake, but your hunger kept you from resting well." } else { "You wake feeling refreshed." });
+        self.msg(if hungry { t!("You wake, but your hunger kept you from resting well.") } else { t!("You wake feeling refreshed.") });
     }
 
     pub fn add_spell(&mut self, s: Spell) {
@@ -715,31 +717,31 @@ impl Game {
     /// Cast the spell on the rune shelf toward `aim`.
     pub fn cast_shelf(&mut self, aim: V3) {
         if self.player.shelf.is_empty() {
-            self.msg("You have no runes on your rune shelf.");
+            self.msg(t!("You have no runes on your rune shelf."));
             return;
         }
         let shelf = self.player.shelf.clone();
         let Some(spell) = Spell::from_runes(&shelf) else {
             self.sound(Sfx::Fizzle);
-            self.msg("Those runes do not form a spell.");
+            self.msg(t!("Those runes do not form a spell."));
             return;
         };
         let def = spell.def();
         let cost = spell.mana_cost();
         if self.player.max_circle() < def.circle {
-            self.msg("You are not experienced enough to cast that spell.");
+            self.msg(t!("You are not experienced enough to cast that spell."));
             return;
         }
         if self.player.mana < cost {
             self.sound(Sfx::Fizzle);
-            self.msg("You do not have enough mana to cast that spell.");
+            self.msg(t!("You do not have enough mana to cast that spell."));
             return;
         }
         let chance = (45 + self.player.skill(Skill::Casting) * 7 + self.player.int - def.circle * 10).clamp(10, 98);
         if self.rng.range(0, 100) >= chance {
             self.player.mana -= cost / 2;
             self.sound(Sfx::Fizzle);
-            self.msg("The spell fizzles.");
+            self.msg(t!("The spell fizzles."));
             return;
         }
         self.player.mana -= cost;
@@ -771,46 +773,46 @@ impl Game {
                     let n = self.level_mut().npc_mut(id).unwrap();
                     if spell == Spell::Paralyze {
                         n.paralyzed = 10.0;
-                        self.msg("The creature is frozen in place!");
+                        self.msg(t!("The creature is frozen in place!"));
                     } else {
                         n.attitude = Attitude::Friendly;
                         n.ai = AiState::Follow;
-                        self.msg("The creature becomes your ally.");
+                        self.msg(t!("The creature becomes your ally."));
                     }
                 } else {
-                    self.msg("The spell finds no target.");
+                    self.msg(t!("The spell finds no target."));
                 }
             }
             Spell::LesserHeal => {
                 let a = self.rng.range(6, 12);
                 self.heal_player(a);
-                self.msg("You feel better.");
+                self.msg(t!("You feel better."));
             }
             Spell::Heal => {
                 let a = self.rng.range(14, 24);
                 self.heal_player(a);
-                self.msg("You feel much better.");
+                self.msg(t!("You feel much better."));
             }
             Spell::GreaterHeal => {
                 let a = self.player.max_vit;
                 self.heal_player(a);
-                self.msg("You are completely healed.");
+                self.msg(t!("You are completely healed."));
             }
             Spell::CurePoison => {
                 self.player.poison = 0.0;
-                self.msg("You are cured of poison.");
+                self.msg(t!("You are cured of poison."));
             }
             Spell::CreateFood => {
                 let it = Item::new(if self.rng.chance(0.5) { ItemKind::Bread } else { ItemKind::Apple });
                 self.drop_item(it, None);
-                self.msg("Food appears before you.");
+                self.msg(t!("Food appears before you."));
             }
             Spell::DetectMonster => {
                 let n = self.level().npcs.iter().filter(|n| n.alive() && n.attitude == Attitude::Hostile && (n.pos - eye).len() < 12.0).count();
                 self.msg(match n {
-                    0 => "You sense no hostile creatures nearby.".to_string(),
-                    1 => "You sense one hostile creature nearby.".to_string(),
-                    _ => format!("You sense {} hostile creatures nearby.", n),
+                    0 => t!("You sense no hostile creatures nearby.").to_string(),
+                    1 => t!("You sense one hostile creature nearby.").to_string(),
+                    _ => t!("You sense {} hostile creatures nearby.", n),
                 });
             }
             Spell::CauseFear => {
@@ -821,7 +823,7 @@ impl Game {
                         n.ai = AiState::Flee;
                     }
                 }
-                self.msg(if ids.is_empty() { "Nothing seems affected." } else { "Your foes flee in terror!" });
+                self.msg(if ids.is_empty() { t!("Nothing seems affected.") } else { t!("Your foes flee in terror!") });
             }
             Spell::Confusion => {
                 let ids: Vec<u32> = self.level().npcs.iter().filter(|n| n.alive() && (n.pos - eye).len() < 6.0 && n.attitude == Attitude::Hostile).map(|n| n.id).collect();
@@ -831,7 +833,7 @@ impl Game {
                         n.ai = AiState::Wander;
                     }
                 }
-                self.msg("Your foes forget their quarrel with you.");
+                self.msg(t!("Your foes forget their quarrel with you."));
             }
             Spell::Reveal => {
                 let (cx, cz) = (eye.x, eye.z);
@@ -842,7 +844,7 @@ impl Game {
                         found += 1;
                     }
                 }
-                self.msg(if found > 0 { "Hidden passages are revealed to you!" } else { "Nothing hidden is revealed." });
+                self.msg(if found > 0 { t!("Hidden passages are revealed to you!") } else { t!("Nothing hidden is revealed.") });
             }
             Spell::RoamingSight => {
                 for t in self.level_mut().map.tiles.iter_mut() {
@@ -850,14 +852,14 @@ impl Game {
                         t.explored = true;
                     }
                 }
-                self.msg("Your spirit soars through the level. Your map is complete.");
+                self.msg(t!("Your spirit soars through the level. Your map is complete."));
             }
             Spell::GateTravel => {
                 let (x, z, yaw) = self.level().start;
                 let y = self.level().map.floor_at(x, z);
                 self.player.pos = V3::new(x, y, z);
                 self.player.yaw = yaw;
-                self.msg("You are whisked away through a moongate!");
+                self.msg(t!("You are whisked away through a moongate!"));
             }
             Spell::Tremor | Spell::FlameWind => {
                 let ids: Vec<u32> = self.level().npcs.iter().filter(|n| n.alive() && (n.pos - eye).len() < 5.0 && n.attitude != Attitude::Friendly).map(|n| n.id).collect();
@@ -869,24 +871,24 @@ impl Game {
                 if spell == Spell::FlameWind {
                     self.spawn_effect(eye + aim, EffectKind::Explosion);
                 }
-                self.msg(if spell == Spell::Tremor { "The ground heaves violently!" } else { "A wind of flame roars about you!" });
+                self.msg(if spell == Spell::Tremor { t!("The ground heaves violently!") } else { t!("A wind of flame roars about you!") });
             }
             Spell::Open | Spell::StrengthenDoor | Spell::RemoveTrap => {
                 let door = self.level().doors.iter().filter(|d| ((d.tx as f32 + 0.5 - eye.x).powi(2) + (d.tz as f32 + 0.5 - eye.z).powi(2)).sqrt() < 3.0).map(|d| d.id).next();
                 match (spell, door) {
                     (Spell::Open, Some(id)) if self.level().doors.iter().any(|d| d.id == id && d.key == SHARD_GATE && d.locked) => {
-                        self.msg("The gate's light swallows your spell. Only the three shards will open it.");
+                        self.msg(t!("The gate's light swallows your spell. Only the three shards will open it."));
                     }
                     (Spell::Open, Some(id)) => {
                         let d = self.level_mut().doors.iter_mut().find(|d| d.id == id).unwrap();
                         d.locked = false;
                         d.opening = true;
-                        self.msg("The door swings open.");
+                        self.msg(t!("The door swings open."));
                     }
                     (Spell::StrengthenDoor, Some(id)) => {
                         let d = self.level_mut().doors.iter_mut().find(|d| d.id == id).unwrap();
                         d.opening = false;
-                        self.msg("The door is magically sealed.");
+                        self.msg(t!("The door is magically sealed."));
                     }
                     (Spell::RemoveTrap, _) => {
                         let (tx, tz) = (eye.x.floor() as i32, eye.z.floor() as i32);
@@ -898,9 +900,9 @@ impl Game {
                                 n += 1;
                             }
                         }
-                        self.msg(if n > 0 { "You disarm a trap." } else { "You find no traps." });
+                        self.msg(if n > 0 { t!("You disarm a trap.") } else { t!("You find no traps.") });
                     }
-                    _ => self.msg("There is no door nearby."),
+                    _ => self.msg(t!("There is no door nearby.")),
                 }
             }
             Spell::NameEnchantment => {
@@ -920,19 +922,19 @@ impl Game {
                 for it in self.player.pack.iter_mut().flatten() {
                     n += name_all(std::slice::from_mut(it));
                 }
-                self.msg(if n > 0 { "The nature of your enchanted belongings is revealed. Look at them to learn more." } else { "You carry nothing whose nature is hidden." });
+                self.msg(if n > 0 { t!("The nature of your enchanted belongings is revealed. Look at them to learn more.") } else { t!("You carry nothing whose nature is hidden.") });
             }
             Spell::RuneOfWarding => {
                 let p = self.player.pos;
                 self.level_mut().add_item(Item::new(ItemKind::Ward), p.x, p.z);
-                self.msg("You trace a rune of warding upon the floor. It will snare the next foe to cross it.");
+                self.msg(t!("You trace a rune of warding upon the floor. It will snare the next foe to cross it."));
             }
             _ => {
                 if def.target == Targeting::Caster && def.duration > 0.0 {
                     self.add_spell(spell);
-                    self.msg(format!("You cast {}.", def.name));
+                    self.msg(t!("You cast {}.", spell.label()));
                 } else {
-                    self.msg(format!("You cast {}.", def.name));
+                    self.msg(t!("You cast {}.", spell.label()));
                 }
             }
         }
@@ -964,18 +966,18 @@ impl Game {
     pub fn dream(&mut self) -> String {
         let has = |k| self.player.has_item(k);
         if self.flag("malchor_revealed") != 0 {
-            return "You dream of nothing at all. The voice that woke you is silent now.".into();
+            return t!("You dream of nothing at all. The voice that woke you is silent now.").into();
         }
         let hint = if !has(ItemKind::ShardOfValor) && self.flag("thorgrim_done") == 0 {
-            "Seek the mountain folk below. Their king keeps the shard of Valor, and he will test thy courage."
+            t!("Seek the mountain folk below. Their king keeps the shard of Valor, and he will test thy courage.")
         } else if !has(ItemKind::ShardOfWisdom) && self.flag("ssrath_done") == 0 {
-            "The lizard folk of the flooded warrens grieve for their stolen young. Their Sage holds the shard of Wisdom."
+            t!("The lizard folk of the flooded warrens grieve for their stolen young. Their Sage holds the shard of Wisdom.")
         } else if !has(ItemKind::ShardOfMercy) && self.flag("aldric_done") == 0 {
-            "In the crypts a knight cannot rest. Return to him what was taken, and Mercy shall be thine."
+            t!("In the crypts a knight cannot rest. Return to him what was taken, and Mercy shall be thine.")
         } else {
-            "The three shards are thine, my knight. Bring them down to the Deep Sanctum and lay them upon my gate. I am waiting."
+            t!("The three shards are thine, my knight. Bring them down to the Deep Sanctum and lay them upon my gate. I am waiting.")
         };
-        format!("You dream. A crowned figure on a throne of bones, its face in shadow, speaks with the voice that woke you: \"{}\"", hint)
+        t!("You dream. A crowned figure on a throne of bones, its face in shadow, speaks with the voice that woke you: \"{}\"", hint)
     }
 
     /// Use the Track skill: report the nearest creature's direction.
@@ -991,19 +993,19 @@ impl Game {
             .map(|n| (n, (n.pos - eye).len()))
             .filter(|(_, d)| *d < range)
             .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
-            .map(|(n, d)| (n.race.def().name, n.pos, d));
+            .map(|(n, d)| (n.race_noun(), n.pos, d));
         if self.rng.range(0, 100) > 30 + skill * 8 {
-            self.msg("You search for tracks, but find nothing you can read.");
+            self.msg(t!("You search for tracks, but find nothing you can read."));
             return;
         }
         match best {
-            None => self.msg("You find no fresh tracks nearby."),
+            None => self.msg(t!("You find no fresh tracks nearby.")),
             Some((name, pos, d)) => {
                 let a = (pos.x - eye.x).atan2(-(pos.z - eye.z));
-                let dirs = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
+                let dirs = [t!("north"), t!("north-east"), t!("east"), t!("south-east"), t!("south"), t!("south-west"), t!("west"), t!("north-west")];
                 let k = ((a / std::f32::consts::TAU * 8.0).round() as i32).rem_euclid(8) as usize;
-                let how = if d < 4.0 { "very close" } else if d < 8.0 { "nearby" } else { "some distance away" };
-                self.msg(format!("You find the tracks of a {} to the {}, {}.", name, dirs[k], how));
+                let how = if d < 4.0 { t!("very close") } else if d < 8.0 { t!("nearby") } else { t!("some distance away") };
+                self.msg(t!("You find the tracks of a {} to the {}, {}.", name, dirs[k], how));
             }
         }
     }
@@ -1026,22 +1028,15 @@ impl Game {
         let health = if p.poison > 0.0 { "poisoned" } else if p.vit < p.max_vit / 3 { "badly wounded" } else if p.vit < p.max_vit { "wounded" } else { "in good health" };
         let day = self.day();
         let lvl = self.cur + 1;
-        let enc = if p.load() > p.capacity() { " You are overburdened." } else { "" };
-        self.msg(format!("You are {}, {} and {}.{}", health, hunger, fatigue, enc));
-        self.msg(format!("It is the {} day of your imprisonment. You are on level {} of the abyss.", ordinal(day), lvl));
+        let enc = if p.load() > p.capacity() { t!(" You are overburdened.") } else { "" };
+        let g = if p.female { crate::lang::Gender::F } else { crate::lang::Gender::M };
+        let w = |s| crate::lang::agree_g(s, g);
+        self.msg(t!("You are {}, {} and {}.{}", w(health), w(hunger), w(fatigue), enc));
+        self.msg(t!("It is the {} day of your imprisonment. You are on level {} of the abyss.", ordinal(day), lvl));
     }
 }
 
-pub fn ordinal(n: i32) -> String {
-    let suffix = match (n % 10, n % 100) {
-        (1, 11) | (2, 12) | (3, 13) => "th",
-        (1, _) => "st",
-        (2, _) => "nd",
-        (3, _) => "rd",
-        _ => "th",
-    };
-    format!("{}{}", n, suffix)
-}
+pub use crate::lang::ordinal;
 
 fn consume(mut item: Item) -> Option<Item> {
     if item.qty > 1 {
@@ -1052,20 +1047,22 @@ fn consume(mut item: Item) -> Option<Item> {
     }
 }
 
-pub fn describe_item(it: &Item) -> String {
+/// "a worn longsword", "a torch (burnt out)".
+pub fn describe_item(it: &Item) -> Noun {
     let d = it.def();
-    let base = it.name_with_article();
+    let mut base = it.noun();
     if d.class == Class::Weapon || d.class == Class::Armor {
         let cond = it.condition_word();
         if !cond.is_empty() {
-            let mut s = base.clone();
-            let sp = s.find(' ').unwrap_or(0);
-            s.insert_str(sp + 1, cond);
-            return s;
+            let sp = base.en.find(' ').unwrap_or(0);
+            base.en.insert_str(sp + 1, cond);
+            return base.adj(cond);
         }
     }
     if d.class == Class::Light && it.fuel <= 0.0 && d.light.map(|l| l.2 > 0.0).unwrap_or(false) {
-        return format!("{} (burnt out)", base);
+        let burnt = format!("({})", crate::lang::agree("burnt out", &base));
+        base.en = format!("{} (burnt out)", base.en);
+        return base.suffix(burnt);
     }
     base
 }
@@ -1202,7 +1199,7 @@ mod tests {
     fn describe_worn_weapon() {
         let mut it = Item::new(ItemKind::Longsword);
         it.quality = 30;
-        assert_eq!(describe_item(&it), "a worn longsword");
+        assert_eq!(describe_item(&it).en, "a worn longsword");
     }
 
     /// A corridor level with the player at its west end.

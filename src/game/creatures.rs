@@ -268,6 +268,22 @@ impl Npc {
         }
     }
 
+    /// The creature as a noun phrase (see `describe`).
+    pub fn noun(&self) -> crate::lang::Noun {
+        let mut n = self.race_noun().adj(self.attitude.word());
+        n.en = self.describe();
+        match &self.name {
+            Some(name) => n.suffix(t!("named {}", crate::lang::tr_dyn(name))),
+            None => n,
+        }
+    }
+
+    /// The creature's kind with no article: "giant rat".
+    pub fn race_noun(&self) -> crate::lang::Noun {
+        let name = self.race.def().name;
+        crate::lang::Noun::new(name, name)
+    }
+
     pub fn health_word(&self) -> &'static str {
         let f = self.hp as f32 / self.max_hp.max(1) as f32;
         if f > 0.8 {

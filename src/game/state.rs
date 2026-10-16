@@ -67,10 +67,10 @@ impl Door {
     }
     pub fn name(&self) -> &'static str {
         match self.kind {
-            DoorKind::Wood => "a sturdy door",
-            DoorKind::Iron => "a massive iron door",
-            DoorKind::Portcullis => "a portcullis",
-            DoorKind::Secret => "a secret door",
+            DoorKind::Wood => t!("a sturdy door"),
+            DoorKind::Iron => t!("a massive iron door"),
+            DoorKind::Portcullis => t!("a portcullis"),
+            DoorKind::Secret => t!("a secret door"),
         }
     }
 }
@@ -217,14 +217,14 @@ pub const ALL_CLASSES: [PClass; 8] =
 impl PClass {
     pub fn name(self) -> &'static str {
         match self {
-            PClass::Fighter => "Fighter",
-            PClass::Mage => "Mage",
-            PClass::Bard => "Bard",
-            PClass::Tinker => "Tinker",
-            PClass::Druid => "Druid",
-            PClass::Paladin => "Paladin",
-            PClass::Ranger => "Ranger",
-            PClass::Shepherd => "Shepherd",
+            PClass::Fighter => t!("Fighter"),
+            PClass::Mage => t!("Mage"),
+            PClass::Bard => t!("Bard"),
+            PClass::Tinker => t!("Tinker"),
+            PClass::Druid => t!("Druid"),
+            PClass::Paladin => t!("Paladin"),
+            PClass::Ranger => t!("Ranger"),
+            PClass::Shepherd => t!("Shepherd"),
         }
     }
     /// Base (str, dex, int) bias.

@@ -19,6 +19,7 @@
 //! `shelf A B C` - put runes on the shelf
 //! `shot PATH` - save a screenshot (3x, 4:3 aspect)
 //! `shot1 PATH` - save a 1x screenshot
+//! `lang en|pl` - the language of the text (before `play` too)
 
 use crate::gfx::{Bitmap, SCREEN_H, SCREEN_W};
 use crate::platform::{App, Input, Key};
@@ -80,7 +81,11 @@ pub fn run(script: &str) -> Result<(), String> {
             "chargen" => app.screen = Screen::CharGen(crate::ui::menus::CharGen::new()),
             "intro" => app.screen = Screen::Story(crate::ui::menus::Story::intro()),
             "ending" => app.screen = Screen::Story(crate::ui::menus::Story::fall()),
-            "play" => app = GameApp::new_playing(7),
+            "play" => app = GameApp::new_playing_in(7, app.ctx.lang),
+            "lang" => {
+                let l = if arg(1).eq_ignore_ascii_case("pl") { crate::lang::Lang::Pl } else { crate::lang::Lang::En };
+                app.ctx.set_lang(l);
+            }
             "wait" => {
                 for _ in 0..num(1) as i32 {
                     step(&mut app, &base);

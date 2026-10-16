@@ -11,14 +11,14 @@ use crate::layout::*;
 use crate::platform::{Input, Key};
 use crate::util::V3;
 
-pub const OPTIONS: [&str; 9] = ["Save Game", "Restore Game", "Music", "Sound", "Controls", "Help", "Return to Game", "Quit to Title", "Quit Game"];
+pub const OPTIONS: [&str; 10] = ["Save Game", "Restore Game", "Music", "Sound", "Controls", "Language", "Help", "Return to Game", "Quit to Title", "Quit Game"];
 
 pub const HELP_TEXT: &str = "MOVING: W run, S walk, X back, A/D turn, Z/C sidestep (or the arrow keys). Hold the left mouse button in the view: the cursor arrow shows the direction, and further from the centre is faster. J or Space jumps. 1/3 look down/up, 2 centres the view. E/Q fly up/down when flying.\n\nCOMMANDS: click an icon on the left (or F2 Talk, F3 Get, F4 Look, F5 Fight, F6 Use), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or F7) for your statistics; spend skill points there after gaining a level.\n\nBARTER: when a trader shows you their goods, click the ones you want (top left of the conversation), put gold or items from your inventory in your own trade area (top right), and choose Let us trade. Right-click either side to ask what something is worth.\n\nFIGHTING: select Fight (F5), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or P, ; and . keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or F8) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. F9 tracks, F10 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, F1/Esc opens the options. F11 toggles fullscreen, F12 toggles the 4:3 aspect.\n\nThe options menu switches to modern controls.";
 
 pub const MODERN_HELP_TEXT: &str = "MOVING (modern controls): W/S or Up/Down forward and back (hold Shift to walk), A/D or Left/Right turn, Q/E sidestep. J or Space jumps. Z/C look up/down, X centres the view. R/T fly up/down when flying. Hold the left mouse button in the view to move as in the classic controls.\n\nCOMMANDS: 1 options, 2 Talk, 3 Get, 4 Look, 5 Fight, 6 Use (or click an icon on the left), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or 7) for your statistics; spend skill points there after gaining a level.\n\nBARTER: when a trader shows you their goods, click the ones you want (top left of the conversation), put gold or items from your inventory in your own trade area (top right), and choose Let us trade. Right-click either side to ask what something is worth.\n\nFIGHTING: select Fight (5), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or V, B and N keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or 8) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. 9 tracks, 0 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, Esc opens the options, where you can switch back to the classic controls. The F-keys work as in the classic layout. F11 toggles fullscreen, F12 toggles the 4:3 aspect.";
 
 pub fn help_text(modern: bool) -> &'static str {
-    if modern { MODERN_HELP_TEXT } else { HELP_TEXT }
+    t!(if modern { MODERN_HELP_TEXT } else { HELP_TEXT })
 }
 
 
@@ -80,27 +80,32 @@ pub fn update(st: &mut PlayState, ctx: &mut Ctx, input: &Input, dt: f32) -> Opti
                     1 => st.overlay = Overlay::Slots(false, 0),
                     2 => {
                         ctx.music_on = !ctx.music_on;
-                        let s = if ctx.music_on { "Music is on." } else { "Music is off." };
+                        let s = if ctx.music_on { t!("Music is on.") } else { t!("Music is off.") };
                         st.game.sys(s);
                     }
                     3 => {
                         ctx.sound_on = !ctx.sound_on;
-                        let s = if ctx.sound_on { "Sound effects are on." } else { "Sound effects are off." };
+                        let s = if ctx.sound_on { t!("Sound effects are on.") } else { t!("Sound effects are off.") };
                         st.game.sys(s);
                     }
                     4 => {
                         ctx.modern_controls = !ctx.modern_controls;
-                        let s = if ctx.modern_controls { "Modern controls: WASD to move, Q/E sidestep, 1-6 for commands (H for help)." } else { "Classic controls, as in the original." };
+                        let s = if ctx.modern_controls { t!("Modern controls: WASD to move, Q/E sidestep, 1-6 for commands (H for help).") } else { t!("Classic controls, as in the original.") };
                         st.game.sys(s);
-                        if ctx.persist_settings {
-                            if let Err(e) = super::save::save_settings(&super::save::Settings { modern_controls: ctx.modern_controls }) {
-                                st.game.sys(format!("Could not save the settings: {}", e));
-                            }
+                        if let Err(e) = ctx.save_settings() {
+                            st.game.sys(t!("Could not save the settings: {}", e));
                         }
                     }
-                    5 => st.overlay = Overlay::Text(help_text(ctx.modern_controls).to_string(), 0),
-                    6 => st.overlay = Overlay::None,
-                    7 => return Some(ScreenCmd::Title),
+                    5 => {
+                        ctx.set_lang(ctx.lang.next());
+                        st.game.sys(t!("The game is now in English."));
+                        if let Err(e) = ctx.save_settings() {
+                            st.game.sys(t!("Could not save the settings: {}", e));
+                        }
+                    }
+                    6 => st.overlay = Overlay::Text(help_text(ctx.modern_controls).to_string(), 0),
+                    7 => st.overlay = Overlay::None,
+                    8 => return Some(ScreenCmd::Title),
                     _ => return Some(ScreenCmd::Quit),
                 }
             }
@@ -136,8 +141,8 @@ pub fn update(st: &mut PlayState, ctx: &mut Ctx, input: &Input, dt: f32) -> Opti
                 let saving = *saving;
                 if saving {
                     match super::save::save(&st.game, i) {
-                        Ok(()) => st.game.sys("Save game succeeded."),
-                        Err(e) => st.game.sys(format!("Save failed: {}", e)),
+                        Ok(()) => st.game.sys(t!("Save game succeeded.")),
+                        Err(e) => st.game.sys(t!("Save failed: {}", e)),
                     }
                     st.overlay = Overlay::None;
                 } else {
@@ -263,7 +268,7 @@ fn resurrect(st: &mut PlayState) {
         let y = g.level().map.floor_at(x, z);
         g.player.pos = V3::new(x, y, z);
     }
-    g.sys("The silver sapling has called you back from death!");
+    g.sys(t!("The silver sapling has called you back from death!"));
     st.overlay = Overlay::None;
     st.mesh = crate::render::mesh::LevelMesh::build(&st.game.level().map);
     st.mesh_level = st.game.cur;
@@ -351,7 +356,7 @@ pub fn option_lines(ctx: &Ctx, opts: &[dialogue::Opt]) -> Vec<(usize, String)> {
 }
 
 fn option_rect(i: usize) -> Rect {
-    Rect::new(TEXT_AREA.x + 30, TEXT_AREA.y + 10 + i as i32 * 8, TEXT_AREA.w - 60, 8)
+    Rect::new(TEXT_AREA.x + 30, TEXT_AREA.y + 10 + i as i32 * 7, TEXT_AREA.w - 60, 7)
 }
 
 pub fn parchment(fb: &mut Bitmap, r: Rect) {
@@ -379,41 +384,40 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
     match &st.overlay {
         Overlay::Options(sel) => {
             parchment(fb, TEXT_AREA);
-            f.draw_centered(fb, TEXT_AREA.x + TEXT_AREA.w / 2, TEXT_AREA.y + 3, "- Game Options -", INK);
+            f.draw_centered(fb, TEXT_AREA.x + TEXT_AREA.w / 2, TEXT_AREA.y + 3, t!("- Game Options -"), INK);
+            let on_off = |on: bool| if on { t!("On") } else { t!("Off") };
             for (i, o) in OPTIONS.iter().enumerate() {
                 let r = option_rect(i);
                 if i == *sel {
                     fb.fill_rect(r.x, r.y, r.w, r.h, c(Ramp::Parch, 9));
                 }
-                let mut label = o.to_string();
-                if i == 2 {
-                    label = format!("Music: {}", if ctx.music_on { "On" } else { "Off" });
-                }
-                if i == 3 {
-                    label = format!("Sound: {}", if ctx.sound_on { "On" } else { "Off" });
-                }
-                if i == 4 {
-                    label = format!("Controls: {}", if ctx.modern_controls { "Modern" } else { "Classic" });
-                }
-                f.draw_centered(fb, r.x + r.w / 2, r.y + 2, &label, INK);
+                let label = match i {
+                    2 => t!("Music: {}", on_off(ctx.music_on)),
+                    3 => t!("Sound: {}", on_off(ctx.sound_on)),
+                    4 => t!("Controls: {}", if ctx.modern_controls { t!("Modern") } else { t!("Classic") }),
+                    // Each language's name is written in that language.
+                    5 => t!("Language: {}", ctx.lang.name()),
+                    _ => t!(*o).to_string(),
+                };
+                f.draw_centered(fb, r.x + r.w / 2, r.y + 1, &label, INK);
             }
         }
         Overlay::Slots(saving, sel) => {
             parchment(fb, TEXT_AREA);
-            let title = if *saving { "- Save Game -" } else { "- Restore Game -" };
+            let title = if *saving { t!("- Save Game -") } else { t!("- Restore Game -") };
             f.draw_centered(fb, TEXT_AREA.x + TEXT_AREA.w / 2, TEXT_AREA.y + 3, title, INK);
             for i in 0..4 {
                 let r = option_rect(i + 1);
                 if i == *sel {
                     fb.fill_rect(r.x - 20, r.y, r.w + 40, r.h, c(Ramp::Parch, 9));
                 }
-                let desc = super::save::describe(i).unwrap_or_else(|| "(empty)".into());
+                let desc = super::save::describe(i).unwrap_or_else(|| t!("(empty)").into());
                 let numeral = ["I", "II", "III", "IV"][i];
-                f.draw(fb, r.x - 16, r.y + 2, numeral, INK);
-                f.draw(fb, r.x + 2, r.y + 2, &desc, INK);
+                f.draw(fb, r.x - 16, r.y + 1, numeral, INK);
+                f.draw(fb, r.x + 2, r.y + 1, &desc, INK);
             }
             let r = option_rect(5);
-            f.draw_centered(fb, r.x + r.w / 2, r.y + 2, "Cancel", INK);
+            f.draw_centered(fb, r.x + r.w / 2, r.y + 1, t!("Cancel"), INK);
         }
         Overlay::Text(text, page) => {
             parchment(fb, TEXT_AREA);
@@ -423,7 +427,7 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
                 f.draw(fb, TEXT_AREA.x + 5, TEXT_AREA.y + 5 + i as i32 * 6, l, INK);
             }
             if p + 1 < ps.len() {
-                f.draw(fb, TEXT_AREA.x + TEXT_AREA.w - 30, TEXT_AREA.y + TEXT_AREA.h - 8, "[MORE]", c(Ramp::Red, 6));
+                f.draw(fb, TEXT_AREA.x + TEXT_AREA.w - 30, TEXT_AREA.y + TEXT_AREA.h - 8, t!("[MORE]"), c(Ramp::Red, 6));
             }
         }
         Overlay::Sleep(t) => {
@@ -440,11 +444,11 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
                     }
                 }
             }
-            ctx.art.font_big.draw_fancy(fb, VIEW.x + 30, VIEW.y + 30, "You have died.", &[c(Ramp::Red, 13), c(Ramp::Red, 12), c(Ramp::Red, 11), c(Ramp::Red, 10), c(Ramp::Red, 9), c(Ramp::Red, 8)], BLACK, None);
+            ctx.art.font_big.draw_fancy(fb, VIEW.x + 30, VIEW.y + 30, t!("You have died."), &[c(Ramp::Red, 13), c(Ramp::Red, 12), c(Ramp::Red, 11), c(Ramp::Red, 10), c(Ramp::Red, 9), c(Ramp::Red, 8)], BLACK, None);
             if *t > 1.5 {
-                let msg = if st.game.flag("sapling_planted") > 0 { "Click to return to the silver sapling." } else { "Click to restore your last game." };
+                let msg = if st.game.flag("sapling_planted") > 0 { t!("Click to return to the silver sapling.") } else { t!("Click to restore your last game.") };
                 f.draw_centered(fb, VIEW.x + VIEW.w / 2, VIEW.y + 70, msg, c(Ramp::Parch, 12));
-                f.draw_centered(fb, VIEW.x + VIEW.w / 2, VIEW.y + 80, "(Esc returns to the title)", c(Ramp::Parch, 9));
+                f.draw_centered(fb, VIEW.x + VIEW.w / 2, VIEW.y + 80, t!("(Esc returns to the title)"), c(Ramp::Parch, 9));
             }
         }
         Overlay::Victory(t) if st.game.flag("ending") == 1 => {
@@ -459,13 +463,13 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
         }
         Overlay::Victory(t) => {
             parchment(fb, TEXT_AREA);
-            let text = "The Lord of Souls closes his hand about the shards. Light floods your cold limbs, and for the first time in an age your heart beats. Far above, the great doors grind open. You climb toward the daylight, alive - and behind you, in the dark, an old lord's flame burns low.";
+            let text = t!("The Lord of Souls closes his hand about the shards. Light floods your cold limbs, and for the first time in an age your heart beats. Far above, the great doors grind open. You climb toward the daylight, alive - and behind you, in the dark, an old lord's flame burns low.");
             let lines = f.wrap(text, TEXT_AREA.w - 10);
             for (i, l) in lines.iter().enumerate() {
                 f.draw(fb, TEXT_AREA.x + 5, TEXT_AREA.y + 5 + i as i32 * 6, l, INK);
             }
             if *t > 2.0 {
-                f.draw_centered(fb, TEXT_AREA.x + TEXT_AREA.w / 2, TEXT_AREA.y + TEXT_AREA.h - 9, "- The End -", c(Ramp::Red, 6));
+                f.draw_centered(fb, TEXT_AREA.x + TEXT_AREA.w / 2, TEXT_AREA.y + TEXT_AREA.h - 9, t!("- The End -"), c(Ramp::Red, 6));
             }
         }
         _ => {}

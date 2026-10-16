@@ -308,11 +308,11 @@ fn melee(g: &mut Game, i: usize, dt: f32) {
         let armor = g.player.armor_value();
         let raw = g.rng.range(def.dmg.0, def.dmg.1 + 1);
         let dmg = (raw - armor / 3).max(1);
-        let name = def.name;
-        g.hurt_player(dmg, &format!("The {} hits you.", name));
+        let name = crate::lang::Noun::new(def.name, def.name);
+        g.hurt_player(dmg, &t!("The {} hits you.", name));
         if def.poisons && g.rng.chance(0.25) {
             g.player.poison += 15.0;
-            g.msg("You have been poisoned!");
+            g.msg(t!("You have been poisoned!"));
         }
         let e = g.eye();
         let fwd = V3::new(g.player.yaw.sin(), 0.0, -g.player.yaw.cos());
@@ -331,9 +331,9 @@ fn melee(g: &mut Game, i: usize, dt: f32) {
             }
         }
     } else {
-        let name = def.name;
+        let name = crate::lang::Noun::new(def.name, def.name);
         if g.rng.chance(0.5) {
-            g.msg(format!("The {} misses you.", name));
+            g.msg(t!("The {} misses you.", name));
         }
     }
 }
@@ -356,7 +356,7 @@ fn npc_shoot(g: &mut Game, i: usize, target: V3) {
 }
 
 /// A master's thralls live on its power and crumble to bones when it dies.
-fn release_thralls(g: &mut Game, master: &str) {
+fn release_thralls(g: &mut Game, master: &crate::lang::Noun) {
     let lv = g.cur;
     let mut fallen = Vec::new();
     for i in 0..g.levels[lv].npcs.len() {
@@ -382,7 +382,7 @@ fn release_thralls(g: &mut Game, master: &str) {
             g.foe = None;
         }
     }
-    g.msg(format!("With {} gone, his thralls crumble to dust.", master));
+    g.msg(t!("With {} gone, his thralls crumble to dust.", master));
 }
 
 /// Apply damage to a creature; handles death, loot and experience.
@@ -396,7 +396,7 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
     if g.levels[lv].npcs[idx].race == super::creatures::Race::Demon && !g.has_all_shards() {
         dmg = 0;
         if by_player {
-            g.msg("Your blow passes harmlessly through the Lord of Souls! Only the light of the Lumen Stone can touch him.");
+            g.msg(t!("Your blow passes harmlessly through the Lord of Souls! Only the light of the Lumen Stone can touch him."));
         }
     }
     {
@@ -418,8 +418,8 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
     if npc.hp <= 0 {
         let def = npc.race.def();
         let name = match &npc.name {
-            Some(n) => n.clone(),
-            None => format!("the {}", def.name),
+            Some(n) => crate::lang::Noun::new(n.clone(), n),
+            None => crate::lang::Noun::new(format!("the {}", def.name), def.name),
         };
         let pos = npc.pos;
         let inv = npc.inventory.clone();
@@ -435,10 +435,8 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
         }
         g.sound(Sfx::MonsterDie);
         let mut s = name.clone();
-        if let Some(c) = s.get_mut(0..1) {
-            c.make_ascii_uppercase();
-        }
-        g.msg(format!("{} is dead.", s));
+        s.en = crate::lang::cap(&s.en);
+        g.msg(t!("{} is dead.", s));
         if by_player {
             g.gain_exp(def.exp);
         }
@@ -488,7 +486,7 @@ pub fn player_attack(g: &mut Game, aim: V3, kind: usize, power: f32) {
         let ammo = if w.kind == ItemKind::Sling { ItemKind::SlingStone } else { ItemKind::Bolt };
         let found = take_ammo(g, ammo);
         if !found {
-            g.msg("You have no ammunition for that weapon.");
+            g.msg(t!("You have no ammunition for that weapon."));
             return;
         }
         let ws = w.def().weapon.unwrap();
@@ -558,7 +556,7 @@ pub fn player_attack(g: &mut Game, aim: V3, kind: usize, power: f32) {
         }
         if power >= 0.98 && g.rng.chance(0.25) {
             dmg = dmg * 3 / 2;
-            g.msg("A critical hit!");
+            g.msg(t!("A critical hit!"));
         }
         let dmg = dmg.max(1);
         let c = V3::new(npc_pos.x, npc_pos.y + def.height * 0.6, npc_pos.z);

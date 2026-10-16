@@ -13,6 +13,7 @@ use crate::art::Art;
 use crate::audio::Sfx;
 use crate::game::dialogue::{ConvState, DialogueDb};
 use crate::game::{Game, Player};
+use crate::lang::Lang;
 use crate::gfx::{Bitmap, Palette};
 use crate::platform::{App, AppCmd, Input, Key};
 use crate::render::Renderer;
@@ -32,6 +33,25 @@ pub struct Ctx {
     pub modern_controls: bool,
     /// Load and save settings in ~/.ultima-j/ (only the real window, not scripts and tests).
     pub persist_settings: bool,
+    /// The language of the text (see `crate::lang`).
+    pub lang: Lang,
+}
+
+impl Ctx {
+    /// Switch the language of the text and the conversations.
+    pub fn set_lang(&mut self, l: Lang) {
+        crate::lang::set(l);
+        self.lang = l;
+        self.db = DialogueDb::load_lang(l);
+    }
+
+    /// Remember the settings for the next launch (if this is the real window).
+    pub fn save_settings(&self) -> Result<(), String> {
+        if !self.persist_settings {
+            return Ok(());
+        }
+        save::save_settings(&save::Settings { modern_controls: self.modern_controls, language: self.lang })
+    }
 }
 
 pub enum Overlay {
@@ -84,20 +104,28 @@ impl GameApp {
             art,
             cache: SpriteCache::new(),
             renderer: Renderer::new(72.0, 1.2),
-            db: DialogueDb::load(),
+            db: DialogueDb::load_lang(Lang::En),
             sounds: Vec::new(),
             time: 0.0,
             sound_on: true,
             music_on: true,
             modern_controls: false,
             persist_settings: false,
+            lang: Lang::En,
         };
+        crate::lang::set(Lang::En);
         GameApp { ctx, screen: Screen::Title(menus::Title::new()), mouse: (160, 100) }
     }
 
     /// Start directly in the game with a default character (for testing/screenshots).
     pub fn new_playing(seed: u64) -> GameApp {
+        GameApp::new_playing_in(seed, Lang::En)
+    }
+
+    /// `new_playing` with the text in a given language.
+    pub fn new_playing_in(seed: u64, lang: Lang) -> GameApp {
         let mut app = GameApp::new();
+        app.ctx.set_lang(lang);
         let mut p = Player::new("Avatar", crate::game::PClass::Fighter, false);
         menus::starting_kit(&mut p);
         let game = Game::new(p, seed);
@@ -110,15 +138,16 @@ impl GameApp {
     pub fn with_saved_settings(mut self) -> GameApp {
         let s = save::load_settings();
         self.ctx.modern_controls = s.modern_controls;
+        self.ctx.set_lang(s.language);
         self.ctx.persist_settings = true;
         self
     }
 
     fn start_messages(&mut self) {
         if let Screen::Play(st) = &mut self.screen {
-            st.game.sys("Welcome to the Abyss.");
-            st.game.msg("You claw your way out of a shallow grave. You are cold, and grey, and dead.");
-            st.game.sys("(Press H for help on the controls.)");
+            st.game.sys(t!("Welcome to the Abyss."));
+            st.game.msg(t!("You claw your way out of a shallow grave. You are cold, and grey, and dead."));
+            st.game.sys(t!("(Press H for help on the controls.)"));
             st.game.explore();
         }
     }
@@ -140,14 +169,14 @@ impl GameApp {
             ScreenCmd::LoadSlot(slot) => match save::load(slot) {
                 Ok(game) => {
                     let mut st = PlayState::new(game);
-                    st.game.sys("Game restored.");
+                    st.game.sys(t!("Game restored."));
                     self.screen = Screen::Play(Box::new(st));
                 }
                 Err(e) => {
                     if let Screen::Play(st) = &mut self.screen {
-                        st.game.sys(format!("Could not restore: {}", e));
+                        st.game.sys(t!("Could not restore: {}", e));
                     } else if let Screen::Title(t) = &mut self.screen {
-                        t.note = Some("No saved game found.".into());
+                        t.note = Some(t!("No saved game found.").into());
                     }
                 }
             },

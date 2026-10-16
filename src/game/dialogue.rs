@@ -199,8 +199,16 @@ impl DialogueDb {
         Ok(DialogueDb { convs })
     }
 
+    /// The conversations in the current language.
     pub fn load() -> DialogueDb {
-        DialogueDb::parse(include_str!("../../assets/dialogue.txt")).expect("dialogue.txt is valid")
+        DialogueDb::load_lang(crate::lang::get())
+    }
+
+    pub fn load_lang(l: crate::lang::Lang) -> DialogueDb {
+        match l {
+            crate::lang::Lang::En => DialogueDb::parse(include_str!("../../assets/dialogue.txt")).expect("dialogue.txt is valid"),
+            crate::lang::Lang::Pl => DialogueDb::parse(include_str!("../../assets/dialogue.pl.txt")).expect("dialogue.pl.txt is valid"),
+        }
     }
 
     pub fn find(&self, name: &str) -> Option<u16> {
@@ -340,7 +348,7 @@ pub fn enter_node(g: &mut Game, db: &DialogueDb, st: &mut ConvState, node: &str)
     };
     st.node = node.to_string();
     let name = g.player.name.clone();
-    st.text = fill_prices(g, &n.text.replace("{name}", &name));
+    st.text = fill_prices(g, &crate::lang::by_sex(&n.text.replace("{name}", &name), g.player.female));
     for a in &n.actions {
         run_action(g, st.npc, a, &mut st.ended);
     }
@@ -359,14 +367,14 @@ pub fn refresh_options(g: &Game, db: &DialogueDb, st: &mut ConvState) {
     let opt = |text: &str, next: &str| Opt { text: text.to_string(), next: next.to_string(), conds: Vec::new() };
     st.options.clear();
     if n.actions.iter().any(|a| a.first().map(|s| s == "barter").unwrap_or(false)) {
-        st.options.push(opt("Let us trade.", TRADE));
-        st.options.push(opt("What is mine offer worth to thee?", APPRAISE));
+        st.options.push(opt(t!("Let us trade."), TRADE));
+        st.options.push(opt(t!("What is mine offer worth to thee?"), APPRAISE));
         let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
         if stock > super::barter::SLOTS {
-            st.options.push(opt("Show me thy other goods.", MORE_GOODS));
+            st.options.push(opt(t!("Show me thy other goods."), MORE_GOODS));
         }
     }
-    st.options.extend(n.options.iter().filter(|o| o.conds.iter().all(|c| cond_ok(g, c))).map(|o| Opt { text: fill_prices(g, &o.text), ..o.clone() }));
+    st.options.extend(n.options.iter().filter(|o| o.conds.iter().all(|c| cond_ok(g, c))).map(|o| Opt { text: fill_prices(g, &crate::lang::by_sex(&o.text, g.player.female)), ..o.clone() }));
 }
 
 /// Choose one of the built-in trading options; the reply becomes the NPC's
@@ -380,7 +388,7 @@ pub fn barter_choice(g: &mut Game, db: &DialogueDb, st: &mut ConvState, what: &s
             let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
             let pages = stock.div_ceil(barter::SLOTS).max(1);
             st.goods_page = (st.goods_page + 1) % pages;
-            "Have a look at these, then.".to_string()
+            t!("Have a look at these, then.").to_string()
         }
     };
     let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
@@ -405,12 +413,12 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
                 if k == ItemKind::Torch {
                     it.fuel = 600.0;
                 }
-                let desc = it.name_with_article();
+                let desc = it.noun();
                 if let Some(back) = g.player.give(it) {
                     g.drop_item(back, None);
-                    g.msg(format!("You receive {} (it is at your feet).", desc));
+                    g.msg(t!("You receive {} (it is at your feet).", desc));
                 } else {
-                    g.msg(format!("You receive {}.", desc));
+                    g.msg(t!("You receive {}.", desc));
                 }
             }
         }
@@ -432,7 +440,7 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
             if let Some(back) = g.player.give(coins) {
                 g.drop_item(back, None);
             }
-            g.msg(format!("You receive {} gold.", n));
+            g.msg(t!("You receive {}.", crate::lang::gold(n)));
         }
         "mend" => {
             for s in super::ALL_EQ {
@@ -447,7 +455,7 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
                     it.quality = 100;
                 }
             }
-            g.msg("Your weapons and armour are as good as new.");
+            g.msg(t!("Your weapons and armour are as good as new."));
         }
         "exp" => g.gain_exp(num(1, 10)),
         "heal" => {
@@ -459,12 +467,12 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
         "rune" => {
             let r = num(1, 0) as usize % 24;
             g.player.runes[r] = true;
-            g.msg(format!("You learn the {} rune.", super::magic::RUNE_NAMES[r]));
+            g.msg(t!("You learn the {} rune.", super::magic::RUNE_NAMES[r]));
         }
         "skill" => {
             if let Some(s) = ALL_SKILLS.iter().find(|s| s.name().eq_ignore_ascii_case(arg(1))) {
                 g.player.skills[*s as usize] += num(2, 1);
-                g.msg(format!("Your {} skill improves.", s.name()));
+                g.msg(t!("Your {} skill improves.", s.label()));
             }
         }
         "hostile" => {
@@ -505,7 +513,7 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
 
 /// Texts of scrolls, books and plaques, indexed by item data.
 pub fn scroll_text(id: u16) -> &'static str {
-    SCROLLS.get(id as usize).copied().unwrap_or("The writing is too faded to read.")
+    crate::lang::tr(SCROLLS.get(id as usize).copied().unwrap_or(SCROLLS[0]))
 }
 
 pub const SCROLLS: &[&str] = &[
@@ -545,6 +553,37 @@ mod tests {
     fn bundled_dialogue_parses() {
         let db = DialogueDb::load();
         assert!(!db.convs.is_empty());
+    }
+
+    /// The Polish conversations are the English ones with other words: the
+    /// same conversations in the same order (saves keep their index), the
+    /// same nodes, actions, options, targets and conditions.
+    #[test]
+    fn polish_dialogue_matches_english() {
+        let en = DialogueDb::load_lang(crate::lang::Lang::En);
+        let pl = DialogueDb::load_lang(crate::lang::Lang::Pl);
+        assert_eq!(en.convs.iter().map(|c| &c.name).collect::<Vec<_>>(), pl.convs.iter().map(|c| &c.name).collect::<Vec<_>>());
+        for (a, b) in en.convs.iter().zip(&pl.convs) {
+            let mut names: Vec<&String> = a.nodes.keys().collect();
+            names.sort();
+            let mut pl_names: Vec<&String> = b.nodes.keys().collect();
+            pl_names.sort();
+            assert_eq!(names, pl_names, "conversation {}", a.name);
+            for n in names {
+                let (x, y) = (&a.nodes[n], &b.nodes[n]);
+                let at = format!("{} / {}", a.name, n);
+                assert_eq!(x.actions, y.actions, "{}", at);
+                assert_eq!(x.options.len(), y.options.len(), "{}", at);
+                for (o, p) in x.options.iter().zip(&y.options) {
+                    assert_eq!(o.next, p.next, "{}", at);
+                    assert_eq!(format!("{:?}", o.conds), format!("{:?}", p.conds), "{}", at);
+                }
+                assert!(!y.text.is_empty() || x.text.is_empty(), "{} has no Polish text", at);
+                for (key, _) in [("{name}", 0), ("{buy", 0), ("{sell", 0)] {
+                    assert_eq!(x.text.matches(key).count(), y.text.matches(key).count(), "{} uses {} differently", at, key);
+                }
+            }
+        }
     }
 
     #[test]

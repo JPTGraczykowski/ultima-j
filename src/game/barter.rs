@@ -8,6 +8,7 @@
 use super::dialogue::{buy_price, sell_price};
 use super::items::{Item, ItemKind};
 use super::Game;
+use crate::lang::{self, gold, Case};
 
 /// Slots in each trade area.
 pub const SLOTS: usize = 4;
@@ -31,18 +32,12 @@ pub fn worth(g: &Game, it: &Item) -> i32 {
 }
 
 /// "a torch", "a torch and a lantern", "a torch, bread and a lantern".
-fn list(items: &[&Item]) -> String {
-    let names: Vec<String> = items.iter().map(|i| i.name_with_article()).collect();
-    match names.len() {
-        0 => String::new(),
-        1 => names[0].clone(),
-        n => format!("{} and {}", names[..n - 1].join(", "), names[n - 1]),
-    }
+fn list(items: &[&Item], case: Case) -> String {
+    lang::list(&items.iter().map(|i| i.noun()).collect::<Vec<_>>(), case)
 }
 
 fn capitalise(s: &str) -> String {
-    let mut c = s.chars();
-    c.next().map(|f| f.to_uppercase().chain(c).collect()).unwrap_or_default()
+    lang::cap(s)
 }
 
 fn goods<'a>(g: &'a Game, npc: u32, picked: &[usize]) -> Vec<&'a Item> {
@@ -58,25 +53,29 @@ fn refused<'a>(g: &Game, offer: &'a [Option<Item>]) -> Option<&'a Item> {
 
 fn refusal(it: &Item) -> String {
     if it.contents.is_empty() {
-        format!("I have no use for {}.", it.name_with_article())
+        t!("I have no use for {}.", it.noun())
     } else {
-        format!("Empty the {} first; I'll not buy what I cannot see.", it.display_name())
+        t!("Empty the {} first; I'll not buy what I cannot see.", it.bare())
     }
 }
 
 /// The trader's words when the player looks at one of their goods.
 pub fn describe_good(g: &Game, it: &Item) -> String {
-    format!("{}, for {} gold.", capitalise(&it.name_with_article()), ask(g, it))
+    let mut n = it.noun();
+    n.en = capitalise(&n.en);
+    t!("{}, for {}.", n, gold(ask(g, it)))
 }
 
 /// The trader's words when the player looks at something in their offer.
 pub fn describe_offer(g: &Game, it: &Item) -> String {
     if it.kind == ItemKind::Coin {
-        return format!("{}. Gold is always welcome.", capitalise(&it.name_with_article()));
+        let mut n = it.noun();
+        n.en = capitalise(&n.en);
+        return t!("{}. Gold is always welcome.", n);
     }
     match worth(g, it) {
         0 => refusal(it),
-        w => format!("For {} I would give thee {} gold.", it.name_with_article(), w),
+        w => t!("For {} I would give thee {}.", it.noun(), gold(w)),
     }
 }
 
@@ -85,9 +84,9 @@ pub fn appraise(g: &Game, npc: u32, picked: &[usize], offer: &[Option<Item>]) ->
     let chosen = goods(g, npc, picked);
     let ask_total: i32 = chosen.iter().map(|i| ask(g, i)).sum();
     let offered: i32 = offer.iter().flatten().map(|i| worth(g, i)).sum();
-    let mut s = if offer.iter().all(|o| o.is_none()) { "Thou hast offered me nothing yet.".to_string() } else { format!("Thine offer is worth {} gold to me.", offered) };
+    let mut s = if offer.iter().all(|o| o.is_none()) { t!("Thou hast offered me nothing yet.").to_string() } else { t!("Thine offer is worth {} to me.", gold(offered)) };
     if !chosen.is_empty() {
-        s += &format!(" For {} I ask {} gold.", list(&chosen), ask_total);
+        s += &t!(" For {} I ask {}.", list(&chosen, Case::Acc), gold(ask_total));
     }
     if let Some(it) = refused(g, offer) {
         s += " ";
@@ -102,7 +101,7 @@ pub fn trade(g: &mut Game, npc: u32, picked: &mut Vec<usize>, offer: &mut [Optio
     let chosen: Vec<Item> = goods(g, npc, picked).into_iter().cloned().collect();
     let has_offer = offer.iter().any(|o| o.is_some());
     if chosen.is_empty() && !has_offer {
-        return "Choose what thou wouldst have from my goods, and lay thine offer beside them.".to_string();
+        return t!("Choose what thou wouldst have from my goods, and lay thine offer beside them.").to_string();
     }
     if let Some(it) = refused(g, offer) {
         return refusal(it);
@@ -110,14 +109,14 @@ pub fn trade(g: &mut Game, npc: u32, picked: &mut Vec<usize>, offer: &mut [Optio
     let ask_total: i32 = chosen.iter().map(|i| ask(g, i)).sum();
     let offered: i32 = offer.iter().flatten().map(|i| worth(g, i)).sum();
     if !has_offer {
-        return format!("For {} I ask {} gold. Lay thine offer on the table.", list(&chosen.iter().collect::<Vec<_>>()), ask_total);
+        return t!("For {} I ask {}. Lay thine offer on the table.", list(&chosen.iter().collect::<Vec<_>>(), Case::Acc), gold(ask_total));
     }
     if offered < ask_total {
-        return format!("For {} I ask {} gold, and thine offer is worth but {}. Thou art {} short.", list(&chosen.iter().collect::<Vec<_>>()), ask_total, offered, ask_total - offered);
+        return t!("For {} I ask {}, and thine offer is worth but {}. Thou art {} short.", list(&chosen.iter().collect::<Vec<_>>(), Case::Acc), gold(ask_total), offered, ask_total - offered);
     }
     // The deal stands: goods change hands.
     let sold: Vec<Item> = offer.iter_mut().filter_map(|o| o.take()).filter(|i| i.kind != ItemKind::Coin).collect();
-    let sold_names = list(&sold.iter().collect::<Vec<_>>());
+    let sold_names = list(&sold.iter().collect::<Vec<_>>(), Case::Acc);
     if let Some(n) = g.level_mut().npc_mut(npc) {
         let mut idx = picked.clone();
         idx.sort_unstable();
@@ -136,23 +135,23 @@ pub fn trade(g: &mut Game, npc: u32, picked: &mut Vec<usize>, offer: &mut [Optio
     if change > 0 {
         receive(g, Item::new(ItemKind::Coin).qty(change as u16));
     }
-    let bought = list(&chosen.iter().collect::<Vec<_>>());
+    let chosen: Vec<&Item> = chosen.iter().collect();
     match (chosen.is_empty(), change > 0) {
-        (true, _) => format!("Done! Here are {} gold coins for {}.", change, sold_names),
-        (false, true) => format!("Done! Take {}, and {} gold in change.", bought, change),
-        (false, false) => format!("Done! {} is thine.", capitalise(&bought)),
+        (true, _) => t!("Done! Here are {} gold coins for {}.", change, sold_names, gold(change)),
+        (false, true) => t!("Done! Take {}, and {} gold in change.", list(&chosen, Case::Acc), change, gold(change)),
+        (false, false) => t!("Done! {} is thine.", capitalise(&list(&chosen, Case::Nom))),
     }
 }
 
 /// Give an item to the player, or drop it at their feet if they cannot
 /// carry it.
 fn receive(g: &mut Game, it: Item) {
-    let desc = it.name_with_article();
+    let desc = it.noun();
     if let Some(back) = g.player.give(it) {
         g.drop_item(back, None);
-        g.msg(format!("You receive {} (it is at your feet).", desc));
+        g.msg(t!("You receive {} (it is at your feet).", desc));
     } else {
-        g.msg(format!("You receive {}.", desc));
+        g.msg(t!("You receive {}.", desc));
     }
 }
 
@@ -160,9 +159,9 @@ fn receive(g: &mut Game, it: Item) {
 pub fn return_offer(g: &mut Game, offer: &mut [Option<Item>]) {
     for it in offer.iter_mut().filter_map(|o| o.take()) {
         if let Some(back) = g.player.give(it) {
-            let desc = back.name_with_article();
+            let desc = back.noun();
             g.drop_item(back, None);
-            g.msg(format!("You cannot carry {}; it is at your feet.", desc));
+            g.msg(t!("You cannot carry {}; it is at your feet.", desc));
         }
     }
 }

@@ -74,7 +74,7 @@ pub fn latest_slot() -> usize {
 
 pub fn describe(slot: usize) -> Option<String> {
     let g = load(slot).ok()?;
-    Some(format!("{}, level {} {}, day {}", g.player.name, g.player.level, g.player.class.name(), g.day()))
+    Some(t!("{}, level {} {}, day {}", &g.player.name, g.player.level, g.player.class.name(), g.day()))
 }
 
 /// Options remembered between launches.
@@ -82,6 +82,8 @@ pub fn describe(slot: usize) -> Option<String> {
 pub struct Settings {
     #[serde(default)]
     pub modern_controls: bool,
+    #[serde(default)]
+    pub language: crate::lang::Lang,
 }
 
 fn settings_path() -> PathBuf {
@@ -101,8 +103,8 @@ pub fn save_settings(s: &Settings) -> Result<(), String> {
 
 pub fn quick_save(st: &mut PlayState, _ctx: &mut Ctx) {
     match save(&st.game, 0) {
-        Ok(()) => st.game.sys("Save game succeeded."),
-        Err(e) => st.game.sys(format!("Save failed: {}", e)),
+        Ok(()) => st.game.sys(t!("Save game succeeded.")),
+        Err(e) => st.game.sys(t!("Save failed: {}", e)),
     }
 }
 
@@ -140,11 +142,13 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_default_when_missing() {
-        let s = super::Settings { modern_controls: true };
+        let s = super::Settings { modern_controls: true, language: crate::lang::Lang::Pl };
         let back: super::Settings = serde_json::from_slice(&serde_json::to_vec(&s).unwrap()).unwrap();
         assert!(back.modern_controls);
+        assert_eq!(back.language, crate::lang::Lang::Pl);
         let empty: super::Settings = serde_json::from_str("{}").unwrap();
         assert!(!empty.modern_controls);
+        assert_eq!(empty.language, crate::lang::Lang::En);
     }
 
     #[test]

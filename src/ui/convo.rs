@@ -107,7 +107,7 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
     let npc = st.game.level().npc(cs.npc).cloned();
     // Clear the top frame area.
     fb.fill_rect(41, 0, 195, 46, BLACK);
-    let name = npc.as_ref().and_then(|n| n.name.clone()).unwrap_or_else(|| npc.as_ref().map(|n| n.race.def().name.to_string()).unwrap_or_default());
+    let name = npc.as_ref().and_then(|n| n.name.as_deref().map(crate::lang::tr_dyn)).unwrap_or_else(|| npc.as_ref().map(|n| crate::lang::cap(&n.race_noun().text())).unwrap_or_default());
     plate(fb, ctx, Rect::new(44, 1, 92, 9), &name);
     let pname = st.game.player.name.clone();
     plate(fb, ctx, Rect::new(140, 1, 92, 9), &pname);
@@ -143,10 +143,10 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
     }
     // Replies on the message scroll.
     if p + 1 < ps.len() {
-        ctx.art.font.draw(fb, TEXT_AREA.x + TEXT_AREA.w - 30, TEXT_AREA.y + TEXT_AREA.h - 7, "[MORE]", c(Ramp::Red, 6));
-        ctx.art.font.draw(fb, SCROLL_TEXT_X, SCROLL_TEXT_Y, "(click or press a key to continue)", INK);
+        ctx.art.font.draw(fb, TEXT_AREA.x + TEXT_AREA.w - 30, TEXT_AREA.y + TEXT_AREA.h - 7, t!("[MORE]"), c(Ramp::Red, 6));
+        ctx.art.font.draw(fb, SCROLL_TEXT_X, SCROLL_TEXT_Y, t!("(click or press a key to continue)"), INK);
     } else if cs.options.is_empty() || cs.ended {
-        ctx.art.font.draw(fb, SCROLL_TEXT_X, SCROLL_TEXT_Y, "(click or press a key to end the conversation)", INK);
+        ctx.art.font.draw(fb, SCROLL_TEXT_X, SCROLL_TEXT_Y, t!("(click or press a key to end the conversation)"), INK);
     } else {
         let lines = option_lines(ctx, &cs.options);
         for (row, (_, l)) in lines.iter().enumerate().take(SCROLL_LINES as usize) {

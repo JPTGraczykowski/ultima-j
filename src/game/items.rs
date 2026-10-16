@@ -1,5 +1,6 @@
 //! Item definitions and item instances.
 
+use crate::lang::{self, Noun};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -74,6 +75,11 @@ impl Skill {
             Skill::Appraise => "Appraise",
             Skill::Swimming => "Swimming",
         }
+    }
+
+    /// The name shown to the player (`name` is also the key used in dialogue).
+    pub fn label(self) -> &'static str {
+        lang::tr(self.name())
     }
 }
 
@@ -491,10 +497,10 @@ impl Enchant {
     pub fn describe(self) -> String {
         match self {
             Enchant::None => String::new(),
-            Enchant::Accuracy(n) => format!("an enchantment of accuracy (+{})", n),
-            Enchant::Damage(n) => format!("an enchantment of damage (+{})", n),
-            Enchant::Protection(n) => format!("an enchantment of protection (+{})", n),
-            Enchant::Spell(sp) => format!("the {} spell", sp.def().name),
+            Enchant::Accuracy(n) => t!("an enchantment of accuracy (+{})", n),
+            Enchant::Damage(n) => t!("an enchantment of damage (+{})", n),
+            Enchant::Protection(n) => t!("an enchantment of protection (+{})", n),
+            Enchant::Spell(sp) => t!("the {} spell", sp.label()),
         }
     }
 }
@@ -595,6 +601,25 @@ impl Item {
         format!("{} {}", art, n)
     }
 
+    /// The item as a noun phrase, with its article in English: "a sword",
+    /// "an apple", "5 gold coins".
+    pub fn noun(&self) -> Noun {
+        self.polish(Noun::new(self.name_with_article(), self.def().name).qty(self.qty as u32))
+    }
+
+    /// The item without an article, for "the ...": "lit torch".
+    pub fn bare(&self) -> Noun {
+        self.polish(Noun::new(self.display_name(), self.def().name))
+    }
+
+    fn polish(&self, n: Noun) -> Noun {
+        match self.kind {
+            ItemKind::RuneStone => n.suffix(crate::game::magic::RUNE_NAMES[self.data as usize % 24]),
+            ItemKind::Torch | ItemKind::Candle | ItemKind::Lantern if self.lit => n.adj("lit"),
+            _ => n,
+        }
+    }
+
     pub fn display_name(&self) -> String {
         let d = self.def();
         match self.kind {
@@ -634,6 +659,22 @@ mod tests {
         assert_eq!(Item::new(ItemKind::Longsword).name_with_article(), "a longsword");
         assert_eq!(Item::new(ItemKind::Coin).qty(5).name_with_article(), "5 gold coins");
         assert_eq!(Item::new(ItemKind::LeatherBoots).name_with_article(), "a pair of leather boots");
+    }
+
+    #[test]
+    fn every_item_and_skill_has_a_polish_name() {
+        lang::set(lang::Lang::Pl);
+        for k in crate::game::dialogue::ALL_ITEM_KINDS {
+            let n = k.def().name;
+            assert!(lang::has_noun(n), "no Polish noun for '{}'", n);
+        }
+        for s in ALL_SKILLS {
+            assert!(lang::has_phrase(s.name()), "no Polish name for the {} skill", s.name());
+        }
+        let mut lit = Item::new(ItemKind::Torch);
+        lit.lit = true;
+        assert_eq!(t!("You see {}.", lit.noun()), "Widzisz zapaloną pochodnię.");
+        lang::set(lang::Lang::En);
     }
 
     #[test]

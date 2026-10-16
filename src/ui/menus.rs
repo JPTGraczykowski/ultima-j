@@ -92,11 +92,15 @@ pub struct Title {
     pub note: Option<String>,
 }
 
-const TITLE_ITEMS: [&str; 4] = ["Introduction", "Create Character", "Acknowledgements", "Journey Onward"];
+const TITLE_ITEMS: [&str; 5] = ["Introduction", "Create Character", "Acknowledgements", "Journey Onward", "Language"];
+
+fn item_label(ctx: &Ctx, i: usize) -> String {
+    if i == 4 { t!("Language: {}", ctx.lang.name()) } else { t!(TITLE_ITEMS[i]).to_string() }
+}
 
 fn item_rect(ctx: &Ctx, i: usize) -> Rect {
-    let w = ctx.art.font_big.text_width(TITLE_ITEMS[i]);
-    Rect::new(160 - w / 2 - 4, 92 + i as i32 * 20, w + 8, 16)
+    let w = ctx.art.font_big.text_width(&item_label(ctx, i));
+    Rect::new(160 - w / 2 - 4, 88 + i as i32 * 17, w + 8, 16)
 }
 
 impl Title {
@@ -106,14 +110,15 @@ impl Title {
 
     pub fn update(&mut self, ctx: &mut Ctx, input: &Input, dt: f32) -> Option<ScreenCmd> {
         self.t += dt;
+        let n = TITLE_ITEMS.len();
         if input.hit(Key::Up) {
-            self.sel = (self.sel + 3) % 4;
+            self.sel = (self.sel + n - 1) % n;
         }
         if input.hit(Key::Down) {
-            self.sel = (self.sel + 1) % 4;
+            self.sel = (self.sel + 1) % n;
         }
         let mut choose = if input.hit(Key::Enter) { Some(self.sel) } else { None };
-        for i in 0..4 {
+        for i in 0..n {
             if item_rect(ctx, i).contains(input.mouse) {
                 self.sel = i;
                 if input.pressed[0] {
@@ -135,6 +140,12 @@ impl Title {
             }
             Some(2) => Some(ScreenCmd::Credits),
             Some(3) => Some(ScreenCmd::LoadSlot(super::save::latest_slot())),
+            Some(4) => {
+                ctx.sounds.push(Sfx::Click);
+                ctx.set_lang(ctx.lang.next());
+                self.note = ctx.save_settings().err().map(|e| t!("Could not save the settings: {}", e));
+                None
+            }
             _ => None,
         }
     }
@@ -142,15 +153,15 @@ impl Title {
     pub fn draw(&mut self, ctx: &mut Ctx, fb: &mut Bitmap, mouse: (i32, i32)) {
         fb.blit_opaque(&self.bg, 0, 0);
         draw_title_logo(ctx, fb, 22);
-        for (i, s) in TITLE_ITEMS.iter().enumerate() {
+        for i in 0..TITLE_ITEMS.len() {
             let r = item_rect(ctx, i);
             let rows = if i == self.sel { gold_rows() } else { bronze_rows() };
-            ctx.art.font_big.draw_fancy(fb, r.x + 4, r.y + 2, s, &rows, BLACK, Some(c(Ramp::Purple, 1)));
+            ctx.art.font_big.draw_fancy(fb, r.x + 4, r.y + 2, &item_label(ctx, i), &rows, BLACK, Some(c(Ramp::Purple, 1)));
         }
         if let Some(n) = &self.note {
             ctx.art.font.draw_centered(fb, 160, 180, n, c(Ramp::Gold, 12));
         }
-        ctx.art.font.draw_centered(fb, 160, 192, "A tribute to the 1992 classic. Made with Rust.", c(Ramp::Purple, 11));
+        ctx.art.font.draw_centered(fb, 160, 192, t!("A tribute to the 1992 classic. Made with Rust."), c(Ramp::Purple, 11));
         let (b, hs) = &ctx.art.ui.cursors[0];
         fb.blit(b, mouse.0 - hs.0, mouse.1 - hs.1);
     }
@@ -557,14 +568,20 @@ impl Story {
         let pic = &self.pics[p];
         fb.blit(pic, 160 - pic.w / 2, 18);
         let (text, ramp) = pages[p];
-        let lines = ctx.art.font.wrap(text, 260);
+        let lines = ctx.art.font.wrap(t!(text), 260);
         for (i, l) in lines.iter().enumerate() {
             ctx.art.font.draw_centered(fb, 160, 146 + i as i32 * 8, l, c(ramp, 12));
         }
         if self.ending && p == pages.len() - 1 && self.t > 1.0 {
-            ctx.art.font.draw_centered(fb, 160, 192, "- The End -", c(Ramp::Red, 10));
+            ctx.art.font.draw_centered(fb, 160, 192, t!("- The End -"), c(Ramp::Red, 10));
         }
     }
+}
+
+/// The texts of the intro and the ending (for the translation tests).
+#[cfg(test)]
+pub fn story_texts() -> Vec<&'static str> {
+    INTRO.iter().chain(FALL.iter()).map(|p| p.0).chain(TITLE_ITEMS).chain(CREDITS).filter(|s| !s.is_empty()).collect()
 }
 
 // --------------------------------------------------------- character creation
@@ -616,21 +633,21 @@ impl CharGen {
 
     fn options(&self) -> Vec<String> {
         match self.step {
-            0 => vec!["Male".into(), "Female".into()],
+            0 => vec![t!("Male").into(), t!("Female").into()],
             1 => ALL_CLASSES.iter().map(|c| c.name().to_string()).collect(),
-            2 => vec!["Fair".into(), "Golden".into(), "Dusky".into(), "Bronze".into()],
+            2 => vec![t!("Fair").into(), t!("Golden").into(), t!("Dusky").into(), t!("Bronze").into()],
             3 => vec![],
-            _ => vec!["Yes".into(), "No".into()],
+            _ => vec![t!("Yes").into(), t!("No").into()],
         }
     }
 
     fn question(&self) -> &'static str {
         match self.step {
-            0 => "Choose thy sex:",
-            1 => "Choose thy profession:",
-            2 => "Choose thine appearance:",
-            3 => "What is thy name?",
-            _ => "Keep this character?",
+            0 => t!("Choose thy sex:"),
+            1 => t!("Choose thy profession:"),
+            2 => t!("Choose thine appearance:"),
+            3 => t!("What is thy name?"),
+            _ => t!("Keep this character?"),
         }
     }
 
@@ -740,12 +757,15 @@ impl CharGen {
         panel(fb, r1);
         let name = if self.step >= 4 { p.name.clone() } else if self.step == 3 { format!("{}_", self.name) } else { "".into() };
         big.draw_fancy(fb, 80 - big.text_width(&name) / 2, 9, &name, &text_rows, BLACK, None);
-        if self.step > 0 {
-            big.draw_fancy(fb, 16, 22, if self.female { "Female" } else { "Male" }, &text_rows, BLACK, None);
-        }
-        if self.step > 1 {
-            let cn = ALL_CLASSES[self.class].name();
+        let sex = if self.step > 0 { if self.female { t!("Female") } else { t!("Male") } } else { "" };
+        let cn = if self.step > 1 { ALL_CLASSES[self.class].name() } else { "" };
+        if big.text_width(sex) + big.text_width(cn) + 8 <= r1.w - 12 {
+            big.draw_fancy(fb, 16, 22, sex, &text_rows, BLACK, None);
             big.draw_fancy(fb, 144 - big.text_width(cn), 22, cn, &text_rows, BLACK, None);
+        } else {
+            // Longer words (in Polish, say) take the small font.
+            f.draw(fb, 16, 26, sex, c(Ramp::Silver, 13));
+            f.draw(fb, 144 - f.text_width(cn), 26, cn, c(Ramp::Silver, 13));
         }
         // Portrait (paperdoll).
         let r2 = Rect::new(10, 40, 62, 78);
@@ -756,7 +776,7 @@ impl CharGen {
         let r3 = Rect::new(76, 40, 74, 78);
         panel(fb, r3);
         if self.step > 1 {
-            for (i, (l, v)) in [("Str:", p.st), ("Dex:", p.dex), ("Int:", p.int), ("Vit:", p.max_vit)].iter().enumerate() {
+            for (i, (l, v)) in [(t!("Str:"), p.st), (t!("Dex:"), p.dex), (t!("Int:"), p.int), (t!("Vit:"), p.max_vit)].iter().enumerate() {
                 big.draw_fancy(fb, 84, 48 + i as i32 * 17, l, &text_rows, BLACK, None);
                 let s = v.to_string();
                 big.draw_fancy(fb, 142 - big.text_width(&s), 48 + i as i32 * 17, &s, &text_rows, BLACK, None);
@@ -768,7 +788,7 @@ impl CharGen {
         if self.step > 1 {
             let mut y = 128;
             for s in ALL_SKILLS.iter().filter(|s| p.skills[**s as usize] > 0).take(6) {
-                f.draw(fb, 20, y, s.name(), c(Ramp::Silver, 12));
+                f.draw(fb, 20, y, s.label(), c(Ramp::Silver, 12));
                 let v = p.skills[*s as usize].to_string();
                 f.draw(fb, 130 - f.text_width(&v), y, &v, c(Ramp::Silver, 12));
                 y += 10;
@@ -788,8 +808,8 @@ impl CharGen {
             let r = Rect::new(200, 130, 80, 14);
             fb.fill_rect(r.x, r.y, r.w, r.h, c(Ramp::Purple, 3));
             fb.rect(r.x, r.y, r.w, r.h, BLACK);
-            f.draw_centered(fb, 240, r.y + 4, "Done", c(Ramp::Silver, 13));
-            f.draw_centered(fb, 240, 100, "Type a name and press Enter.", c(Ramp::Silver, 10));
+            f.draw_centered(fb, 240, r.y + 4, t!("Done"), c(Ramp::Silver, 13));
+            f.draw_centered(fb, 240, 100, t!("Type a name and press Enter."), c(Ramp::Silver, 10));
         }
         for (i, o) in self.options().iter().enumerate() {
             let r = self.opt_rect(i);
@@ -803,14 +823,14 @@ impl CharGen {
         }
         if self.step == 1 {
             let desc = match ALL_CLASSES[self.sel] {
-                PClass::Fighter => "Strong and skilled with weapons.",
-                PClass::Mage => "A wielder of rune magic.",
-                PClass::Bard => "Charming, learned, a little of all.",
-                PClass::Tinker => "Clever with locks, traps and tools.",
-                PClass::Druid => "Magic, lore and the wild.",
-                PClass::Paladin => "A holy warrior.",
-                PClass::Ranger => "Tracker, archer, swordsman.",
-                PClass::Shepherd => "Humble, hardy and resourceful.",
+                PClass::Fighter => t!("Strong and skilled with weapons."),
+                PClass::Mage => t!("A wielder of rune magic."),
+                PClass::Bard => t!("Charming, learned, a little of all."),
+                PClass::Tinker => t!("Clever with locks, traps and tools."),
+                PClass::Druid => t!("Magic, lore and the wild."),
+                PClass::Paladin => t!("A holy warrior."),
+                PClass::Ranger => t!("Tracker, archer, swordsman."),
+                PClass::Shepherd => t!("Humble, hardy and resourceful."),
             };
             f.draw_centered(fb, 240, 170, desc, c(Ramp::Silver, 11));
         }
@@ -858,26 +878,28 @@ pub fn starting_kit(p: &mut Player) {
     }
 }
 
+const CREDITS: [&str; 11] = [
+    "",
+    "A loving tribute to Ultima Underworld: The Stygian Abyss",
+    "(Blue Sky Productions / ORIGIN Systems, 1992).",
+    "",
+    "Engine, art and sound: all generated procedurally in Rust.",
+    "Software renderer: 320x200, 256 colours, light tables.",
+    "Creatures: ray-cast clay models, pixelated and outlined.",
+    "",
+    "Story, characters and dialogue are original to this game.",
+    "",
+    "Thank you for playing.",
+];
+
 pub fn draw_credits(ctx: &mut Ctx, fb: &mut Bitmap, t: f32) {
     fb.fill(BLACK);
     draw_title_logo(ctx, fb, 8);
-    let lines = [
-        "",
-        "A loving tribute to Ultima Underworld: The Stygian Abyss",
-        "(Blue Sky Productions / ORIGIN Systems, 1992).",
-        "",
-        "Engine, art and sound: all generated procedurally in Rust.",
-        "Software renderer: 320x200, 256 colours, light tables.",
-        "Creatures: ray-cast clay models, pixelated and outlined.",
-        "",
-        "Story, characters and dialogue are original to this game.",
-        "",
-        "Thank you for playing.",
-    ];
+    let lines = CREDITS;
     let scroll = (t * 6.0) as i32;
     for (i, l) in lines.iter().enumerate() {
         let y = 70 + i as i32 * 9 - scroll.min(0);
-        ctx.art.font.draw_centered(fb, 160, y, l, c(Ramp::Gold, 12));
+        ctx.art.font.draw_centered(fb, 160, y, if l.is_empty() { "" } else { t!(*l) }, c(Ramp::Gold, 12));
     }
-    ctx.art.font.draw_centered(fb, 160, 188, "(click to return)", c(Ramp::Purple, 10));
+    ctx.art.font.draw_centered(fb, 160, 188, t!("(click to return)"), c(Ramp::Purple, 10));
 }

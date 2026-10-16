@@ -184,9 +184,9 @@ pub fn draw(ctx: &mut Ctx, fb: &mut Bitmap, g: &Game, lvl: usize, note: Option<(
     let f = &ctx.art.font;
     let big = &ctx.art.font_big;
     let ink_cols = [c(Ramp::Parch, 2), c(Ramp::Parch, 2), c(Ramp::Parch, 3), c(Ramp::Parch, 3), c(Ramp::Parch, 2)];
-    big.draw_rows(fb, 214, 10, &format!("Level {}", lvl + 1), &ink_cols);
-    let name = &lv.name;
-    for (i, l) in f.wrap(name, 100).iter().enumerate() {
+    big.draw_rows(fb, 214, 10, &t!("Level {}", lvl + 1), &ink_cols);
+    let name = crate::lang::tr_dyn(&lv.name);
+    for (i, l) in f.wrap(&name, 100).iter().enumerate() {
         f.draw(fb, 214, 28 + i as i32 * 6, l, c(Ramp::Parch, 2));
     }
     for (r, up) in [(UP, true), (DOWN, false)] {
@@ -199,7 +199,7 @@ pub fn draw(ctx: &mut Ctx, fb: &mut Bitmap, g: &Game, lvl: usize, note: Option<(
     }
     // compass rose
     let (cx, cy) = (258, 110);
-    for (dx, dy, l) in [(0, -14, "N"), (14, 0, "E"), (0, 14, "S"), (-14, 0, "W")] {
+    for (dx, dy, l) in [(0, -14, t!("N")), (14, 0, t!("E")), (0, 14, t!("S")), (-14, 0, t!("W"))] {
         fb.line(cx, cy, cx + dx * 2 / 3, cy + dy * 2 / 3, c(Ramp::Parch, 3));
         f.draw(fb, cx + dx - 1, cy + dy - 2, l, c(Ramp::Parch, 2));
     }
@@ -207,16 +207,16 @@ pub fn draw(ctx: &mut Ctx, fb: &mut Bitmap, g: &Game, lvl: usize, note: Option<(
     // explored percentage
     let open = map.tiles.iter().filter(|t| !t.is_solid()).count().max(1);
     let seen = map.tiles.iter().filter(|t| !t.is_solid() && t.explored).count();
-    f.draw(fb, 214, 140, &format!("Explored: {}%", seen * 100 / open), c(Ramp::Parch, 2));
-    f.draw(fb, 214, 150, "Click the map to", c(Ramp::Parch, 4));
-    f.draw(fb, 214, 156, "write a note.", c(Ramp::Parch, 4));
+    f.draw(fb, 214, 140, &t!("Explored: {}%", seen * 100 / open), c(Ramp::Parch, 2));
+    f.draw(fb, 214, 150, t!("Click the map to"), c(Ramp::Parch, 4));
+    f.draw(fb, 214, 156, t!("write a note."), c(Ramp::Parch, 4));
     // close scroll button
     fb.fill_rect(CLOSE.x, CLOSE.y, CLOSE.w, CLOSE.h, c(Ramp::Parch, 10));
     fb.rect(CLOSE.x, CLOSE.y, CLOSE.w, CLOSE.h, c(Ramp::Parch, 3));
     for k in [CLOSE.x - 2, CLOSE.x + CLOSE.w] {
         fb.fill_rect(k, CLOSE.y - 1, 3, CLOSE.h + 2, c(Ramp::Parch, 6));
     }
-    f.draw_centered(fb, CLOSE.x + CLOSE.w / 2, CLOSE.y + 6, "CLOSE", c(Ramp::Parch, 2));
+    f.draw_centered(fb, CLOSE.x + CLOSE.w / 2, CLOSE.y + 6, t!("CLOSE"), c(Ramp::Parch, 2));
     // quill
     for k in 0..30 {
         fb.set(214 + k, 190 - k / 3, c(Ramp::Silver, 11));

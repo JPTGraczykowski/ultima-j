@@ -185,10 +185,10 @@ impl Game {
                     let dmg = if slow_fall || liquid == Liquid::Water { 0 } else { p.fall_damage(drop) };
                     if dmg > 0 {
                         self.events.push(Event::Sound(Sfx::Thud));
-                        self.hurt_player(dmg, "You land hard and hurt yourself.");
+                        self.hurt_player(dmg, t!("You land hard and hurt yourself."));
                     } else if drop > 1.4 && !slow_fall && liquid != Liquid::Water {
                         self.events.push(Event::Sound(Sfx::Thud));
-                        self.msg("You roll as you land and come up unhurt.");
+                        self.msg(t!("You roll as you land and come up unhurt."));
                     } else if drop > 0.4 {
                         self.events.push(Event::Sound(if liquid == Liquid::Water { Sfx::Splash } else { Sfx::Step }));
                     }
@@ -201,7 +201,7 @@ impl Game {
         p.swimming = liquid == Liquid::Water && p.pos.y <= floor + 0.05 && !body.flying;
         if p.swimming && !was_swimming {
             self.events.push(Event::Sound(Sfx::Splash));
-            self.sys("You are swimming.");
+            self.sys(t!("You are swimming."));
         }
         let p = &mut self.player;
         if p.swimming {
@@ -212,7 +212,7 @@ impl Game {
                 if p.drown > p.drown_interval() {
                     p.drown = 0.0;
                     self.events.push(Event::Flash([40.0, 60.0, 220.0], 0.4));
-                    self.hurt_player(2, "You are drowning!");
+                    self.hurt_player(2, t!("You are drowning!"));
                 }
             }
         } else {
@@ -224,7 +224,7 @@ impl Game {
                 self.player.drown = 0.0;
                 let dmg = if self.player.has_spell(Spell::ResistFire) { 1 } else { 4 };
                 self.events.push(Event::Flash([255.0, 80.0, 0.0], 0.35));
-                self.hurt_player(dmg, "The lava burns you!");
+                self.hurt_player(dmg, t!("The lava burns you!"));
             }
         }
         if moved && self.player.on_ground && !self.player.swimming {
@@ -295,7 +295,7 @@ impl Game {
                     self.player.pos = V3::new(x, y, z);
                     self.sound(Sfx::Spell);
                 }
-                TriggerKind::Message { text } => self.msg(text),
+                TriggerKind::Message { text } => self.msg(crate::lang::tr_dyn(&text)),
                 TriggerKind::OpenDoor { door } => {
                     if let Some(d) = self.level_mut().doors.iter_mut().find(|d| d.id == door) {
                         d.opening = true;
@@ -327,8 +327,8 @@ impl Game {
         self.effects.clear();
         self.foe = None;
         self.events.push(Event::LevelChanged);
-        let name = self.levels[level].name.clone();
-        self.sys(format!("You {} to {}.", if going_down { "descend" } else { "climb" }, name));
+        let name = crate::lang::tr_dyn(&self.levels[level].name);
+        self.sys(if going_down { t!("You descend to {}.", name) } else { t!("You climb to {}.", name) });
         self.explore();
     }
 
@@ -374,7 +374,7 @@ impl Game {
             p.skill_points += 3;
             let lvl = p.level;
             self.sound(Sfx::LevelUp);
-            self.sys(format!("You have attained experience level {}! You may improve your skills.", lvl));
+            self.sys(t!("You have attained experience level {}! You may improve your skills.", lvl));
         }
     }
 
@@ -396,9 +396,9 @@ impl Game {
         p.hunger = (p.hunger - dt / 20.0).max(0.0);
         p.fatigue = (p.fatigue + dt / 36.0).min(100.0);
         let hunger_msg = if before >= 25.0 && p.hunger < 25.0 {
-            Some("You are getting hungry.")
+            Some(t!("You are getting hungry."))
         } else if before >= 8.0 && p.hunger < 8.0 {
-            Some("You are starving!")
+            Some(t!("You are starving!"))
         } else {
             None
         };
@@ -433,7 +433,7 @@ impl Game {
             self.msg(m);
         }
         if vit_delta < 0 {
-            self.hurt_player(-vit_delta, "You are starving!");
+            self.hurt_player(-vit_delta, t!("You are starving!"));
         }
         // Poison.
         if self.player.poison > 0.0 {
@@ -444,11 +444,11 @@ impl Game {
             }
             if self.player.poison <= 0.0 {
                 self.player.poison = 0.0;
-                self.msg("The poison has worn off.");
+                self.msg(t!("The poison has worn off."));
             }
         }
         // Light sources burn.
-        let mut burnt: Vec<String> = Vec::new();
+        let mut burnt: Vec<crate::lang::Noun> = Vec::new();
         for s in [EqSlot::ShoulderL, EqSlot::ShoulderR, EqSlot::Weapon, EqSlot::Shield] {
             if let Some(it) = self.player.equip.get_mut(s) {
                 if it.lit && it.def().light.map(|l| l.2 > 0.0).unwrap_or(false) {
@@ -456,13 +456,13 @@ impl Game {
                     if it.fuel <= 0.0 {
                         it.lit = false;
                         it.fuel = 0.0;
-                        burnt.push(it.def().name.to_string());
+                        burnt.push(it.bare());
                     }
                 }
             }
         }
         for name in burnt {
-            self.msg(format!("Your {} has burned out.", name));
+            self.msg(t!("Your {} has burned out.", name));
         }
         // Active spells.
         let mut expired: Vec<Spell> = Vec::new();
@@ -474,7 +474,7 @@ impl Game {
         }
         self.player.spells.retain(|a| a.left > 0.0);
         for s in expired {
-            self.msg(format!("The {} spell has worn off.", s.def().name));
+            self.msg(t!("The {} spell has worn off.", s.label()));
         }
     }
 
@@ -487,11 +487,11 @@ impl Game {
                 n.alive() && n.attitude == creatures::Attitude::Hostile && (n.pos.x - at.x).powi(2) + (n.pos.z - at.z).powi(2) < (n.race.def().radius + 0.25).powi(2)
             });
             let Some(id) = victim.map(|n| n.id) else { continue };
-            let name = self.level().npc(id).unwrap().race.def().name;
+            let name = self.level().npc(id).unwrap().race_noun();
             self.level_mut().items.retain(|i| i.id != ward);
             self.spawn_effect(V3::new(at.x, at.y + 0.2, at.z), EffectKind::Sparks);
             self.sound(Sfx::Zap);
-            self.msg(format!("The rune of warding flares as the {} crosses it!", name));
+            self.msg(t!("The rune of warding flares as the {} crosses it!", name));
             ai::damage_npc(self, id, 3 + casting / 2, true);
             if let Some(n) = self.level_mut().npc_mut(id) {
                 if n.alive() {
@@ -572,7 +572,7 @@ impl Game {
                         }
                         if !pr.from_player || (self.player.pos - center).len() < 1.0 {
                             if (self.player.pos - center).len() < 1.0 && target != Some(0) {
-                                self.hurt_player(pr.dmg / 3, "You are caught in the blast!");
+                                self.hurt_player(pr.dmg / 3, t!("You are caught in the blast!"));
                             }
                         }
                     }
@@ -583,10 +583,10 @@ impl Game {
                                 dmg /= 3;
                             }
                             let why = match pr.kind {
-                                ProjKind::Fireball => "You are burned by fire!",
-                                ProjKind::Lightning => "You are struck by lightning!",
-                                ProjKind::Poison => "You are hit by poison!",
-                                _ => "You are hit!",
+                                ProjKind::Fireball => t!("You are burned by fire!"),
+                                ProjKind::Lightning => t!("You are struck by lightning!"),
+                                ProjKind::Poison => t!("You are hit by poison!"),
+                                _ => t!("You are hit!"),
                             };
                             if pr.kind == ProjKind::Poison {
                                 self.player.poison += 12.0;
