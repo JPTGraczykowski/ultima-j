@@ -352,10 +352,14 @@ mod tests {
             Screen::Play(st) => (st.ui.mode, st.game.player.pos, st.game.player.yaw),
             _ => panic!("left the game"),
         };
-        app.update(&key(Key::Num4), 1.0 / 30.0);
+        app.update(&key(Key::Num3), 1.0 / 30.0);
         assert_eq!(play(&app).0, Mode::Look);
-        app.update(&key(Key::Num4), 1.0 / 30.0);
+        app.update(&key(Key::Num3), 1.0 / 30.0);
         assert_eq!(play(&app).0, Mode::None);
+        app.update(&key(Key::Num1), 1.0 / 30.0);
+        assert_eq!(play(&app).0, Mode::Talk);
+        assert!(matches!(&app.screen, Screen::Play(st) if matches!(st.overlay, crate::ui::Overlay::None)), "1 should not open the options");
+        app.update(&key(Key::Num1), 1.0 / 30.0);
 
         let (_, p0, yaw0) = play(&app);
         for _ in 0..15 {

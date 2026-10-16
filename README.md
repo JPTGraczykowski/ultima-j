@@ -72,12 +72,12 @@ above, and the `F` keys still work.
 | --- | --- |
 | Forward / back, turn | `W`/`S` or `Up`/`Down` (hold `Shift` to walk), `A`/`D` or `Left`/`Right` |
 | Sidestep | `Q` / `E` |
-| Look up / centre / down | `Z` / `X` / `C` |
+| Look down / centre / up | `Z` / `X` / `C` |
 | Fly up / down (when flying) | `R` / `T` |
-| Options, Talk, Get, Look, Fight, Use | `1`–`6` (or click an icon), then right-click in the view |
-| Statistics / cast | `7` / `8` |
+| Talk, Get, Look, Fight, Use | `1`–`5` (or click an icon), then right-click in the view |
+| Statistics / cast | `6` / `7` |
 | Attack | `V`, `B`, `N` (bash, slash, thrust), or hold the right button in Fight mode |
-| Track / sleep | `9` / `0` |
+| Track / sleep | `8` / `9` |
 
 ## Skills
 

@@ -254,7 +254,7 @@ impl PlayState {
         mv.fly_up = input.key(fly_up);
         mv.fly_down = input.key(fly_down);
         // Look up/down.
-        let (look_up, look_centre, look_down) = if modern { (Key::Z, Key::X, Key::C) } else { (Key::Num3, Key::Num2, Key::Num1) };
+        let (look_up, look_centre, look_down) = if modern { (Key::C, Key::X, Key::Z) } else { (Key::Num3, Key::Num2, Key::Num1) };
         if input.key(look_down) || input.key(Key::PageDown) {
             self.ui.pitch = (self.ui.pitch - dt * 90.0).max(-48.0);
         }
@@ -264,34 +264,34 @@ impl PlayState {
         if input.hit(look_centre) || input.hit(Key::Home) {
             self.ui.pitch = 0.0;
         }
-        // Function keys (modern controls repeat them on the number row, 0 for F10).
+        // Function keys (modern controls repeat F2-F10 on the number row from 1).
         let fkey = |f: Key, n: Key| input.hit(f) || modern && input.hit(n);
-        if fkey(Key::F1, Key::Num1) || input.hit(Key::Escape) {
+        if input.hit(Key::F1) || input.hit(Key::Escape) {
             self.overlay = Overlay::Options(0);
             ctx.sounds.push(Sfx::Click);
         }
         let mode_keys = [
-            (Key::F2, Key::Num2, Mode::Talk),
-            (Key::F3, Key::Num3, Mode::Get),
-            (Key::F4, Key::Num4, Mode::Look),
-            (Key::F5, Key::Num5, Mode::Fight),
-            (Key::F6, Key::Num6, Mode::Use),
+            (Key::F2, Key::Num1, Mode::Talk),
+            (Key::F3, Key::Num2, Mode::Get),
+            (Key::F4, Key::Num3, Mode::Look),
+            (Key::F5, Key::Num4, Mode::Fight),
+            (Key::F6, Key::Num5, Mode::Use),
         ];
         for (f, n, m) in mode_keys {
             if fkey(f, n) {
                 self.ui.mode = if self.ui.mode == m { Mode::None } else { m };
             }
         }
-        if fkey(Key::F7, Key::Num7) {
+        if fkey(Key::F7, Key::Num6) {
             self.ui.panel = if self.ui.panel == Panel::Inventory { Panel::Stats } else { Panel::Inventory };
         }
-        if fkey(Key::F8, Key::Num8) {
+        if fkey(Key::F8, Key::Num7) {
             self.cast(ctx, input);
         }
-        if fkey(Key::F9, Key::Num9) {
+        if fkey(Key::F9, Key::Num8) {
             self.game.track();
         }
-        if fkey(Key::F10, Key::Num0) {
+        if fkey(Key::F10, Key::Num9) {
             self.game.sleep();
         }
         if input.hit(Key::H) {
