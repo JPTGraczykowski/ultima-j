@@ -127,8 +127,8 @@ The screen copies the original game's layout:
 | Fullscreen / aspect | `F11` / `F12` |
 
 **Modern controls.** Choose *Controls* in the options menu (`F1` / `Esc`) to
-switch to a modern layout. Anything not listed here works as above, and the
-`F` keys still work.
+switch to a modern layout (the game remembers your choice). Anything not
+listed here works as above, and the `F` keys still work.
 
 | Action | Keys / mouse |
 | --- | --- |

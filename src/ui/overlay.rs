@@ -89,6 +89,11 @@ pub fn update(st: &mut PlayState, ctx: &mut Ctx, input: &Input, dt: f32) -> Opti
                         ctx.modern_controls = !ctx.modern_controls;
                         let s = if ctx.modern_controls { "Modern controls: WASD to move, Q/E sidestep, 1-6 for commands (H for help)." } else { "Classic controls, as in the original." };
                         st.game.sys(s);
+                        if ctx.persist_settings {
+                            if let Err(e) = super::save::save_settings(&super::save::Settings { modern_controls: ctx.modern_controls }) {
+                                st.game.sys(format!("Could not save the settings: {}", e));
+                            }
+                        }
                     }
                     5 => st.overlay = Overlay::Text(help_text(ctx.modern_controls).to_string(), 0),
                     6 => st.overlay = Overlay::None,

@@ -150,11 +150,11 @@ fn main() {
             Ok(())
         }
         "--play" => {
-            platform::run_window(Box::new(ui::GameApp::new_playing(1)));
+            platform::run_window(Box::new(ui::GameApp::new_playing(1).with_saved_settings()));
             Ok(())
         }
         _ => {
-            platform::run_window(Box::new(ui::GameApp::new()));
+            platform::run_window(Box::new(ui::GameApp::new().with_saved_settings()));
             Ok(())
         }
     };

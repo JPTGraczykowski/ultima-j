@@ -1,4 +1,5 @@
-//! Saving and restoring games (gzipped JSON files in ~/.ultima-j/).
+//! Saving and restoring games (gzipped JSON files in ~/.ultima-j/), and the
+//! settings kept between launches (settings.json there).
 
 use super::play::PlayState;
 use super::Ctx;
@@ -76,6 +77,28 @@ pub fn describe(slot: usize) -> Option<String> {
     Some(format!("{}, level {} {}, day {}", g.player.name, g.player.level, g.player.class.name(), g.day()))
 }
 
+/// Options remembered between launches.
+#[derive(serde::Serialize, serde::Deserialize, Default)]
+pub struct Settings {
+    #[serde(default)]
+    pub modern_controls: bool,
+}
+
+fn settings_path() -> PathBuf {
+    dir().join("settings.json")
+}
+
+/// The saved settings, or the defaults if there are none (or they can't be read).
+pub fn load_settings() -> Settings {
+    std::fs::read(settings_path()).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default()
+}
+
+pub fn save_settings(s: &Settings) -> Result<(), String> {
+    std::fs::create_dir_all(dir()).map_err(|e| e.to_string())?;
+    let json = serde_json::to_vec_pretty(s).map_err(|e| e.to_string())?;
+    std::fs::write(settings_path(), json).map_err(|e| e.to_string())
+}
+
 pub fn quick_save(st: &mut PlayState, _ctx: &mut Ctx) {
     match save(&st.game, 0) {
         Ok(()) => st.game.sys("Save game succeeded."),
@@ -113,6 +136,15 @@ mod tests {
         // A restored game keeps running.
         let mut back = back;
         back.update(&crate::game::MoveInput { forward: 1.0, ..Default::default() }, 0.1);
+    }
+
+    #[test]
+    fn settings_round_trip_and_default_when_missing() {
+        let s = super::Settings { modern_controls: true };
+        let back: super::Settings = serde_json::from_slice(&serde_json::to_vec(&s).unwrap()).unwrap();
+        assert!(back.modern_controls);
+        let empty: super::Settings = serde_json::from_str("{}").unwrap();
+        assert!(!empty.modern_controls);
     }
 
     #[test]

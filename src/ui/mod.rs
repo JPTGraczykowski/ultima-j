@@ -30,6 +30,8 @@ pub struct Ctx {
     pub music_on: bool,
     /// Modern key layout (WASD, number row for commands) instead of the original's.
     pub modern_controls: bool,
+    /// Load and save settings in ~/.ultima-j/ (only the real window, not scripts and tests).
+    pub persist_settings: bool,
 }
 
 pub enum Overlay {
@@ -86,6 +88,7 @@ impl GameApp {
             sound_on: true,
             music_on: true,
             modern_controls: false,
+            persist_settings: false,
         };
         GameApp { ctx, screen: Screen::Title(menus::Title::new()), mouse: (160, 100) }
     }
@@ -99,6 +102,14 @@ impl GameApp {
         app.screen = Screen::Play(Box::new(PlayState::new(game)));
         app.start_messages();
         app
+    }
+
+    /// Use the settings saved in ~/.ultima-j/ and save changes to them.
+    pub fn with_saved_settings(mut self) -> GameApp {
+        let s = save::load_settings();
+        self.ctx.modern_controls = s.modern_controls;
+        self.ctx.persist_settings = true;
+        self
     }
 
     fn start_messages(&mut self) {
