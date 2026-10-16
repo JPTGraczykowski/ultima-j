@@ -66,6 +66,9 @@ mostly balance.
   table paced so a thorough player reaches level 8 in the Crypts.
 - `HANDBOOK.md` is the player's handbook. Keep its numbers in step with the
   code when balancing.
+- `STORY.md` and `STORY.pl.md` tell the whole story in English and Polish.
+  Keep them in step with `assets/dialogue.txt` and the intro and ending text
+  in `src/ui/menus.rs`. The README's quest section stays spoiler-free.
 - Visual pass after the side-by-side review: smaller command icons with oval
   cartouches, reworked creature models (stone golem, bat wings with membranes,
   hunched trolls, humanoid proportions), bigger paperdoll with a face and beard.

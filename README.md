@@ -97,15 +97,15 @@ All twenty skills do something. Besides the combat, magic and lock skills:
 ## The quest
 
 You wake up dead. You claw your way out of a shallow grave at the top of the
-Abyss, one of the hollow dead who have begun to rise since the Lord of Souls
-grew weak, but you can still think. You don't know who you were, and the great
-doors above are sealed. A voice that calls itself the Lord of Souls promises
-you your life if you win the three shards of the Lumen Stone (Valor from the
-mountain folk, Wisdom from the lizardmen, Mercy from the dead in the crypts)
-and carry them down to his throne, behind a gate that only the shards can
-open. Not everyone who wants them there is who they say they are. At the
-throne you choose: give the Lord of Souls the shards and walk out into the
-daylight alive, or strike him down and try to take his throne.
+Abyss, one of the hollow dead who have begun to rise, but unlike them you can
+still think. You don't know who you were, the great doors above are sealed,
+and a voice from far below is calling you. To find out who you were, and how
+to live again, you must win the three shards of the Lumen Stone from the
+peoples of the Abyss and carry them down to the Throne of Souls. What you do
+when you get there is up to you.
+
+The whole story, both endings included, is in [STORY.md](STORY.md)
+([po polsku](STORY.pl.md)). It gives everything away.
 
 ## Differences from the original
 
@@ -121,7 +121,7 @@ you are trapped in an underground abyss whose peoples have fallen into war.
 
 | | Ultima Underworld (1992) | Ultima-J |
 | --- | --- | --- |
-| Story | Baron Almric's daughter Arial is taken by Tyball; you have to stop the Slasher of Veils from being summoned | Inspired by Dark Souls: you rise from the grave as one of the undead, learn who you were, and choose between living again and striking down the Lord of Souls |
+| Story | Baron Almric's daughter Arial is taken by Tyball; you have to stop the Slasher of Veils from being summoned | Inspired by Dark Souls: you rise from the grave as one of the undead, learn who you were, and decide what becomes of the Abyss |
 | Goal | Collect the eight talismans of virtue and cast them into the volcano | Collect three shards of the Lumen Stone (Valor, Wisdom and Mercy) and bring them to the Lord of Souls |
 | Size | 8 levels | 5 levels: the Upper Halls, the Mines of the Mountain Folk, the Flooded Warrens, the Crypts and the Deep Sanctum |
 | Characters | The original cast | New characters, among them Elsmore, Tobin, Gnarl, Rhugg, Thorgrim, Hilda, Bodric, Hissk, Ssrath, Sir Aldric, Malchor and Varian, the Lord of Souls |
