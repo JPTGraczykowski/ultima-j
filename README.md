@@ -22,6 +22,24 @@ original. The story and characters are original.
 | ![Bartering](screenshots/barter.png) | ![The Lord of Souls](screenshots/lord-of-souls.png) |
 | ![The automap](screenshots/automap.png) | ![The ending: the Lord of Souls falls](screenshots/ending-fallen-king.png) |
 
+## Download
+
+Ready-to-run builds for Linux, Windows and macOS are on the
+[Releases page](https://github.com/JPTGraczykowski/ultima-j/releases). Unpack the
+archive and start the game; nothing else needs installing.
+
+- **Windows:** run `ultima-j.exe`. The build isn't signed, so if SmartScreen
+  shows "Windows protected your PC", choose *More info → Run anyway*.
+- **macOS:** open `Ultima-J.app` (it runs on both Apple Silicon and Intel). The
+  first time, macOS will refuse to open it because it isn't notarised: go to
+  *System Settings → Privacy & Security* and choose *Open Anyway*.
+- **Linux:** run `./ultima-j`. It needs OpenGL and ALSA, which desktop
+  distributions already have.
+
+To publish a new release, push a version tag (`git tag v0.1.0 && git push origin
+v0.1.0`); the workflow in `.github/workflows/release.yml` builds and uploads
+everything.
+
 ## Building and running
 
 Requires Rust (stable). From this directory:
@@ -31,7 +49,7 @@ cargo run --release            # title screen
 cargo run --release -- --play  # skip straight into the dungeon
 ```
 
-Saved games go to `~/.ultima-j/`.
+Saved games go to `~/.ultima-j/` (on Windows, `%USERPROFILE%\.ultima-j\`).
 
 ## Controls
 

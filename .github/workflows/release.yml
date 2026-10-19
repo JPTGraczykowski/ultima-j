@@ -1,0 +1,107 @@
+# Builds the game for Linux, Windows and macOS. Pushing a tag like `v0.1.0`
+# publishes the builds as a GitHub Release; running it by hand from the Actions
+# tab only builds them (download them from the run's artifacts).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The oldest supported Ubuntu, so the binary runs on older glibc too.
+          - os: ubuntu-22.04
+            name: linux-x86_64
+          - os: windows-latest
+            name: windows-x86_64
+          - os: macos-latest
+            name: macos-universal
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.name }}
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev libxi-dev libgl1-mesa-dev
+          cargo build --release
+          mkdir -p dist/ultima-j
+          cp target/release/ultima-j LICENSE dist/ultima-j/
+          tar -czf ultima-j-${{ matrix.name }}.tar.gz -C dist ultima-j
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cargo build --release
+          New-Item -ItemType Directory dist/ultima-j | Out-Null
+          Copy-Item target/release/ultima-j.exe, LICENSE dist/ultima-j/
+          Compress-Archive -Path dist/ultima-j -DestinationPath ultima-j-${{ matrix.name }}.zip
+
+      # One app bundle for both Apple Silicon and Intel Macs. It is only
+      # ad-hoc signed, so Gatekeeper asks the player to allow it once.
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cargo build --release --target aarch64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
+          version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          app=dist/ultima-j/Ultima-J.app
+          mkdir -p "$app/Contents/MacOS"
+          lipo -create -output "$app/Contents/MacOS/ultima-j" \
+            target/aarch64-apple-darwin/release/ultima-j \
+            target/x86_64-apple-darwin/release/ultima-j
+          cat > "$app/Contents/Info.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key><string>Ultima-J</string>
+            <key>CFBundleDisplayName</key><string>Ultima-J</string>
+            <key>CFBundleIdentifier</key><string>io.github.jptgraczykowski.ultima-j</string>
+            <key>CFBundleExecutable</key><string>ultima-j</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleShortVersionString</key><string>$version</string>
+            <key>CFBundleVersion</key><string>$version</string>
+            <key>LSMinimumSystemVersion</key><string>11.0</string>
+          </dict>
+          </plist>
+          EOF
+          codesign --force --deep --sign - "$app"
+          cp LICENSE dist/ultima-j/
+          ditto -c -k --keepParent dist/ultima-j ultima-j-${{ matrix.name }}.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ultima-j-${{ matrix.name }}
+          path: ultima-j-${{ matrix.name }}.*
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

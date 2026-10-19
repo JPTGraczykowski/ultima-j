@@ -1,6 +1,9 @@
 //! Ultima-J: a clone of the 1992 first-person dungeon RPG Ultima Underworld,
 //! with a software renderer and procedurally generated art in its style.
 
+// Release builds on Windows open only the game window, without a console.
+#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
+
 #[macro_use]
 mod lang;
 mod art;
