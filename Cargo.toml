@@ -3,6 +3,7 @@ name = "ultima-j"
 version = "0.1.0"
 edition = "2024"
 description = "A clone of the 1992 first-person dungeon RPG Ultima Underworld, with a software renderer and procedurally generated art in the style of the original."
+license = "MIT"
 
 [dependencies]
 macroquad = { version = "0.4.16", default-features = false, features = ["audio"] }

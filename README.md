@@ -150,3 +150,7 @@ ULTIMA_J_SELFTEST=out.png ultima-j --play     # capture the real window after 3 
 - `src/world`, `src/game` — map, items, creatures, AI and combat, magic, dialogue, levels
 - `src/ui` — screens, main game screen, inventory panel, conversations, automap, menus
 - `assets/dialogue.txt` — all conversations, in a small text format
+
+## License
+
+MIT — see [LICENSE](LICENSE).
