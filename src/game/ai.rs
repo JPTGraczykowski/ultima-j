@@ -4,7 +4,7 @@ use super::creatures::{AiState, Anim, Attitude, Ranged};
 use super::items::{Item, ItemKind, Skill};
 use super::magic::Spell;
 use super::physics::{self, Body, PLAYER_RADIUS};
-use super::{EffectKind, Event, Game, ProjKind, Projectile};
+use super::{EffectKind, EqSlot, Event, Game, ProjKind, Projectile};
 use crate::audio::Sfx;
 use crate::util::{wrap_angle, V3};
 use crate::world::map::{Map, MAP_SIZE};
@@ -72,8 +72,15 @@ pub fn path_step(map: &Map, from: (i32, i32), to: (i32, i32), max_nodes: usize) 
 pub fn update_npcs(g: &mut Game, dt: f32) {
     let n = g.level().npcs.len();
     let player_eye = g.eye();
-    let stealthy = g.player.has_spell(Spell::Stealth) || g.player.has_spell(Spell::Invisibility);
     let invisible = g.player.has_spell(Spell::Invisibility);
+    // Conceal hides you better than Stealth: creatures see you only up close.
+    let stealth = if g.player.has_spell(Spell::Conceal) {
+        0.2
+    } else if g.player.has_spell(Spell::Stealth) {
+        0.4
+    } else {
+        1.0
+    };
     for i in 0..n {
         let lv = g.cur;
         // Animation clocks.
@@ -126,7 +133,9 @@ pub fn update_npcs(g: &mut Game, dt: f32) {
         let hostile = attitude == Attitude::Hostile;
         let mut sees = false;
         if hostile && !g.player.dead && !invisible {
-            let range = if stealthy { SIGHT * 0.4 } else { SIGHT };
+            // Creatures already hunting you keep their full sight; others must notice you first.
+            let base = if ai == AiState::Attack { SIGHT } else { g.player.notice_range(SIGHT) };
+            let range = base * stealth;
             if dist < range && physics::line_of_sight(&g.levels[lv], npc_eye, player_eye) {
                 sees = true;
             }
@@ -299,25 +308,32 @@ fn melee(g: &mut Game, i: usize, dt: f32) {
         let armor = g.player.armor_value();
         let raw = g.rng.range(def.dmg.0, def.dmg.1 + 1);
         let dmg = (raw - armor / 3).max(1);
-        let name = def.name;
-        g.hurt_player(dmg, &format!("The {} hits you.", name));
+        let name = crate::lang::Noun::new(def.name, def.name);
+        g.hurt_player(dmg, &t!("The {} hits you.", name));
         if def.poisons && g.rng.chance(0.25) {
             g.player.poison += 15.0;
-            g.msg("You have been poisoned!");
+            g.msg(t!("You have been poisoned!"));
         }
         let e = g.eye();
         let fwd = V3::new(g.player.yaw.sin(), 0.0, -g.player.yaw.cos());
         g.spawn_effect(e + fwd * 0.35 - V3::new(0.0, 0.1, 0.0), EffectKind::Blood);
         // Armour wears.
         if g.rng.chance(0.15) {
-            if let Some(it) = g.player.equip.chest.as_mut() {
-                it.quality = it.quality.saturating_sub(1);
+            let worn: Vec<EqSlot> = [EqSlot::Head, EqSlot::Chest, EqSlot::Legs, EqSlot::Feet, EqSlot::Hands, EqSlot::Shield]
+                .into_iter()
+                .filter(|s| g.player.equip.get(*s).as_ref().map(|i| i.def().armor.is_some()).unwrap_or(false))
+                .collect();
+            if !worn.is_empty() {
+                let s = worn[g.rng.range(0, worn.len() as i32) as usize];
+                if let Some(it) = g.player.equip.get_mut(s).as_mut() {
+                    it.quality = it.quality.saturating_sub(1);
+                }
             }
         }
     } else {
-        let name = def.name;
+        let name = crate::lang::Noun::new(def.name, def.name);
         if g.rng.chance(0.5) {
-            g.msg(format!("The {} misses you.", name));
+            g.msg(t!("The {} misses you.", name));
         }
     }
 }
@@ -339,6 +355,36 @@ fn npc_shoot(g: &mut Game, i: usize, target: V3) {
     g.sound(if kind == ProjKind::Fireball { Sfx::Fire } else { Sfx::Spell });
 }
 
+/// A master's thralls live on its power and crumble to bones when it dies.
+fn release_thralls(g: &mut Game, master: &crate::lang::Noun) {
+    let lv = g.cur;
+    let mut fallen = Vec::new();
+    for i in 0..g.levels[lv].npcs.len() {
+        let n = &g.levels[lv].npcs[i];
+        if !n.alive() || n.flags & super::creatures::THRALL == 0 {
+            continue;
+        }
+        let (id, pos) = (n.id, n.pos);
+        let floor = g.levels[lv].map.floor_at(pos.x, pos.z);
+        let n = &mut g.levels[lv].npcs[i];
+        n.hp = 0;
+        n.anim = Anim::Die;
+        n.anim_t = 0.0;
+        n.pos.y = floor;
+        fallen.push((id, pos));
+    }
+    if fallen.is_empty() {
+        return;
+    }
+    for (id, pos) in fallen {
+        g.levels[lv].add_item(Item::new(ItemKind::Bone), pos.x, pos.z);
+        if g.foe == Some(id) {
+            g.foe = None;
+        }
+    }
+    g.msg(t!("With {} gone, his thralls crumble to dust.", master));
+}
+
 /// Apply damage to a creature; handles death, loot and experience.
 pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
     let lv = g.cur;
@@ -350,7 +396,7 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
     if g.levels[lv].npcs[idx].race == super::creatures::Race::Demon && !g.has_all_shards() {
         dmg = 0;
         if by_player {
-            g.msg("Your blow passes harmlessly through the shadow! Only the Lumen Stone can harm it.");
+            g.msg(t!("Your blow passes harmlessly through the Lord of Souls! Only the light of the Lumen Stone can touch him."));
         }
     }
     {
@@ -372,12 +418,13 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
     if npc.hp <= 0 {
         let def = npc.race.def();
         let name = match &npc.name {
-            Some(n) => n.clone(),
-            None => format!("the {}", def.name),
+            Some(n) => crate::lang::Noun::new(n.clone(), n),
+            None => crate::lang::Noun::new(format!("the {}", def.name), def.name),
         };
         let pos = npc.pos;
         let inv = npc.inventory.clone();
         let race = npc.race;
+        let master = npc.flags & super::creatures::MASTER != 0;
         {
             let floor = g.levels[lv].map.floor_at(pos.x, pos.z);
             let npc = &mut g.levels[lv].npcs[idx];
@@ -388,10 +435,8 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
         }
         g.sound(Sfx::MonsterDie);
         let mut s = name.clone();
-        if let Some(c) = s.get_mut(0..1) {
-            c.make_ascii_uppercase();
-        }
-        g.msg(format!("{} is dead.", s));
+        s.en = crate::lang::cap(&s.en);
+        g.msg(t!("{} is dead.", s));
         if by_player {
             g.gain_exp(def.exp);
         }
@@ -412,8 +457,12 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
             g.foe = None;
         }
         if race == super::creatures::Race::Demon {
-            g.set_flag("fiend_slain", 1);
+            // Striking down the Lord of Souls is the throne ending.
+            g.set_flag("ending", 1);
             g.events.push(super::Event::Victory);
+        }
+        if master {
+            release_thralls(g, &name);
         }
     } else {
         let npc = &mut g.levels[lv].npcs[idx];
@@ -437,7 +486,7 @@ pub fn player_attack(g: &mut Game, aim: V3, kind: usize, power: f32) {
         let ammo = if w.kind == ItemKind::Sling { ItemKind::SlingStone } else { ItemKind::Bolt };
         let found = take_ammo(g, ammo);
         if !found {
-            g.msg("You have no ammunition for that weapon.");
+            g.msg(t!("You have no ammunition for that weapon."));
             return;
         }
         let ws = w.def().weapon.unwrap();
@@ -507,7 +556,7 @@ pub fn player_attack(g: &mut Game, aim: V3, kind: usize, power: f32) {
         }
         if power >= 0.98 && g.rng.chance(0.25) {
             dmg = dmg * 3 / 2;
-            g.msg("A critical hit!");
+            g.msg(t!("A critical hit!"));
         }
         let dmg = dmg.max(1);
         let c = V3::new(npc_pos.x, npc_pos.y + def.height * 0.6, npc_pos.z);
@@ -570,6 +619,27 @@ mod tests {
     use super::*;
     use crate::art::textures::Tex;
     use crate::world::map::Tile;
+
+    #[test]
+    fn thralls_crumble_with_malchor() {
+        use super::super::creatures::{MASTER, THRALL};
+        use super::super::state::{PClass, Player};
+        let mut g = Game::new(Player::new("T", PClass::Fighter, false), 1);
+        g.change_level(4, 32.5, 6.5, 0.0);
+        let thralls = |g: &Game| g.level().npcs.iter().filter(|n| n.alive() && n.flags & THRALL != 0).count();
+        assert_eq!(thralls(&g), 7);
+        // Malchor hides until the shards open the gate, then steps out to talk.
+        assert!(g.level().npcs.iter().all(|n| n.flags & MASTER == 0));
+        g.malchor_appears();
+        g.malchor_appears();
+        assert_eq!(g.level().npcs.iter().filter(|n| n.flags & MASTER != 0).count(), 1);
+        let malchor = g.level().npcs.iter().find(|n| n.flags & MASTER != 0).unwrap();
+        assert!(g.level().map.point_open(malchor.pos.x, malchor.pos.z));
+        assert!(g.events.iter().any(|e| matches!(e, crate::game::Event::StartConversation(id) if *id == malchor.id)));
+        let malchor = malchor.id;
+        damage_npc(&mut g, malchor, 999, true);
+        assert_eq!(thralls(&g), 0);
+    }
 
     #[test]
     fn bfs_finds_way_around_wall() {

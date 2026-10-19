@@ -12,7 +12,7 @@ pub struct Glyph {
 
 #[derive(Clone)]
 pub struct Font {
-    pub glyphs: Vec<Option<Glyph>>, // indexed by ASCII code
+    pub glyphs: Vec<Option<Glyph>>, // indexed by code point (ASCII and Polish letters)
     pub height: i32,
     pub spacing: i32,
     pub space_w: i32,
@@ -115,11 +115,33 @@ const SMALL_GLYPHS: &[(char, [&str; 6])] = &[
     ('|', ["#", "#", "#", "#", "#", "#"]),
     ('}', ["##.", ".#.", "..#", ".#.", "##.", "..."]),
     ('~', ["....", ".#.#", "#.#.", "....", "....", "...."]),
+    // Polish letters. Capitals with a mark above are squeezed to four rows.
+    ('ą', ["....", ".##.", "#..#", "#.##", ".#.#", "...#"]),
+    ('ć', ["..#", ".##", "#..", "#..", ".##", "..."]),
+    ('ę', ["....", ".##.", "####", "#...", ".###", "..#."]),
+    ('ł', [".#.", ".#.", ".##", "##.", ".#.", "..."]),
+    ('ń', ["..#.", "###.", "#..#", "#..#", "#..#", "...."]),
+    ('ó', ["..#.", ".##.", "#..#", "#..#", ".##.", "...."]),
+    ('ś', ["..#.", ".###", "##..", "..##", "###.", "...."]),
+    ('ź', ["..#.", "####", "..#.", ".#..", "####", "...."]),
+    ('ż', [".#..", "####", "..#.", ".#..", "####", "...."]),
+    ('Ą', [".##.", "#..#", "####", "#..#", "#..#", "...#"]),
+    ('Ć', ["..#.", ".###", "#...", "#...", ".###", "...."]),
+    ('Ę', ["####", "#...", "###.", "#...", "####", "..#."]),
+    ('Ł', [".#..", ".#..", ".##.", "##..", ".###", "...."]),
+    ('Ń', ["..#.", "#..#", "##.#", "#.##", "#..#", "...."]),
+    ('Ó', ["..#.", ".##.", "#..#", "#..#", ".##.", "...."]),
+    ('Ś', ["..#.", ".###", "##..", "..##", "###.", "...."]),
+    ('Ź', ["..#.", "####", "..#.", ".#..", "####", "...."]),
+    ('Ż', [".#..", "####", "..#.", ".#..", "####", "...."]),
 ];
+
+/// Glyph table size: ASCII plus Latin Extended-A, which holds the Polish letters.
+const GLYPH_SLOTS: usize = 0x180;
 
 impl Font {
     pub fn small() -> Font {
-        let mut glyphs: Vec<Option<Glyph>> = vec![None; 128];
+        let mut glyphs: Vec<Option<Glyph>> = vec![None; GLYPH_SLOTS];
         for (ch, rows) in SMALL_GLYPHS {
             let w = rows[0].len() as i32;
             let mut mask = vec![false; (w * 6) as usize];
@@ -190,7 +212,12 @@ impl Font {
 
     fn glyph(&self, ch: char) -> Option<&Glyph> {
         let i = ch as usize;
-        if i < 128 { self.glyphs[i].as_ref() } else { self.glyphs['?' as usize].as_ref() }
+        self.glyphs.get(i).and_then(|g| g.as_ref()).or(self.glyphs['?' as usize].as_ref())
+    }
+
+    #[cfg(test)]
+    pub fn has_glyph(&self, ch: char) -> bool {
+        self.glyphs.get(ch as usize).map(|g| g.is_some()).unwrap_or(false)
     }
 
     pub fn char_width(&self, ch: char) -> i32 {
@@ -400,12 +427,90 @@ const SERIF_GLYPHS: &[(char, &[&str])] = &[
     (')', &["#..", ".#.", ".##", ".##", ".##", ".##", ".##", ".#.", "#.."]),
     ('/', &["....#", "...##", "...#.", "..##.", "..#..", ".##..", ".#...", "##...", "#...."]),
     ('+', &["", "", "..##..", "..##..", "######", "..##..", "..##.."]),
+    ('ł', &["###..", ".##..", ".##..", ".##.#", ".###.", "###..", ".##..", ".##..", "####."]),
+    ('Ł', &["####...", ".##....", ".##....", ".##.#..", ".###...", "###....", ".##....", ".##...#", "#######"]),
 ];
+
+#[derive(Clone, Copy)]
+enum Mark {
+    Acute,
+    Dot,
+    Ogonek,
+}
+
+/// The other Polish letters: a base letter and a mark. Capitals with a mark
+/// above are squeezed from nine rows to seven to make room for it.
+const SERIF_MARKED: &[(char, char, Mark)] = &[
+    ('ą', 'a', Mark::Ogonek),
+    ('ć', 'c', Mark::Acute),
+    ('ę', 'e', Mark::Ogonek),
+    ('ń', 'n', Mark::Acute),
+    ('ó', 'o', Mark::Acute),
+    ('ś', 's', Mark::Acute),
+    ('ź', 'z', Mark::Acute),
+    ('ż', 'z', Mark::Dot),
+    ('Ą', 'A', Mark::Ogonek),
+    ('Ć', 'C', Mark::Acute),
+    ('Ę', 'E', Mark::Ogonek),
+    ('Ń', 'N', Mark::Acute),
+    ('Ó', 'O', Mark::Acute),
+    ('Ś', 'S', Mark::Acute),
+    ('Ź', 'Z', Mark::Acute),
+    ('Ż', 'Z', Mark::Dot),
+];
+
+fn serif_marked(base: &Glyph, height: i32, mark: Mark, capital: bool) -> Glyph {
+    let w = base.w;
+    let get = |x: i32, y: i32| base.mask[(y * w + x) as usize];
+    let mut mask = vec![false; (w * height) as usize];
+    let mut set = |x: i32, y: i32| {
+        if x >= 0 && x < w && y >= 0 && y < height {
+            mask[(y * w + x) as usize] = true;
+        }
+    };
+    let above = !matches!(mark, Mark::Ogonek);
+    if capital && above {
+        for (to, from) in [0, 1, 3, 4, 6, 7, 8].iter().enumerate() {
+            for x in 0..w {
+                if get(x, *from) {
+                    set(x, to as i32 + 2);
+                }
+            }
+        }
+    } else {
+        for y in 0..height {
+            for x in 0..w {
+                if get(x, y) {
+                    set(x, y);
+                }
+            }
+        }
+    }
+    let (c, top) = (w / 2, if capital { 0 } else { 1 });
+    match mark {
+        Mark::Acute => {
+            for (x, y) in [(c, top), (c + 1, top), (c - 1, top + 1), (c, top + 1)] {
+                set(x, y);
+            }
+        }
+        Mark::Dot => {
+            for (x, y) in [(c - 1, top), (c, top), (c - 1, top + 1), (c, top + 1)] {
+                set(x, y);
+            }
+        }
+        Mark::Ogonek => {
+            for (x, y) in [(w - 3, 9), (w - 2, 10), (w - 1, 10)] {
+                set(x, y);
+            }
+        }
+    }
+    Glyph { w, mask }
+}
 
 impl Font {
     pub fn serif() -> Font {
         let height = 12;
-        let mut glyphs: Vec<Option<Glyph>> = vec![None; 128];
+        let mut glyphs: Vec<Option<Glyph>> = vec![None; GLYPH_SLOTS];
         for (ch, rows) in SERIF_GLYPHS {
             let w = rows.iter().map(|r| r.len()).max().unwrap_or(1) as i32;
             let mut mask = vec![false; (w * height) as usize];
@@ -415,6 +520,10 @@ impl Font {
                 }
             }
             glyphs[*ch as usize] = Some(Glyph { w, mask });
+        }
+        for (ch, base, mark) in SERIF_MARKED {
+            let g = glyphs[*base as usize].as_ref().map(|b| serif_marked(b, height, *mark, base.is_ascii_uppercase()));
+            glyphs[*ch as usize] = g;
         }
         Font { glyphs, height, spacing: 1, space_w: 4, line_h: 13 }
     }

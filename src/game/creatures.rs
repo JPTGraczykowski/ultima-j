@@ -141,7 +141,7 @@ impl Race {
             Lurker => RaceDef { name: "lurker", hp: 45, attack: 14, defense: 10, dmg: (4, 12), speed: 0.8, exp: 90, swims: true, radius: 0.35, height: 0.69, ..base },
             Imp => RaceDef { name: "imp", hp: 18, attack: 12, defense: 10, dmg: (2, 6), speed: 1.5, exp: 50, flies: true, ranged: Ranged::Fire, height: 0.62, hover: 0.44, ..base },
             Reaper => RaceDef { name: "reaper", hp: 70, attack: 17, defense: 14, dmg: (5, 15), speed: 0.6, exp: 150, radius: 0.3, height: 1.38, ..base },
-            Demon => RaceDef { name: "shadow fiend", hp: 220, attack: 24, defense: 20, dmg: (8, 22), speed: 1.0, exp: 1000, ranged: Ranged::Fire, radius: 0.35, height: 1.69, ..base },
+            Demon => RaceDef { name: "lord of souls", hp: 220, attack: 24, defense: 20, dmg: (8, 22), speed: 1.0, exp: 1000, ranged: Ranged::Fire, radius: 0.35, height: 1.69, ..base },
         }
     }
 
@@ -205,6 +205,7 @@ pub struct Npc {
     pub poisoned: f32,
     #[serde(default)]
     pub wander_to: Option<(f32, f32)>,
+    /// `THRALL` / `MASTER` bits.
     #[serde(default)]
     pub flags: u32,
     /// Seconds since the NPC last saw the player.
@@ -214,6 +215,11 @@ pub struct Npc {
     #[serde(default)]
     pub swing: f32,
 }
+
+/// `Npc::flags`: an undead kept alive by its master's power.
+pub const THRALL: u32 = 1;
+/// `Npc::flags`: when this NPC dies, every thrall on the level crumbles.
+pub const MASTER: u32 = 2;
 
 impl Npc {
     pub fn new(id: u32, race: Race, x: f32, z: f32) -> Npc {
@@ -260,6 +266,22 @@ impl Npc {
             Some(n) => format!("{} {} {} named {}", art, att, d.name, n),
             None => format!("{} {} {}", art, att, d.name),
         }
+    }
+
+    /// The creature as a noun phrase (see `describe`).
+    pub fn noun(&self) -> crate::lang::Noun {
+        let mut n = self.race_noun().adj(self.attitude.word());
+        n.en = self.describe();
+        match &self.name {
+            Some(name) => n.suffix(t!("named {}", crate::lang::tr_dyn(name))),
+            None => n,
+        }
+    }
+
+    /// The creature's kind with no article: "giant rat".
+    pub fn race_noun(&self) -> crate::lang::Noun {
+        let name = self.race.def().name;
+        crate::lang::Noun::new(name, name)
     }
 
     pub fn health_word(&self) -> &'static str {

@@ -2,7 +2,7 @@
 //! water and lava, and the designs of the five levels of the abyss.
 
 use super::actions::SHARD_GATE;
-use super::creatures::{AiState, Attitude, Npc, Race};
+use super::creatures::{AiState, Attitude, Npc, Race, MASTER, THRALL};
 use super::dialogue::DialogueDb;
 use super::items::{Enchant, Item, ItemKind};
 use super::magic::rune;
@@ -304,6 +304,13 @@ impl<'a> B<'a> {
         self.lv.add_npc(n)
     }
 
+    /// An undead bound to its master's power (see `creatures::THRALL`).
+    pub fn thrall(&mut self, race: Race, x: f32, z: f32) -> u32 {
+        let id = self.npc(race, x, z);
+        self.npc_mut(id).flags |= THRALL;
+        id
+    }
+
     pub fn named(&mut self, race: Race, look: u8, name: &str, conv: &str, x: f32, z: f32, yaw_deg: f32) -> u32 {
         let (x, z) = self.spot(x, z);
         let mut n = Npc::new(0, race, x, z);
@@ -335,15 +342,15 @@ impl<'a> B<'a> {
     }
 
     pub fn stairs(&mut self, x: i32, z: i32, level: usize, dx: f32, dz: f32, yaw_deg: f32) {
-        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Stairs { level, x: dx, z: dz, yaw: yaw_deg.to_radians() }, once: false, fired: false });
+        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Stairs { level, x: dx, z: dz, yaw: yaw_deg.to_radians() }, once: false, fired: false, found: false });
     }
 
     pub fn message(&mut self, x: i32, z: i32, text: &str) {
-        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Message { text: text.to_string() }, once: true, fired: false });
+        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Message { text: text.to_string() }, once: true, fired: false, found: false });
     }
 
     pub fn trap(&mut self, x: i32, z: i32, dmg: i32) {
-        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Damage { amount: dmg }, once: true, fired: false });
+        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Damage { amount: dmg }, once: true, fired: false, found: false });
     }
 
     pub fn writing(&mut self, wall_x: i32, wall_z: i32, text: &str) {
@@ -386,6 +393,8 @@ fn level1(db: &DialogueDb) -> Level {
     b.item(ItemKind::Bread, 29.2, 57.3);
     b.put(Item::new(ItemKind::Scroll).data(3), 31.7, 53.2);
     b.item(ItemKind::BonePile, 32.4, 57.4);
+    b.item(ItemKind::Gravestone, 28.6, 57.4);
+    b.message(29, 56, "Beside you gapes a shallow, empty grave. The earth inside still holds the shape of a body - your body.");
 
     // West corridor to the outcasts' camp.
     b.style(Tex::Dirt, Tex::StoneBlocks, Tex::CeilingRock);
@@ -394,7 +403,8 @@ fn level1(db: &DialogueDb) -> Level {
     b.light(14, 40, 9, 6, 10);
     b.item(ItemKind::Campfire, 18.5, 43.0);
     b.named(Race::Human, 1, "Elsmore", "elsmore", 16.5, 42.0, 90.0);
-    b.named(Race::Human, 0, "Tobin", "tobin", 21.0, 41.0, 200.0);
+    let tobin = b.named(Race::Human, 0, "Tobin", "tobin", 21.0, 41.0, 200.0);
+    b.npc_mut(tobin).inventory = [ItemKind::Torch, ItemKind::Torch, ItemKind::Bread, ItemKind::Bread, ItemKind::RedPotion, ItemKind::Lantern, ItemKind::Lockpick, ItemKind::Candle].into_iter().map(Item::new).collect();
     b.item(ItemKind::Barrel, 14.6, 40.6);
     b.item(ItemKind::Barrel, 15.5, 40.5);
     b.item(ItemKind::Bed, 21.4, 44.6);
@@ -437,6 +447,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.style(Tex::Dirt, Tex::StoneBlocks, Tex::CeilingRock);
     b.corridor(18, 39, 18, 35, 0, 8);
     b.door(18, 37, DoorAxis::NS, DoorKind::Wood, 7);
+    b.trap(18, 36, 3);
     b.style(Tex::WoodFloor, Tex::DarkPanels, Tex::CeilingBeams);
     b.room(15, 28, 7, 6, 2, 9);
     b.tile(18, 34, 0, 10);
@@ -475,6 +486,7 @@ fn level1(db: &DialogueDb) -> Level {
     // Slug tunnel to the south-east.
     b.cave(57, 58, 3, 3, 0, 8);
     b.corridor(44, 57, 57, 57, 0, 8);
+    b.trap(52, 57, 3);
     b.npc(Race::Slug, 57.5, 58.5);
     b.container(ItemKind::Box, 58.5, 59.5, vec![Item::new(ItemKind::RuneStone).data(rune::MANI as u16), Item::new(ItemKind::Candle)]);
     b.item(ItemKind::Mushroom, 56.0, 57.0);
@@ -583,7 +595,8 @@ fn level2(db: &DialogueDb) -> Level {
     b.room(22, 42, 11, 7, 0, 11);
     b.lava(24, 47, 7, 1, -1);
     b.light(22, 42, 11, 7, 10);
-    b.named(Race::Dwarf, 3, "Bodric", "bodric", 26.5, 44.5, 0.0);
+    let bodric = b.named(Race::Dwarf, 3, "Bodric", "bodric", 26.5, 44.5, 0.0);
+    b.npc_mut(bodric).inventory = [ItemKind::ChainShirt, ItemKind::Gauntlets, ItemKind::Broadsword, ItemKind::WoodenShield, ItemKind::Torch, ItemKind::Torch].into_iter().map(Item::new).collect();
     b.item(ItemKind::Cauldron, 31.3, 43.0);
     b.item(ItemKind::Table, 29.0, 43.3);
     b.rune_stone(rune::FLAM, 29.0, 43.2);
@@ -601,6 +614,8 @@ fn level2(db: &DialogueDb) -> Level {
     b.corridor(46, 30, 46, 44, 0, 9);
     b.corridor(46, 44, 50, 44, 0, 9);
     b.corridor(50, 44, 58, 32, 0, 9);
+    b.trap(40, 30, 5);
+    b.trap(46, 38, 5);
     for (x, z) in [(45.5, 27.5), (48.5, 29.5), (49.5, 44.5), (52.5, 46.5)] {
         b.npc(Race::Spider, x, z);
     }
@@ -626,6 +641,7 @@ fn level2(db: &DialogueDb) -> Level {
     // The deep mine and the way down, south-west of the hall.
     b.cave(16, 54, 6, 4, 0, 9);
     b.corridor(21, 36, 21, 54, 0, 8);
+    b.trap(21, 45, 5);
     b.corridor(21, 54, 16, 54, 0, 8);
     b.corridor(13, 54, 6, 54, 0, 8);
     b.lava(14, 50, 2, 9, -3);
@@ -634,6 +650,7 @@ fn level2(db: &DialogueDb) -> Level {
     b.npc(Race::Slug, 11.5, 52.5);
     b.item(ItemKind::GoldNugget, 19.0, 57.0);
     b.item(ItemKind::Shovel, 18.0, 52.0);
+    b.rune_stone(rune::POR, 18.6, 53.4);
     b.writing(16, 49, "DANGER - the old fissure runs hot. Use the bridge.");
     b.tile(5, 54, -2, 10);
     b.slope(5, 54, Shape::SlopeE, -2, 2);
@@ -710,6 +727,7 @@ fn level3(db: &DialogueDb) -> Level {
     // The drowned temple to the south-west (ghouls).
     b.style(Tex::Flagstones, Tex::Sandstone, Tex::CeilingRock);
     b.corridor(10, 27, 10, 33, 0, 8);
+    b.trap(10, 30, 5);
     b.room(4, 34, 14, 12, 0, 12);
     b.water(4, 40, 14, 2, -1);
     b.bridge(10, 40, 2, 2, 0);
@@ -732,6 +750,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.lever(3, 38, grate);
     b.put(Item::new(ItemKind::SilverRing).enchanted(Enchant::Protection(3), 0), 20.0, 37.5);
     b.item(ItemKind::BluePotion, 19.6, 36.4);
+    b.rune_stone(rune::QUAS, 20.6, 36.7);
 
     // Southern caves and the old aqueduct to the stairs.
     b.style(Tex::Gravel, Tex::MossyStone, Tex::CeilingRock);
@@ -742,6 +761,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.rune_stone(rune::GRAV, 37.0, 39.0);
     b.rune_stone(rune::REL, 31.0, 45.0);
     b.corridor(36, 45, 50, 55, 0, 8);
+    b.trap(44, 45, 5);
     b.cave(53, 57, 4, 3, 0, 10);
     b.corridor(50, 57, 53, 57, 0, 8);
     b.rune_stone(rune::TYM, 55.0, 56.0);
@@ -794,6 +814,7 @@ fn level4(db: &DialogueDb) -> Level {
     // Sir Aldric's tomb chamber (centre).
     b.style(Tex::MarbleTiles, Tex::CarvedFrieze, Tex::CeilingRock);
     b.corridor(32, 15, 32, 21, 0, 9);
+    b.trap(32, 18, 7);
     b.room(26, 22, 13, 9, 0, 13);
     b.light(26, 22, 13, 9, 5);
     b.item(ItemKind::Statue, 27.0, 23.0);
@@ -806,6 +827,7 @@ fn level4(db: &DialogueDb) -> Level {
     // West wing: ghosts and headless.
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.corridor(25, 26, 14, 26, 0, 9);
+    b.trap(19, 26, 6);
     b.room(4, 20, 10, 12, 0, 11);
     b.npc(Race::Ghost, 8.5, 24.5);
     b.npc(Race::Headless, 6.5, 29.5);
@@ -820,6 +842,7 @@ fn level4(db: &DialogueDb) -> Level {
     // East wing: the troll den, where Aldric's bones were dragged.
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.corridor(39, 26, 46, 26, 0, 9);
+    b.trap(43, 26, 6);
     b.cave(52, 26, 6, 6, 0, 12);
     b.npc(Race::Troll, 52.5, 25.5);
     b.npc(Race::Troll, 55.5, 29.5);
@@ -857,6 +880,22 @@ fn level4(db: &DialogueDb) -> Level {
 
 // ------------------------------------------------------------------ level 5
 
+/// Malchor, master of the thralls. He is not on the map at the start: the
+/// gate's light burns him, so he hides until the player opens it with the
+/// shards, then steps out behind them (`Game::malchor_appears`).
+pub fn malchor(db: &DialogueDb, x: f32, z: f32) -> Npc {
+    let mut n = Npc::new(0, Race::Mage, x, z);
+    n.name = Some("Malchor".into());
+    n.talk = db.find("malchor");
+    n.attitude = Attitude::Hostile;
+    n.ai = AiState::Idle;
+    n.flags |= MASTER;
+    n.hp = 70;
+    n.max_hp = 70;
+    n.inventory = vec![Item::new(ItemKind::SilverKey).data(501), Item::new(ItemKind::Wand).enchanted(Enchant::Spell(super::magic::Spell::Fireball), 4), Item::new(ItemKind::BluePotion)];
+    n
+}
+
 fn level5(db: &DialogueDb) -> Level {
     let mut b = B::new("the Deep Sanctum", 505, db);
     b.lv.ambient = 2.0;
@@ -870,14 +909,16 @@ fn level5(db: &DialogueDb) -> Level {
     b.stairs(32, 2, 3, 32.5, 56.5, 0.0);
     b.corridor(32, 5, 32, 10, 0, 9);
     b.lv.start = (32.5, 6.5, 180.0);
-    b.message(32, 8, "Heat rises from below. Something vast breathes in the darkness.");
+    b.message(32, 8, "Heat rises from below. A cold voice drifts up out of the darkness: \"Come to me, my knight.\"");
 
-    // Antechamber with fire and imps.
+    // Antechamber with fire and Malchor's thralls.
     b.room(24, 11, 17, 9, 0, 13);
     b.lava(24, 15, 4, 2, -2);
     b.lava(37, 15, 4, 2, -2);
-    b.npc(Race::Imp, 28.5, 13.5);
-    b.npc(Race::Imp, 36.5, 17.5);
+    b.thrall(Race::Skeleton, 28.5, 13.5);
+    b.thrall(Race::Skeleton, 36.5, 17.5);
+    b.thrall(Race::Ghoul, 32.5, 18.5);
+    b.message(32, 11, "Hollow soldiers turn toward you, a violet light burning in their empty eyes. Some will other than their own holds them here.");
     b.item(ItemKind::Brazier, 25.0, 11.8);
     b.item(ItemKind::Brazier, 40.0, 11.8);
     b.item(ItemKind::RedPotion, 39.5, 19.0);
@@ -885,34 +926,33 @@ fn level5(db: &DialogueDb) -> Level {
     // West: Malchor's study.
     b.style(Tex::WoodFloor, Tex::DarkPanels, Tex::CeilingBeams);
     b.corridor(23, 15, 18, 15, 0, 9);
+    b.trap(20, 15, 8);
+    b.thrall(Race::Headless, 22.5, 15.5);
     b.room(8, 10, 10, 10, 0, 11);
     b.light(8, 10, 10, 10, 8);
-    let malchor = b.named(Race::Mage, 0, "Malchor", "malchor", 12.5, 13.5, 90.0);
-    {
-        let n = b.npc_mut(malchor);
-        n.attitude = Attitude::Upset;
-        n.hp = 70;
-        n.max_hp = 70;
-        n.inventory = vec![Item::new(ItemKind::SilverKey).data(501), Item::new(ItemKind::Wand).enchanted(Enchant::Spell(super::magic::Spell::Fireball), 4), Item::new(ItemKind::BluePotion)];
-    }
+    // Malchor himself is not here: he waits unseen by the Shard Gate (see `malchor`).
     b.item(ItemKind::Bookshelf, 8.8, 10.6);
     b.item(ItemKind::Bookshelf, 10.4, 10.6);
     b.item(ItemKind::Cauldron, 16.0, 18.5);
     b.item(ItemKind::Table, 14.0, 12.0);
     b.put(Item::new(ItemKind::Book).data(8), 14.0, 12.0);
-    b.npc(Race::Skeleton, 9.5, 18.5);
+    b.thrall(Race::Skeleton, 9.5, 18.5);
+    b.thrall(Race::Ghost, 16.5, 11.5);
 
-    // East: Lady Rowena's cell.
+    // East: Malchor's soul vault.
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.corridor(41, 15, 47, 15, 0, 9);
+    b.trap(43, 15, 8);
+    b.thrall(Race::Ghoul, 44.5, 15.5);
     b.door(46, 15, DoorAxis::EW, DoorKind::Iron, 501);
     b.room(48, 12, 6, 6, 0, 10);
     b.light(48, 12, 6, 6, 6);
-    b.named(Race::Human, 4, "Lady Rowena", "rowena", 51.5, 14.5, 270.0);
-    b.item(ItemKind::Bed, 52.5, 16.8);
-    b.item(ItemKind::WaterFlask, 49.0, 17.0);
+    b.item(ItemKind::BonePile, 52.5, 16.8);
+    b.item(ItemKind::Skull, 49.0, 13.0);
+    b.container(ItemKind::Chest, 52.6, 12.8, vec![Item::new(ItemKind::RedPotion), Item::new(ItemKind::RedPotion), Item::new(ItemKind::Coin).qty(50).data(50)]);
+    b.put(Item::new(ItemKind::Scroll).data(12), 49.5, 16.5);
 
-    // South: the Shard Gate and the Fiend's pit.
+    // South: the Shard Gate and the Throne of Souls.
     b.style(Tex::Flagstones, Tex::RedBricks, Tex::CeilingRock);
     b.corridor(32, 20, 32, 27, 0, 10);
     b.door(32, 25, DoorAxis::NS, DoorKind::Iron, SHARD_GATE);
@@ -924,10 +964,10 @@ fn level5(db: &DialogueDb) -> Level {
     b.lava(36, 34, 8, 4, -3);
     b.lava(26, 48, 14, 3, -3);
     b.light(18, 28, 30, 24, 8);
-    let fiend = b.npc(Race::Demon, 32.5, 41.5);
-    b.npc_mut(fiend).name = Some("the Shadow Fiend".into());
-    b.npc(Race::Imp, 26.5, 34.5);
-    b.npc(Race::Imp, 38.5, 44.5);
+    let lord = b.named(Race::Demon, 0, "Varian", "lord", 32.5, 41.5, 0.0);
+    b.npc_mut(lord).attitude = Attitude::Mellow;
+    b.item(ItemKind::BonePile, 30.0, 43.0);
+    b.item(ItemKind::BonePile, 35.0, 42.5);
     b.item(ItemKind::Shrine, 32.5, 30.0);
     b.item(ItemKind::Stalagmite, 22.0, 33.0);
     b.item(ItemKind::Stalagmite, 42.0, 40.0);
@@ -982,12 +1022,39 @@ mod tests {
                 assert!(reach(it.pos.x, it.pos.z), "level {} item {:?} at ({:.1},{:.1}) unreachable", li, it.item.kind, it.pos.x, it.pos.z);
             }
             for t in &lv.triggers {
+                if let TriggerKind::Damage { .. } = t.kind {
+                    assert!(seen[idx(t.tx, t.tz)], "level {} trap at ({},{}) unreachable", li, t.tx, t.tz);
+                    assert_eq!(m.get(t.tx, t.tz).liquid, Liquid::None, "level {} trap at ({},{}) in liquid", li, t.tx, t.tz);
+                    let shared = lv.triggers.iter().filter(|o| (o.tx, o.tz) == (t.tx, t.tz)).count();
+                    assert_eq!(shared, 1, "level {} trap at ({},{}) shares its tile", li, t.tx, t.tz);
+                }
                 if let TriggerKind::Stairs { level, x, z, .. } = t.kind {
                     assert!(seen[idx(t.tx, t.tz)], "level {} stairs at ({},{}) unreachable", li, t.tx, t.tz);
                     let dest = &levels[level].map;
                     assert!(dest.point_open(x, z), "level {} stairs lead into rock on level {}", li, level);
                 }
             }
+        }
+    }
+
+    /// Every one of the 24 runes must be lying somewhere in the Abyss.
+    #[test]
+    fn every_rune_is_placed() {
+        fn collect(items: &[Item], found: &mut [bool; 24]) {
+            for it in items {
+                if it.kind == ItemKind::RuneStone {
+                    found[it.data as usize % 24] = true;
+                }
+                collect(&it.contents, found);
+            }
+        }
+        let mut found = [false; 24];
+        for lv in build_all() {
+            let items: Vec<Item> = lv.items.iter().map(|w| w.item.clone()).collect();
+            collect(&items, &mut found);
+        }
+        for (r, f) in found.iter().enumerate() {
+            assert!(f, "the {} rune is nowhere in the Abyss", super::super::magic::RUNE_NAMES[r]);
         }
     }
 }

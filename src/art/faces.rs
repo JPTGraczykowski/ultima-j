@@ -16,7 +16,6 @@ pub enum Face {
     Ghoul,
     Lizard,
     Ghost,
-    Fiend,
     Imp,
     Tree,
     Spider,
@@ -120,18 +119,6 @@ fn design(f: Face) -> Design {
             ],
             anchor: (4, 2),
             radius: 6.1,
-        },
-        Face::Fiend => Design {
-            rows: &[
-                "K.......K",
-                ".KK...KK.",
-                ".eeK.Kee.",
-                "....l....",
-                ".KwKKKwK.",
-                "..KmmmK..",
-            ],
-            anchor: (4, 3),
-            radius: 5.9,
         },
         Face::Tree => Design {
             rows: &[

@@ -9,12 +9,21 @@
 //! * option text -> next_node ? condition & condition
 //! ```
 //! Conditions: `flag:NAME>=N`, `flag:NAME=N`, `!flag:NAME`, `item:Kind`,
-//! `!item:Kind`, `gold>=N`. Actions: `flag NAME N`, `give Kind [data] [qty]`,
-//! `take Kind [qty]`, `exp N`, `hostile`, `heal`, `rune N`, `follow`,
-//! `mana`, `skill NAME N`, `end`.
+//! `!item:Kind`, `gold>=N`, `afford:N`, `skill:NAME>=N`. Actions: `flag NAME N`,
+//! `give Kind [data] [qty]`, `take Kind [qty]`, `pay N`, `earn N`, `exp N`,
+//! `hostile`, `heal`, `rune N`, `follow`, `mana`, `skill NAME N`, `mend`,
+//! `barter`, `end`.
+//!
+//! Prices: `{buy N}` and `{sell N}` in text show a base price of N gold as
+//! adjusted by the player's Charm and Appraise; `afford:N`, `pay N` and
+//! `earn N` use the same adjusted prices.
+//!
+//! Bartering: a node with `! barter` opens the trade areas (the NPC's
+//! `inventory` is their stock, see `barter.rs`) and adds the trading options
+//! before its own.
 
 use super::creatures::{AiState, Attitude};
-use super::items::{Item, ItemKind, ALL_SKILLS};
+use super::items::{Class, Item, ItemKind, Skill, ALL_SKILLS};
 use super::Game;
 use std::collections::HashMap;
 
@@ -26,6 +35,9 @@ pub enum Cond {
     HasItem(ItemKind),
     NoItem(ItemKind),
     GoldGe(i32),
+    /// Enough gold for a base price after haggling.
+    Afford(i32),
+    SkillGe(Skill, i32),
 }
 
 #[derive(Clone, Debug)]
@@ -67,7 +79,7 @@ pub const ALL_ITEM_KINDS: &[ItemKind] = {
         Lantern, Bag, Pack, Box, RuneBag, IronKey, GoldKey, SilverKey, RuneStone, Wand, Coin, RedGem, BlueGem, GreenGem,
         WhiteGem, GoldNugget, Scroll, Book, Map, Bedroll, Rock, Bone, Skull, Lockpick, Rope, Pole, Shovel, ShardOfValor,
         ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
-        Campfire, Bed, Brazier, Statue, Bookshelf, Pillar, Gravestone, Cauldron, MoonOrb, Corpse, Blood, Stalagmite, Web,
+        Campfire, Bed, Brazier, Statue, Bookshelf, Pillar, Gravestone, Cauldron, MoonOrb, Corpse, Blood, Stalagmite, Web, Ward,
     ]
 };
 
@@ -93,6 +105,14 @@ fn parse_cond(s: &str) -> Option<Cond> {
     }
     if let Some(rest) = s.strip_prefix("gold>=") {
         return Some(Cond::GoldGe(rest.trim().parse().ok()?));
+    }
+    if let Some(rest) = s.strip_prefix("afford:") {
+        return Some(Cond::Afford(rest.trim().parse().ok()?));
+    }
+    if let Some(rest) = s.strip_prefix("skill:") {
+        let (n, v) = rest.split_once(">=")?;
+        let sk = ALL_SKILLS.iter().find(|k| k.name().eq_ignore_ascii_case(n.trim()))?;
+        return Some(Cond::SkillGe(*sk, v.trim().parse().ok()?));
     }
     None
 }
@@ -179,8 +199,16 @@ impl DialogueDb {
         Ok(DialogueDb { convs })
     }
 
+    /// The conversations in the current language.
     pub fn load() -> DialogueDb {
-        DialogueDb::parse(include_str!("../../assets/dialogue.txt")).expect("dialogue.txt is valid")
+        DialogueDb::load_lang(crate::lang::get())
+    }
+
+    pub fn load_lang(l: crate::lang::Lang) -> DialogueDb {
+        match l {
+            crate::lang::Lang::En => DialogueDb::parse(include_str!("../../assets/dialogue.txt")).expect("dialogue.txt is valid"),
+            crate::lang::Lang::Pl => DialogueDb::parse(include_str!("../../assets/dialogue.pl.txt")).expect("dialogue.pl.txt is valid"),
+        }
     }
 
     pub fn find(&self, name: &str) -> Option<u16> {
@@ -235,7 +263,46 @@ pub fn cond_ok(g: &Game, c: &Cond) -> bool {
         Cond::HasItem(k) => g.player.has_item(*k),
         Cond::NoItem(k) => !g.player.has_item(*k),
         Cond::GoldGe(n) => gold(g) >= *n,
+        Cond::Afford(n) => gold(g) >= buy_price(g, *n),
+        Cond::SkillGe(s, n) => g.player.skill(*s) >= *n,
     }
+}
+
+/// What the player pays for something with a base price: Charm talks the
+/// price down, Appraise knows what it is really worth.
+pub fn buy_price(g: &Game, base: i32) -> i32 {
+    let off = (g.player.skill(Skill::Charm) * 2 + g.player.skill(Skill::Appraise)).min(35);
+    ((base * (100 - off) + 50) / 100).max(1)
+}
+
+/// What the player is paid for something with a base price.
+pub fn sell_price(g: &Game, base: i32) -> i32 {
+    let up = (g.player.skill(Skill::Appraise) * 3 + g.player.skill(Skill::Charm)).min(50);
+    (base * (100 + up) + 50) / 100
+}
+
+/// Replace `{buy N}` and `{sell N}` with adjusted prices.
+pub fn fill_prices(g: &Game, s: &str) -> String {
+    let mut out = String::new();
+    let mut rest = s;
+    while let Some(k) = rest.find('{') {
+        out.push_str(&rest[..k]);
+        let tail = &rest[k..];
+        let end = tail.find('}').unwrap_or(tail.len() - 1);
+        let inner = &tail[1..end];
+        let price = match inner.split_once(' ') {
+            Some(("buy", n)) => n.trim().parse().ok().map(|n| buy_price(g, n)),
+            Some(("sell", n)) => n.trim().parse().ok().map(|n| sell_price(g, n)),
+            _ => None,
+        };
+        match price {
+            Some(p) => out.push_str(&p.to_string()),
+            None => out.push_str(&tail[..=end]),
+        }
+        rest = &tail[end + 1..];
+    }
+    out.push_str(rest);
+    out
 }
 
 /// Live state of a conversation in progress.
@@ -247,7 +314,26 @@ pub struct ConvState {
     pub text: String,
     pub options: Vec<Opt>,
     pub ended: bool,
+    /// The trade areas are open (a `barter` node has been reached).
+    pub trading: bool,
+    /// Indices of the NPC's goods the player has chosen.
+    pub picked: Vec<usize>,
+    /// The player's side of the table.
+    pub offer: [Option<Item>; super::barter::SLOTS],
+    /// Which four of the NPC's goods are shown.
+    pub goods_page: usize,
 }
+
+impl ConvState {
+    pub fn new(conv: u16, npc: u32) -> ConvState {
+        ConvState { conv, npc, node: String::new(), text: String::new(), options: Vec::new(), ended: false, trading: false, picked: Vec::new(), offer: Default::default(), goods_page: 0 }
+    }
+}
+
+/// Targets of the built-in trading options.
+pub const TRADE: &str = "@trade";
+pub const APPRAISE: &str = "@appraise";
+pub const MORE_GOODS: &str = "@more";
 
 /// Execute a node's actions and return its visible text and options.
 pub fn enter_node(g: &mut Game, db: &DialogueDb, st: &mut ConvState, node: &str) {
@@ -262,14 +348,54 @@ pub fn enter_node(g: &mut Game, db: &DialogueDb, st: &mut ConvState, node: &str)
     };
     st.node = node.to_string();
     let name = g.player.name.clone();
-    st.text = n.text.replace("{name}", &name);
+    st.text = fill_prices(g, &crate::lang::by_sex(&n.text.replace("{name}", &name), g.player.female));
     for a in &n.actions {
         run_action(g, st.npc, a, &mut st.ended);
     }
-    st.options = n.options.iter().filter(|o| o.conds.iter().all(|c| cond_ok(g, c))).cloned().collect();
+    if n.actions.iter().any(|a| a.first().map(|s| s == "barter").unwrap_or(false)) {
+        st.trading = true;
+    }
+    refresh_options(g, db, st);
     // Remember that we've talked.
     let key = format!("talked_{}", conv.name);
     g.set_flag(&key, 1);
+}
+
+/// Recompute the options shown for the current node.
+pub fn refresh_options(g: &Game, db: &DialogueDb, st: &mut ConvState) {
+    let Some(n) = db.convs[st.conv as usize].nodes.get(&st.node) else { return };
+    let opt = |text: &str, next: &str| Opt { text: text.to_string(), next: next.to_string(), conds: Vec::new() };
+    st.options.clear();
+    if n.actions.iter().any(|a| a.first().map(|s| s == "barter").unwrap_or(false)) {
+        st.options.push(opt(t!("Let us trade."), TRADE));
+        st.options.push(opt(t!("What is mine offer worth to thee?"), APPRAISE));
+        let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
+        if stock > super::barter::SLOTS {
+            st.options.push(opt(t!("Show me thy other goods."), MORE_GOODS));
+        }
+    }
+    st.options.extend(n.options.iter().filter(|o| o.conds.iter().all(|c| cond_ok(g, c))).map(|o| Opt { text: fill_prices(g, &crate::lang::by_sex(&o.text, g.player.female)), ..o.clone() }));
+}
+
+/// Choose one of the built-in trading options; the reply becomes the NPC's
+/// text and the node's options stay.
+pub fn barter_choice(g: &mut Game, db: &DialogueDb, st: &mut ConvState, what: &str) {
+    use super::barter;
+    st.text = match what {
+        TRADE => barter::trade(g, st.npc, &mut st.picked, &mut st.offer),
+        APPRAISE => barter::appraise(g, st.npc, &st.picked, &st.offer),
+        _ => {
+            let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
+            let pages = stock.div_ceil(barter::SLOTS).max(1);
+            st.goods_page = (st.goods_page + 1) % pages;
+            t!("Have a look at these, then.").to_string()
+        }
+    };
+    let stock = g.level().npc(st.npc).map(|n| n.inventory.len()).unwrap_or(0);
+    if st.goods_page * barter::SLOTS >= stock {
+        st.goods_page = 0;
+    }
+    refresh_options(g, db, st);
 }
 
 fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
@@ -287,12 +413,12 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
                 if k == ItemKind::Torch {
                     it.fuel = 600.0;
                 }
-                let desc = it.name_with_article();
+                let desc = it.noun();
                 if let Some(back) = g.player.give(it) {
                     g.drop_item(back, None);
-                    g.msg(format!("You receive {} (it is at your feet).", desc));
+                    g.msg(t!("You receive {} (it is at your feet).", desc));
                 } else {
-                    g.msg(format!("You receive {}.", desc));
+                    g.msg(t!("You receive {}.", desc));
                 }
             }
         }
@@ -307,6 +433,30 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
                 }
             }
         }
+        "pay" => take_gold(g, buy_price(g, num(1, 0))),
+        "earn" => {
+            let n = sell_price(g, num(1, 0));
+            let coins = Item::new(ItemKind::Coin).qty(n as u16);
+            if let Some(back) = g.player.give(coins) {
+                g.drop_item(back, None);
+            }
+            g.msg(t!("You receive {}.", crate::lang::gold(n)));
+        }
+        "mend" => {
+            for s in super::ALL_EQ {
+                if let Some(it) = g.player.equip.get_mut(s).as_mut() {
+                    if matches!(it.def().class, Class::Weapon | Class::Missile | Class::Armor) {
+                        it.quality = 100;
+                    }
+                }
+            }
+            for it in g.player.pack.iter_mut().flatten() {
+                if matches!(it.def().class, Class::Weapon | Class::Missile | Class::Armor) {
+                    it.quality = 100;
+                }
+            }
+            g.msg(t!("Your weapons and armour are as good as new."));
+        }
         "exp" => g.gain_exp(num(1, 10)),
         "heal" => {
             let m = g.player.max_vit;
@@ -317,12 +467,12 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
         "rune" => {
             let r = num(1, 0) as usize % 24;
             g.player.runes[r] = true;
-            g.msg(format!("You learn the {} rune.", super::magic::RUNE_NAMES[r]));
+            g.msg(t!("You learn the {} rune.", super::magic::RUNE_NAMES[r]));
         }
         "skill" => {
             if let Some(s) = ALL_SKILLS.iter().find(|s| s.name().eq_ignore_ascii_case(arg(1))) {
                 g.player.skills[*s as usize] += num(2, 1);
-                g.msg(format!("Your {} skill improves.", s.name()));
+                g.msg(t!("Your {} skill improves.", s.label()));
             }
         }
         "hostile" => {
@@ -363,7 +513,7 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
 
 /// Texts of scrolls, books and plaques, indexed by item data.
 pub fn scroll_text(id: u16) -> &'static str {
-    SCROLLS.get(id as usize).copied().unwrap_or("The writing is too faded to read.")
+    crate::lang::tr(SCROLLS.get(id as usize).copied().unwrap_or(SCROLLS[0]))
 }
 
 pub const SCROLLS: &[&str] = &[
@@ -376,7 +526,7 @@ pub const SCROLLS: &[&str] = &[
     // 3
     "Runes of power: IN means create, LOR means light. Speak them together upon the rune shelf, and darkness shall be driven back. ORT is magic, JUX is danger; together they make a bolt of force.",
     // 4
-    "The Lumen Stone was broken into three shards: Valor, Wisdom and Mercy. Only when they are joined at the altar of the deep can the Shadow be bound again. - from the journal of Lord Varian",
+    "The Lumen Stone was broken into three shards: Valor, Wisdom and Mercy. I cannot make it whole. I go down to the Throne of Souls, to keep the dead of the Abyss until another can bear the light. - from the journal of Lord Varian",
     // 5
     "Mountain folk mining log, day 312: The spiders have overrun the lower galleries. King Thorgrim has sealed the eastern shaft. The hammer of our fathers lies beyond it still.",
     // 6
@@ -384,13 +534,15 @@ pub const SCROLLS: &[&str] = &[
     // 7
     "Here lies Sir Aldric, knight of the Lumen. He swore to guard the shard of Mercy until his bones were laid to rest in consecrated ground.",
     // 8
-    "Malchor's notes: The girl's blood is noble; it will serve. Once the three shards are kept apart, the Fiend's prison weakens. In the deep sanctum I shall finish what Varian could not.",
+    "Malchor's notes: Varian weakens. The gate to his Throne burns me, but it will open to the three shards in the hands of one of his own knights - and the peoples would give their shards to a knight, never to me. The one who took my blast lies in the old graves by the doors. Wake it. Speak to it in Varian's voice. Wait by the gate.",
     // 9
     "IN MANI heals the body. AN NOX cures poison. POR FLAM hurls fire. VAS means great; with it, many spells grow mighty.",
     // 10
     "A child's drawing of the sun, labelled 'what the sky looks like'. Someone was born down here.",
     // 11
     "Recipe: mushrooms from the lower caves, boiled thrice, are safe to eat. Boiled once, you will see colours that do not exist.",
+    // 12
+    "A list in Malchor's hand, every line crossed out but the last: 'Aldric - the bones taken, the ghost bound. Corwin - drunk. Elsmore - too thin to bother. The knight who took the blast - risen, and walking. Save for last.'",
 ];
 
 #[cfg(test)]
@@ -403,6 +555,37 @@ mod tests {
         assert!(!db.convs.is_empty());
     }
 
+    /// The Polish conversations are the English ones with other words: the
+    /// same conversations in the same order (saves keep their index), the
+    /// same nodes, actions, options, targets and conditions.
+    #[test]
+    fn polish_dialogue_matches_english() {
+        let en = DialogueDb::load_lang(crate::lang::Lang::En);
+        let pl = DialogueDb::load_lang(crate::lang::Lang::Pl);
+        assert_eq!(en.convs.iter().map(|c| &c.name).collect::<Vec<_>>(), pl.convs.iter().map(|c| &c.name).collect::<Vec<_>>());
+        for (a, b) in en.convs.iter().zip(&pl.convs) {
+            let mut names: Vec<&String> = a.nodes.keys().collect();
+            names.sort();
+            let mut pl_names: Vec<&String> = b.nodes.keys().collect();
+            pl_names.sort();
+            assert_eq!(names, pl_names, "conversation {}", a.name);
+            for n in names {
+                let (x, y) = (&a.nodes[n], &b.nodes[n]);
+                let at = format!("{} / {}", a.name, n);
+                assert_eq!(x.actions, y.actions, "{}", at);
+                assert_eq!(x.options.len(), y.options.len(), "{}", at);
+                for (o, p) in x.options.iter().zip(&y.options) {
+                    assert_eq!(o.next, p.next, "{}", at);
+                    assert_eq!(format!("{:?}", o.conds), format!("{:?}", p.conds), "{}", at);
+                }
+                assert!(!y.text.is_empty() || x.text.is_empty(), "{} has no Polish text", at);
+                for (key, _) in [("{name}", 0), ("{buy", 0), ("{sell", 0)] {
+                    assert_eq!(x.text.matches(key).count(), y.text.matches(key).count(), "{} uses {} differently", at, key);
+                }
+            }
+        }
+    }
+
     #[test]
     fn parse_basic() {
         let src = "=== test\n-- start\nHello {name}.\nSecond line.\n! flag met 1\n* Bye -> end\n* More -> more ? flag:met>=1 & gold>=5\n-- more\nMore text.\n* Back -> start\n";
@@ -411,6 +594,22 @@ mod tests {
         assert_eq!(c.nodes["start"].text, "Hello {name}. Second line.");
         assert_eq!(c.nodes["start"].options.len(), 2);
         assert_eq!(c.nodes["start"].options[1].conds.len(), 2);
+    }
+
+    #[test]
+    fn charm_and_appraise_haggle() {
+        use super::super::state::{PClass, Player};
+        let mut g = Game::new(Player::new("T", PClass::Fighter, false), 1);
+        assert_eq!(buy_price(&g, 20), 20);
+        assert_eq!(sell_price(&g, 30), 30);
+        assert_eq!(fill_prices(&g, "A potion, {buy 20} gold. {name}"), "A potion, 20 gold. {name}");
+        g.player.skills[Skill::Charm as usize] = 5;
+        g.player.skills[Skill::Appraise as usize] = 5;
+        assert_eq!(buy_price(&g, 20), 17);
+        assert_eq!(sell_price(&g, 30), 36);
+        assert!(cond_ok(&g, &parse_cond("skill:Charm>=5").unwrap()));
+        assert!(!cond_ok(&g, &parse_cond("skill:charm>=6").unwrap()));
+        assert!(!cond_ok(&g, &parse_cond("afford:1").unwrap()));
     }
 
     #[test]

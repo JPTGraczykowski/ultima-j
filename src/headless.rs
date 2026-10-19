@@ -15,11 +15,12 @@
 //! `give Kind` - put an item in the pack
 //! `spawn Race DIST [LOOK]` - place a peaceful creature DIST ahead, facing the player
 //! `equip Kind Slot` - equip an item
-//! `set NAME VALUE` - player attribute (vit, mana, level, exp)
+//! `set NAME VALUE` - player attribute (vit, mana, level, exp) or skill (traps, lore...)
 //! `runes all` - learn all runes
 //! `shelf A B C` - put runes on the shelf
 //! `shot PATH` - save a screenshot (3x, 4:3 aspect)
 //! `shot1 PATH` - save a 1x screenshot
+//! `lang en|pl` - the language of the text (before `play` too)
 
 use crate::gfx::{Bitmap, SCREEN_H, SCREEN_W};
 use crate::platform::{App, Input, Key};
@@ -79,8 +80,13 @@ pub fn run(script: &str) -> Result<(), String> {
         match arg(0) {
             "title" => app.screen = Screen::Title(crate::ui::menus::Title::new()),
             "chargen" => app.screen = Screen::CharGen(crate::ui::menus::CharGen::new()),
-            "intro" => app.screen = Screen::Intro(crate::ui::menus::Intro::new()),
-            "play" => app = GameApp::new_playing(7),
+            "intro" => app.screen = Screen::Story(crate::ui::menus::Story::intro()),
+            "ending" => app.screen = Screen::Story(crate::ui::menus::Story::fall()),
+            "play" => app = GameApp::new_playing_in(7, app.ctx.lang),
+            "lang" => {
+                let l = if arg(1).eq_ignore_ascii_case("pl") { crate::lang::Lang::Pl } else { crate::lang::Lang::En };
+                app.ctx.set_lang(l);
+            }
             "wait" => {
                 for _ in 0..num(1) as i32 {
                     step(&mut app, &base);
@@ -197,8 +203,11 @@ pub fn run(script: &str) -> Result<(), String> {
                                 }
                                 "level" => g.player.level = v,
                                 "exp" => g.gain_exp(v),
-                                "casting" => g.player.skills[crate::game::items::Skill::Casting as usize] = v,
-                                _ => {}
+                                name => {
+                                    if let Some(sk) = crate::game::items::ALL_SKILLS.iter().find(|k| k.name().eq_ignore_ascii_case(name)) {
+                                        g.player.skills[*sk as usize] = v;
+                                    }
+                                }
                             }
                         }
                         "runes" => g.player.runes = [true; 24],
@@ -269,12 +278,14 @@ mod tests {
         let keys = [
             Key::W, Key::A, Key::S, Key::D, Key::X, Key::Z, Key::C, Key::J, Key::F1, Key::F2, Key::F3, Key::F4, Key::F5, Key::F6,
             Key::F7, Key::F8, Key::F9, Key::Escape, Key::Enter, Key::Num1, Key::Num2, Key::Num3, Key::M, Key::Up, Key::Down,
+            Key::Q, Key::E, Key::R, Key::T, Key::V, Key::B, Key::N, Key::Num4, Key::Num5, Key::Num6, Key::Num7, Key::Num8,
         ];
-        for start in 0..3 {
+        for start in 0..4 {
             let mut app = GameApp::new_playing(11);
             match start {
                 1 => app.screen = Screen::Title(crate::ui::menus::Title::new()),
                 2 => app.screen = Screen::CharGen(crate::ui::menus::CharGen::new()),
+                3 => app.ctx.modern_controls = true,
                 _ => {}
             }
             let mut fb = Bitmap::new(SCREEN_W, SCREEN_H);
@@ -304,10 +315,74 @@ mod tests {
                 let cmd = app.update(&inp, 1.0 / 30.0);
                 let _ = cmd;
                 app.draw(&mut fb);
-                if !matches!(app.screen, Screen::Play(_) | Screen::Title(_) | Screen::CharGen(_) | Screen::Intro(_) | Screen::Credits(_)) {
+                if !matches!(app.screen, Screen::Play(_) | Screen::Title(_) | Screen::CharGen(_) | Screen::Story(_) | Screen::Credits(_)) {
                     break;
                 }
             }
         }
+    }
+
+    /// Striking down the Lord of Souls fades out of the game into the ending's
+    /// scenes, and clicking through them reaches the credits.
+    #[test]
+    fn throne_ending_scenes() {
+        use crate::game::creatures::Race;
+        use crate::game::items::{Item, ItemKind};
+        let mut app = GameApp::new_playing(11);
+        let Screen::Play(st) = &mut app.screen else { unreachable!() };
+        let g = &mut st.game;
+        g.change_level(4, 31.5, 41.5, 0.0);
+        for k in [ItemKind::ShardOfValor, ItemKind::ShardOfWisdom, ItemKind::ShardOfMercy] {
+            assert!(g.player.give(Item::new(k)).is_none(), "no room for the shards");
+        }
+        let lord = g.level().npcs.iter().find(|n| n.race == Race::Demon).unwrap().id;
+        crate::game::ai::damage_npc(g, lord, 10_000, true);
+        assert_eq!(g.flag("ending"), 1);
+        let idle = Input::default();
+        let click = Input { pressed: [true, false, false], ..Default::default() };
+        for _ in 0..30 * 3 {
+            app.update(&idle, 1.0 / 30.0);
+        }
+        assert!(matches!(app.screen, Screen::Story(_)), "the ending should follow the fade");
+        let mut fb = Bitmap::new(SCREEN_W, SCREEN_H);
+        for _ in 0..5 {
+            for _ in 0..15 {
+                app.update(&idle, 1.0 / 30.0);
+            }
+            app.draw(&mut fb);
+            app.update(&click, 1.0 / 30.0);
+        }
+        assert!(matches!(app.screen, Screen::Credits(_)), "five scenes, then the credits");
+    }
+
+    /// Modern controls: the number row picks commands and Q/E sidestep instead of flying.
+    #[test]
+    fn modern_controls() {
+        use crate::ui::play::Mode;
+        use crate::util::V3;
+        let mut app = GameApp::new_playing(11);
+        app.ctx.modern_controls = true;
+        let key = |k: Key| Input { keys_pressed: vec![k], keys_down: vec![k], ..Default::default() };
+        let play = |app: &GameApp| match &app.screen {
+            Screen::Play(st) => (st.ui.mode, st.game.player.pos, st.game.player.yaw),
+            _ => panic!("left the game"),
+        };
+        app.update(&key(Key::Num3), 1.0 / 30.0);
+        assert_eq!(play(&app).0, Mode::Look);
+        app.update(&key(Key::Num3), 1.0 / 30.0);
+        assert_eq!(play(&app).0, Mode::None);
+        app.update(&key(Key::Num1), 1.0 / 30.0);
+        assert_eq!(play(&app).0, Mode::Talk);
+        assert!(matches!(&app.screen, Screen::Play(st) if matches!(st.overlay, crate::ui::Overlay::None)), "1 should not open the options");
+        app.update(&key(Key::Num1), 1.0 / 30.0);
+
+        let (_, p0, yaw0) = play(&app);
+        for _ in 0..15 {
+            app.update(&Input { keys_down: vec![Key::E], ..Default::default() }, 1.0 / 30.0);
+        }
+        let (_, p1, yaw1) = play(&app);
+        assert_eq!(yaw0, yaw1);
+        let side = V3::new(yaw0.cos(), 0.0, yaw0.sin());
+        assert!(((p1 - p0).dot(side)).abs() > 0.1, "E should sidestep: moved {:?}", p1 - p0);
     }
 }

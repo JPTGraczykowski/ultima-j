@@ -5,23 +5,24 @@
 
 === elsmore
 -- start
-Another poor soul thrown into the pit! Welcome, if welcome is the word. I am Elsmore, once a scholar of the Baron's court, now just another outcast warming his hands at this miserable fire.
+Gods preserve us - another corpse crawled out of the old graves! Stay back! ... Wait. Thou speakest? Then thou art not hollow yet. I am Elsmore, once a scholar of the surface, now just another outcast warming his hands at this miserable fire.
 * Who art thou? -> who
-* What is this place? -> place
-* I am looking for the Baron's daughter. -> daughter ? !flag:elsmore_daughter
-* Tell me again about the girl. -> daughter2 ? flag:elsmore_daughter
+* Who am I? -> self
+* How do I get out of here? -> out ? !flag:elsmore_out
+* Tell me again of the way down. -> out2 ? flag:elsmore_out
 * Have you any food to spare? -> food ? !flag:elsmore_food
-* How does magic work down here? -> magic
 * Farewell. -> end
 
 -- who
-I came down here years ago to study the ruins of Lord Varian's colony. The Baron's men sealed the gate behind me "for my own safety". There is no way out the way thou camest, {name}.
+I came down here years ago to study the ruins of Lord Varian's colony. Then the great doors sealed themselves behind me, as they have sealed behind every soul since. The living do not leave the Abyss, {name}. Nor, these days, do the dead stay dead.
 * What happened to the colony? -> place
+* How does magic work down here? -> magic
 * Back to other matters. -> start
 
 -- place
-This is the Abyss. Lord Varian built a colony here where men, mountain folk, goblins and lizardmen lived as one, bound by the light of the Lumen Stone. When he died, the Stone was broken into three shards and the peoples turned on each other.
+This is the Abyss. Lord Varian built a colony here where men, mountain folk, goblins and lizardmen lived as one, bound by the light of the Lumen Stone. One night the Stone was broken into three shards, and the peoples turned on each other.
 * Where are the shards now? -> shards
+* What became of Lord Varian? -> varian
 * Back to other matters. -> start
 
 -- shards
@@ -29,15 +30,24 @@ Valor went to the mountain folk, one level below. Wisdom to the lizardmen of the
 ! flag know_shards 1
 * Thank thee. -> start
 
--- daughter
-Lady Rowena? Aye, I heard screams some nights ago, and saw a robed man drag a girl past this very fire toward the stairs. A wizard, by his look. He went down, deep down. The way down lies beyond the hall of the gray goblins, to the north-east.
-! flag elsmore_daughter 1
+-- varian
+The tales say he did not die. He went down, below even the crypts, and sat upon a throne of the dead to keep their souls from wandering. The Lord of Souls, the goblins call him. But something is wrong down there. The dead walk again - more of them every year - and most of them have no more mind than a beetle.
+! flag know_lord 1
+* Back to other matters. -> start
+
+-- self
+How should I know? Thou climbed out of a grave by the sealed doors, grey as ash. Thou wert buried a long time ago, by the look of thy gear. Most who rise like that are hollow - empty, mindless, hungry. Thou art... different. Keep thy wits about thee, or thou'lt lose them.
+* Back to other matters. -> start
+
+-- out
+Out? Ha! The great doors have not opened since the Stone broke. Only the Lord of Souls holds their key - and only he, they say, can give a dead man back his life. But his throne lies behind a gate sealed by the light of the Stone, and only the three shards together will open it. If thou wouldst find him, go down. The way down lies beyond the hall of the gray goblins, to the north-east.
+! flag elsmore_out 1
 ! exp 20
 * How do I get past the gray goblins? -> goblins
 * Back to other matters. -> start
 
--- daughter2
-The robed man took her down the stairs beyond the gray goblins' hall. Find their chief, Rhugg. He can be reasoned with, unlike the green brutes to the west.
+-- out2
+The stairs down lie beyond the gray goblins' hall. Find their chief, Rhugg. He can be reasoned with, unlike the green brutes to the west.
 * How do I get past the gray goblins? -> goblins
 * Back to other matters. -> start
 
@@ -51,7 +61,7 @@ Magic in the Abyss is worked with rune stones. Place them in thy rune bag, then 
 * Back to other matters. -> start
 
 -- food
-Hmm. Thou hast an honest face. Take this loaf - and do not tell the others.
+Even the dead get hungry down here, it seems. Take this loaf - and do not tell the others.
 ! give Bread
 ! flag elsmore_food 1
 * Thank thee. -> start
@@ -61,6 +71,14 @@ Hmm. Thou hast an honest face. Take this loaf - and do not tell the others.
 Psst! Tobin's the name, and trade's the game. Even down here a man needs coin - or what coin can buy. Care to see my wares?
 * Show me what thou hast. -> wares
 * Where dost thou get these things? -> where
+* Surely a man of thy taste gives his friends a little something. -> charm ? skill:Charm>=4 & !flag:tobin_charmed
+* Farewell. -> end
+
+-- charm
+Ha! A silver tongue, and down here of all places. Thou'rt good for business. Here - a candle, on the house. And my prices are always fairer for a friend.
+! flag tobin_charmed 1
+! give Candle
+* Show me what thou hast. -> wares
 * Farewell. -> end
 
 -- where
@@ -69,47 +87,9 @@ Here and there. The dead don't need their torches, and the goblins don't count t
 * Farewell. -> end
 
 -- wares
-Torch, 5 gold. Loaf of bread, 3 gold. Red potion of healing, 20 gold. A fine lantern, 35 gold. Lockpick, 10 gold.
-* A torch (5 gold). -> torch ? gold>=5
-* A loaf of bread (3 gold). -> bread ? gold>=3
-* A red potion (20 gold). -> potion ? gold>=20
-* The lantern (35 gold). -> lantern ? gold>=35
-* A lockpick (10 gold). -> pick ? gold>=10
-* Nothing for now. -> end
-
--- torch
-A wise purchase. Light is life down here.
-! take Coin 5
-! give Torch
-* Let me see the wares again. -> wares
-* Farewell. -> end
-
--- bread
-Fresh! Well... fresh-ish.
-! take Coin 3
-! give Bread
-* Let me see the wares again. -> wares
-* Farewell. -> end
-
--- potion
-Drink it when the red runs low, friend.
-! take Coin 20
-! give RedPotion
-* Let me see the wares again. -> wares
-* Farewell. -> end
-
--- lantern
-Burns long and bright. Hang it on thy shoulder.
-! take Coin 35
-! give Lantern
-* Let me see the wares again. -> wares
-* Farewell. -> end
-
--- pick
-For opening doors that would rather stay closed. I ask no questions.
-! take Coin 10
-! give Lockpick
-* Let me see the wares again. -> wares
+! barter
+Have a look, friend. Pick what thou wouldst have and lay thine offer beside it - gold or goods, I'm not fussy. Ask me what a thing is worth if thou art unsure.
+* Where dost thou get these things? -> where
 * Farewell. -> end
 
 === rhugg
@@ -117,19 +97,33 @@ For opening doors that would rather stay closed. I ask no questions.
 Hrrm. Human. Rhugg is chief of gray goblins. Why you come to Rhugg's hall?
 * I need to pass to the stairs. -> stairs ? !flag:rhugg_open
 * I have brought thee Gnarl's medallion. -> medallion ? item:Medallion & !flag:rhugg_open
-* What dost thou know of a robed wizard? -> wizard
+* What dost thou know of the walking dead? -> dead
 * Why do thy people hate the green goblins? -> green
 * Farewell. -> end
 
 -- stairs
-Stairs belong to gray goblins. Nobody pass! Unless... Gnarl, the green chief, he steal from us, kill our young ones. You bring Rhugg the medallion of Gnarl, Rhugg open the gate. Or you pay. Fifty gold.
+Stairs belong to gray goblins. Nobody pass! Unless... Gnarl, the green chief, he steal from us, kill our young ones. You bring Rhugg the medallion of Gnarl, Rhugg open the gate. Or you pay. {buy 50} gold.
 * I will deal with Gnarl. -> end
-* Here is fifty gold. -> pay ? gold>=50
+* Here is the gold. -> pay ? afford:50
+* A chief as mighty as Rhugg does not need so much gold from a friend. -> haggle ? skill:Charm>=4
 * Back. -> start
+
+-- haggle
+Hrrm! Friend, you say. Rhugg is mighty, yes, mighty and generous. For friend of Rhugg... {buy 25} gold.
+* Here is the gold. -> pay_friend ? afford:25
+* I will deal with Gnarl. -> end
+* Back. -> start
+
+-- pay_friend
+Hrrm! Gold is good, friend is good. Gate is open. Go, go!
+! pay 25
+! door 55
+! flag rhugg_open 1
+* Thank thee. -> end
 
 -- pay
 Hrrm! Gold is good. Gate is open. Go, go!
-! take Coin 50
+! pay 50
 ! door 55
 ! flag rhugg_open 1
 * Thank thee. -> end
@@ -143,8 +137,8 @@ Gnarl's medallion! Gnarl is dead! Ha! You are friend of gray goblins now. Rhugg 
 ! exp 60
 * Thank thee, Rhugg. -> end
 
--- wizard
-Robed man come with screaming girl. He throw fire at us! He go down the stairs. Rhugg not stop him - Rhugg not stupid.
+-- dead
+Dead men walk, more and more. Rhugg's people burn them. You smell dead too, human. But you talk. Talking dead Rhugg not burn - not yet.
 * Back. -> start
 
 -- green
@@ -155,16 +149,16 @@ Before, when Lumen Stone shine, gray and green goblins live as one tribe. Stone 
 
 === thorgrim
 -- start
-Halt! Thou standest before Thorgrim, son of Thrain, King under the Mountain. Speak thy business, surface-dweller.
-* I seek a wizard who passed this way. -> wizard
+Halt! Thou standest before Thorgrim, son of Thrain, King under the Mountain. A dead man who speaks... Speak thy business, then.
+* What dost thou know of the Lord of Souls? -> lord
 * I seek the Shard of Valor. -> shard ? !flag:thorgrim_done
 * I have found thy Hammer. -> hammer ? item:Hammer & flag:thorgrim_quest & !flag:thorgrim_done
 * Can I help thy people? -> quest ? !flag:thorgrim_quest
 * About the eastern galleries... -> remind ? flag:thorgrim_quest & !flag:thorgrim_done
 * Farewell, King Thorgrim. -> end
 
--- wizard
-A robed man with a captive went down through the deep mine, past the fire fissure. My guards were wise enough to let him pass. Wizards make poor enemies.
+-- lord
+When a dwarf dies, his soul goes down to the Lord of Souls, as it has since the Stone broke. That is all a dwarf needs to know. Yet thou hast come back up, corpse-walker, and thou walkest like one of Varian's own knights. Strange days.
 * Back. -> start
 
 -- shard
@@ -183,7 +177,7 @@ The sealed door lies east of this hall. Beware the queen of the spiders; her bit
 * Back. -> start
 
 -- hammer
-The Hammer of the Mountain! By my beard! Thou hast the courage of ten dwarves. As promised, take the Shard of Valor - and the gratitude of the Mountain Folk.
+The Hammer of the Mountain! By my beard! Thou hast the courage of ten living dwarves, dead one. As promised, take the Shard of Valor - and the gratitude of the Mountain Folk.
 ! take Hammer
 ! give ShardOfValor
 ! flag thorgrim_done 1
@@ -192,7 +186,7 @@ The Hammer of the Mountain! By my beard! Thou hast the courage of ten dwarves. A
 
 === hilda
 -- start
-Oh! A visitor. Mind the beds, I've just made them. I'm Hilda. Hungry, are you? Everyone who comes down here is hungry.
+Oh! A visitor. And a pale one. Mind the beds, I've just made them. I'm Hilda. Hungry, are you? Living or dead, everyone who comes down here is hungry.
 * Yes, I am hungry. -> food ? !flag:hilda_food
 * Tell me about the mines. -> mines
 * What lies below? -> below
@@ -218,56 +212,37 @@ The lizard-folk live in the flooded warrens below. They hiss when they speak, bu
 Clang! Clang! What? Oh. A customer. I'm Bodric, smith of the Mountain Folk. I make the best steel in the Abyss and I'll trade it for gold.
 * Show me thy wares. -> wares
 * I have gold nuggets to sell. -> nugget ? item:GoldNugget
+* Canst thou mend my weapons and armour? -> mend
+* Thy forge-work is the finest I have ever seen, master smith. -> flatter ? skill:Charm>=3 & !flag:bodric_flattered
 * Farewell. -> end
+
+-- mend
+Aye, for {buy 15} gold I'll beat the dents out of everything thou'rt carrying. Steel wants care down here.
+* Do it. -> mended ? afford:15
+* Not now. -> start
+
+-- mended
+! pay 15
+Clang! Clang! ... There. Good as the day it left the anvil.
+! mend
+* My thanks. -> start
+
+-- flatter
+Ha! Thou hast an eye for good steel, and a smooth tongue besides. Give it here - I'll see to thy gear for nothing, this once.
+! flag bodric_flattered 1
+! mend
+* My thanks, master smith. -> start
 
 -- wares
-Chain shirt, 60 gold. Gauntlets, 40 gold. Broadsword, 70 gold. Wooden shield, 25 gold. Torch, 4 gold.
-* A chain shirt (60 gold). -> shirt ? gold>=60
-* Gauntlets (40 gold). -> gauntlets ? gold>=40
-* A broadsword (70 gold). -> sword ? gold>=70
-* A wooden shield (25 gold). -> shield ? gold>=25
-* A torch (4 gold). -> torch ? gold>=4
-* Nothing today. -> end
-
--- shirt
-Good links, tight weave. It'll turn a spider's fang.
-! take Coin 60
-! give ChainShirt
-* Show me the wares again. -> wares
-* Farewell. -> end
-
--- gauntlets
-! take Coin 40
-! give Gauntlets
-Steel for thy fists.
-* Show me the wares again. -> wares
-* Farewell. -> end
-
--- sword
-! take Coin 70
-! give Broadsword
-Balanced like a dancer, bites like a troll.
-* Show me the wares again. -> wares
-* Farewell. -> end
-
--- shield
-! take Coin 25
-! give WoodenShield
-Oak and iron. Keep it between thee and trouble.
-* Show me the wares again. -> wares
-* Farewell. -> end
-
--- torch
-! take Coin 4
-! give Torch
-There. Don't burn thy beard - oh, thou hast none.
-* Show me the wares again. -> wares
+! barter
+Steel and leather, all from my own forge. Pick what thou wilt and show me thy gold - or something worth the melting.
+* Canst thou mend my weapons and armour? -> mend
 * Farewell. -> end
 
 -- nugget
-Gold from the mountain! I'll give thee thirty coins for it.
+Gold from the mountain! I'll give thee {sell 30} coins for it.
 ! take GoldNugget
-! give Coin 0 30
+! earn 30
 * I have more nuggets. -> nugget ? item:GoldNugget
 * Show me the wares. -> wares
 * Farewell. -> end
@@ -297,9 +272,10 @@ Great biting things in the deep water, east. They ssstole the eggs of our clutch
 === ssrath
 -- start
 Ahhh. A warm-blood comes to the pool of thinking. I am Ssrath, Sage of the People. Sssit. What do you ssseek?
-* I seek the Shard of Wisdom. -> shard ? !flag:ssrath_done
+* I seek the Shard of Wisdom. -> shard ? !flag:ssrath_done & !item:LizardEgg
 * I have found the stolen eggs. -> eggs ? item:LizardEgg & !flag:ssrath_done
-* What do you know of the wizard? -> wizard
+* What do you know of the Lord of Souls? -> lord
+* Who was I, before I died? -> self
 * Teach me something of magic. -> teach ? !flag:ssrath_teach
 * Farewell. -> end
 
@@ -317,15 +293,19 @@ The eggs! The young of the People will hatch after all. You have the gratitude o
 ! exp 250
 * I am honoured, Sage. -> end
 
--- wizard
-A dark warm-blood passsed through, with a girl in chains. He ssseeks to wake the Shadow below the crypts. He needs the ssshards kept apart, ssso the Shadow's prison weakens. Gather them, and you can bind the Shadow forever.
-! flag know_fiend 1
-* How do I bind it? -> bind
-* Back. -> start
+-- lord
+He who sitsss upon the throne of the dead, below the crypts. Once he was Varian, lord of the colony. His flame isss guttering, and the dead no longer rest. That isss why you woke, cold-blood. Another sorcerer passed thisss way, hungry for that throne. Malchor. He would sssit in the Lord's place.
+! flag know_lord 1
+* How do I reach the Lord? -> reach
+* Back to other matters. -> start
 
--- bind
-Carry all three ssshards into its lair. Only the light of the whole Lumen Stone can wound the Shadow.
-* Back. -> start
+-- reach
+The way to his throne is sealed by the light of the Lumen. Carry all three ssshards, and the gate will open. Only the Ssstone can touch him.
+* Back to other matters. -> start
+
+-- self
+The People do not know your face. But the dead remember, if you let them. Ask the knight who guards the crypts below. He has kept watch longer than any of usss has lived.
+* Back to other matters. -> start
 
 -- teach
 Wisdom: the rune WIS means knowledge, AN means negation. Sssay AN NOX and poison flees your blood. I give you the rune of knowledge.
@@ -339,8 +319,9 @@ Wisdom: the rune WIS means knowledge, AN means negation. Sssay AN NOX and poison
 -- start
 Who disturbs the rest of the dead? ... Ah. A living soul, and no tomb-robber by thy look. I am Sir Aldric, once Knight of the Lumen. I cannot rest.
 * Why canst thou not rest? -> why
-* I seek the Shard of Mercy. -> shard ? !flag:aldric_done
+* I seek the Shard of Mercy. -> shard ? !flag:aldric_done & !item:RelicBones
 * I have brought thy bones. -> bones ? item:RelicBones & !flag:aldric_done
+* Dost thou know me? -> know
 * Is there aught else I should know? -> advice
 * Farewell, Sir Knight. -> end
 
@@ -363,66 +344,126 @@ My bones... at last. Thou hast shown true mercy to the dead. Take the Shard of M
 ! heal
 * Rest well, Sir Aldric. -> end
 
+-- know
+Thy face is grey and thine eyes are hollow, and yet... {name}! By the Lumen, it is thee! We stood together as Knights of the Lumen, sworn shields of Lord Varian. On the night the Stone was broken, the court mage Malchor struck at it to seize its power. Thou didst throw thyself between them. The blast that shattered the Stone killed thee. I buried thee myself, by the great doors.
+! flag know_self 1
+! exp 100
+* A voice woke me from my grave. -> voice
+* What became of Lord Varian? -> varian
+* What became of Malchor? -> malchor
+* Back. -> start
+
+-- voice
+Varian's? Perhaps. Thine was the soul he held most dear. But be wary, {name}. Malchor has a silver tongue, and he knows the dead better than any living man.
+* What became of Malchor? -> malchor
+* Back. -> start
+
+-- varian
+He could not mend the Stone. So he went down to the Throne of Souls, to hold the dead of the Abyss in his keeping, that no soul should wander hollow. He has held them all these years. Now his strength fails - and so the dead rise. So thou hast risen.
+* Back. -> start
+
+-- malchor
+The blast unmade him too, but Malchor did not die as other men die. He clings to his ruined flesh by drinking souls. He haunts the Deep Sanctum, before the Lord's sealed gate. The gate's light remembers what he did, and it will not let him pass.
+* Back. -> start
+
 -- advice
 In the western tomb lies a silver sapling, a cutting of the great tree of life. Plant it somewhere safe - drop it upon the ground - and should thou fall, it shall call thy spirit back.
 * Thank thee, Sir Knight. -> start
 
 // ----------------------------------------------------------- level 5
 
-=== rowena
+=== malchor
 -- start
-Who... who are you? Have you come to rescue me? Malchor said no one would ever come!
-* Thy father, Baron Aldwin, sent me. -> father
-* Where is Malchor? -> malchor
-* What does he plan? -> plan
-* Come with me. -> follow ? !flag:rowena_follow
-* Stay here, where it is safe. -> stay ? flag:rowena_follow
+Thank thee, {name}. Twenty years that gate has burned me, and thou hast opened it with a touch. Didst thou truly believe the Lord of Souls woke thee? Varian has had no voice for years. It was mine.
+* The voice in my grave was thine? -> voice
+* Why didst thou need me? -> why
+* What are the hollows that guard thee? -> thralls
+* Thou art the one who broke the Lumen Stone. -> broke
+* I will never give thee the shards. -> fight
+
+-- voice
+Mine in thy grave, and mine in thy dreams. I wore his crown in them and called thee my knight, and thou didst crawl all the way down with the shards, as loyal in death as in life. The dead are so very trusting.
+* Why didst thou need me? -> why
+* I will never give thee the shards. -> fight
+
+-- why
+The shards are the Lumen Stone, and the Stone sealed this gate behind Varian. Its light remembers what I did, and it burns me. But it would open for thee, a Knight of the Lumen who died for it. The peoples would never give their shards to me. To thee they gave them gladly.
+* And now thou wouldst take them. -> shards
+* Thou art the one who broke the Lumen Stone. -> broke
+
+-- shards
+Give them to me and go. I shall take the throne, and thou mayst rot wherever thou likest.
+* Never! -> fight
+* Thou art the one who broke the Lumen Stone. -> broke
+
+-- thralls
+My thralls. Hollow souls I snatched before Varian could take them. They walk on my power, and they will walk as long as I do. Thou couldst have been one of them, knight. Thou still mayst.
+* Never! -> fight
+* Why didst thou need me? -> why
+
+-- broke
+Broke it? I freed it! Varian hoarded that light like a miser. I would have made us gods. Thy soul is old and strong, knight. It will make a fine meal.
+* Then come and take it! -> fight
+
+-- fight
+Then I shall take the shards from thy bones!
+! hostile
+* (Draw your weapon.) -> end
+
+=== lord
+-- start
+Who comes to the Throne of Souls, bearing the light of the Lumen? ... {name}. My knight. I thought thee long at rest. I am the Lord of Souls. What has dragged thee from thy grave?
+* A voice woke me. It said it was thine. -> voice
+* Who am I? -> who
+* Who art thou? -> what
+* Canst thou make me live again? -> live
 * Farewell. -> end
 
--- father
-Father! I knew he would not abandon me. Thank you, {name}. But we cannot simply leave - Malchor means to wake the Shadow Fiend in the pit to the south.
-! flag rowena_met 1
-! exp 50
+-- who
+Thou wert my knight, and my shield. When Malchor struck at the Lumen Stone, thou didst stand before me, and the blast that broke the Stone took thy life instead of mine. Of all the dead in my keeping, thine was the soul I held most dear.
+! flag know_self 1
+* Back. -> start
+
+-- voice
+Not mine. I have not had the strength to call anyone for years; it is all I can do to hold the dead. Someone wanted the shards carried to my door - someone the gate would not let pass.
+* It was Malchor. -> malchor
 * Back. -> start
 
 -- malchor
-His study lies west of the great hall. He keeps the key to this cell upon his person. He is powerful - he throws fire.
+Malchor. Of course. The gate remembers what he did to the Stone, and it burns him. But it would open for one of my own knights, carrying the shards. He used thee, {name}, as he once tried to use the Stone. I am sorry.
 * Back. -> start
 
--- plan
-He wanted my noble blood for a ritual, to break the last seal on the Fiend's prison. The three shards of the Lumen Stone are the only thing that can harm it. If you have them, you must face it - before it wakes fully.
-! flag know_fiend 1
+-- what
+Once I was Varian, lord of a colony where all peoples lived as one. When the Stone broke, I came down here and took up the Throne of Souls, so that the dead of the Abyss might rest. I have held them ever since. But I am old, {name}, and my flame gutters.
+* Why do the dead rise? -> rise
 * Back. -> start
 
--- follow
-I will follow you. Please... be careful.
-! follow
-! flag rowena_follow 1
+-- rise
+My grip on them weakens. The souls slip free and crawl back into their bones, empty and hollow. Soon I shall fail entirely, and every soul in the Abyss will wander hollow forever - unless another takes my place.
 * Back. -> start
 
--- stay
-I will wait here. Come back for me.
-! stay
-! flag rowena_follow 0
+-- live
+The three shards are the Lumen Stone, and the Stone is life. Lay them in my hand and I shall kindle the flame in thy breast once more, and open the great doors for thee. Thou shalt walk out into the sun, a living soul. But without the Stone I cannot hold my throne much longer.
+* Take the shards, and give me back my life. -> kindle ? item:ShardOfValor & item:ShardOfWisdom & item:ShardOfMercy
+* And if I would not leave? -> throne_info
 * Back. -> start
 
-=== malchor
--- start
-So. The Baron's dog has sniffed its way to my door. How tiresome. Dost thou know what lies sleeping beneath us, little hero?
-* Release Lady Rowena, wizard! -> release
-* What lies beneath us? -> beneath
-* I have come to stop thee. -> fight
+-- throne_info
+Then thou knowest the oldest law of the dead, as it was told to me. The Throne of Souls is not given; it is taken. Strike me down with the light of the shards and sit in my place - never living, never dying, lord of every soul that falls in the dark. Choose, my knight. I will not blame thee either way.
+* Then I will take thy throne. -> throne ? item:ShardOfValor & item:ShardOfWisdom & item:ShardOfMercy
+* Give me back my life instead. -> kindle ? item:ShardOfValor & item:ShardOfWisdom & item:ShardOfMercy
+* Back. -> start
 
--- beneath
-Power. The Shadow Fiend that Varian chained with his precious Lumen Stone. When it wakes, it will serve me - and the Baron will kneel. Now begone, or burn.
-* Never! -> fight
-* Release Lady Rowena! -> release
+-- kindle
+So be it. Give me the shards... There. Feel it? Warmth in thy limbs. Breath in thy chest. A heart that beats. Go, {name}. The great doors stand open. Live - and remember the dead.
+! take ShardOfValor
+! take ShardOfWisdom
+! take ShardOfMercy
+! flag ending 2
+! victory
+* (Climb toward the light.) -> end
 
--- release
-The girl? She is the key to my ritual. Thou shalt have her over my corpse... which, I assure thee, will not happen.
-* Then over thy corpse it shall be! -> fight
-
--- fight
-Fool! Feel the fire of the Abyss!
+-- throne
+Then rise, my knight, and take it - if thou canst. I will not make it easy. A Lord of Souls must be strong.
 ! hostile
 * (Draw your weapon.) -> end

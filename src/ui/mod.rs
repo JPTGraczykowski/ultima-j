@@ -13,6 +13,7 @@ use crate::art::Art;
 use crate::audio::Sfx;
 use crate::game::dialogue::{ConvState, DialogueDb};
 use crate::game::{Game, Player};
+use crate::lang::Lang;
 use crate::gfx::{Bitmap, Palette};
 use crate::platform::{App, AppCmd, Input, Key};
 use crate::render::Renderer;
@@ -28,6 +29,29 @@ pub struct Ctx {
     pub time: f32,
     pub sound_on: bool,
     pub music_on: bool,
+    /// Modern key layout (WASD, number row for commands) instead of the original's.
+    pub modern_controls: bool,
+    /// Load and save settings in ~/.ultima-j/ (only the real window, not scripts and tests).
+    pub persist_settings: bool,
+    /// The language of the text (see `crate::lang`).
+    pub lang: Lang,
+}
+
+impl Ctx {
+    /// Switch the language of the text and the conversations.
+    pub fn set_lang(&mut self, l: Lang) {
+        crate::lang::set(l);
+        self.lang = l;
+        self.db = DialogueDb::load_lang(l);
+    }
+
+    /// Remember the settings for the next launch (if this is the real window).
+    pub fn save_settings(&self) -> Result<(), String> {
+        if !self.persist_settings {
+            return Ok(());
+        }
+        save::save_settings(&save::Settings { modern_controls: self.modern_controls, language: self.lang })
+    }
 }
 
 pub enum Overlay {
@@ -54,12 +78,14 @@ pub enum ScreenCmd {
     LoadSlot(usize),
     CharGen,
     Intro,
+    /// The story told after the Lord of Souls is struck down.
+    Ending,
     Credits,
 }
 
 pub enum Screen {
     Title(menus::Title),
-    Intro(menus::Intro),
+    Story(menus::Story),
     CharGen(menus::CharGen),
     Credits(f32),
     Play(Box<PlayState>),
@@ -78,18 +104,28 @@ impl GameApp {
             art,
             cache: SpriteCache::new(),
             renderer: Renderer::new(72.0, 1.2),
-            db: DialogueDb::load(),
+            db: DialogueDb::load_lang(Lang::En),
             sounds: Vec::new(),
             time: 0.0,
             sound_on: true,
             music_on: true,
+            modern_controls: false,
+            persist_settings: false,
+            lang: Lang::En,
         };
+        crate::lang::set(Lang::En);
         GameApp { ctx, screen: Screen::Title(menus::Title::new()), mouse: (160, 100) }
     }
 
     /// Start directly in the game with a default character (for testing/screenshots).
     pub fn new_playing(seed: u64) -> GameApp {
+        GameApp::new_playing_in(seed, Lang::En)
+    }
+
+    /// `new_playing` with the text in a given language.
+    pub fn new_playing_in(seed: u64, lang: Lang) -> GameApp {
         let mut app = GameApp::new();
+        app.ctx.set_lang(lang);
         let mut p = Player::new("Avatar", crate::game::PClass::Fighter, false);
         menus::starting_kit(&mut p);
         let game = Game::new(p, seed);
@@ -98,11 +134,20 @@ impl GameApp {
         app
     }
 
+    /// Use the settings saved in ~/.ultima-j/ and save changes to them.
+    pub fn with_saved_settings(mut self) -> GameApp {
+        let s = save::load_settings();
+        self.ctx.modern_controls = s.modern_controls;
+        self.ctx.set_lang(s.language);
+        self.ctx.persist_settings = true;
+        self
+    }
+
     fn start_messages(&mut self) {
         if let Screen::Play(st) = &mut self.screen {
-            st.game.sys("Welcome to the Abyss.");
-            st.game.msg("The great doors have closed behind you. There is no way back.");
-            st.game.sys("(Press H for help on the controls.)");
+            st.game.sys(t!("Welcome to the Abyss."));
+            st.game.msg(t!("You claw your way out of a shallow grave. You are cold, and grey, and dead."));
+            st.game.sys(t!("(Press H for help on the controls.)"));
             st.game.explore();
         }
     }
@@ -112,7 +157,8 @@ impl GameApp {
             ScreenCmd::Quit => return AppCmd::Quit,
             ScreenCmd::Title => self.screen = Screen::Title(menus::Title::new()),
             ScreenCmd::CharGen => self.screen = Screen::CharGen(menus::CharGen::new()),
-            ScreenCmd::Intro => self.screen = Screen::Intro(menus::Intro::new()),
+            ScreenCmd::Intro => self.screen = Screen::Story(menus::Story::intro()),
+            ScreenCmd::Ending => self.screen = Screen::Story(menus::Story::fall()),
             ScreenCmd::Credits => self.screen = Screen::Credits(0.0),
             ScreenCmd::NewGame(p) => {
                 let seed = (self.ctx.time * 1000.0) as u64 ^ 0x5EED;
@@ -123,14 +169,14 @@ impl GameApp {
             ScreenCmd::LoadSlot(slot) => match save::load(slot) {
                 Ok(game) => {
                     let mut st = PlayState::new(game);
-                    st.game.sys("Game restored.");
+                    st.game.sys(t!("Game restored."));
                     self.screen = Screen::Play(Box::new(st));
                 }
                 Err(e) => {
                     if let Screen::Play(st) = &mut self.screen {
-                        st.game.sys(format!("Could not restore: {}", e));
+                        st.game.sys(t!("Could not restore: {}", e));
                     } else if let Screen::Title(t) = &mut self.screen {
-                        t.note = Some("No saved game found.".into());
+                        t.note = Some(t!("No saved game found.").into());
                     }
                 }
             },
@@ -157,7 +203,7 @@ impl App for GameApp {
         }
         let cmd = match &mut self.screen {
             Screen::Title(t) => t.update(&mut self.ctx, input, dt),
-            Screen::Intro(i) => i.update(&mut self.ctx, input, dt),
+            Screen::Story(i) => i.update(&mut self.ctx, input, dt),
             Screen::CharGen(c) => c.update(&mut self.ctx, input, dt),
             Screen::Credits(t) => {
                 *t += dt;
@@ -178,7 +224,7 @@ impl App for GameApp {
     fn draw(&mut self, fb: &mut Bitmap) -> Option<([f32; 3], f32)> {
         match &mut self.screen {
             Screen::Title(t) => t.draw(&mut self.ctx, fb, self.mouse),
-            Screen::Intro(i) => i.draw(&mut self.ctx, fb),
+            Screen::Story(i) => i.draw(&mut self.ctx, fb),
             Screen::CharGen(c) => c.draw(&mut self.ctx, fb, self.mouse),
             Screen::Credits(t) => menus::draw_credits(&mut self.ctx, fb, *t),
             Screen::Play(st) => {

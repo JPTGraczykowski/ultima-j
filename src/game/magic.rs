@@ -196,6 +196,11 @@ impl Spell {
         }
     }
 
+    /// The spell's name in the player's language.
+    pub fn label(self) -> &'static str {
+        crate::lang::tr(self.def().name)
+    }
+
     pub fn from_runes(runes: &[u8]) -> Option<Spell> {
         ALL_SPELLS.iter().copied().find(|s| s.def().runes == runes)
     }

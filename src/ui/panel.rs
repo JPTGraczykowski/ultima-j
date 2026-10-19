@@ -98,7 +98,7 @@ fn click_stats(st: &mut PlayState, ctx: &mut Ctx, m: (i32, i32)) {
                     p.max_mana += 1;
                 }
                 let v = p.skills[s as usize];
-                st.game.sys(format!("Your {} skill is now {}.", s.name(), v));
+                st.game.sys(t!("Your {} skill is now {}.", s.label(), v));
                 ctx.sounds.push(Sfx::LevelUp);
             }
         }
@@ -113,7 +113,7 @@ fn click_runes(st: &mut PlayState, ctx: &mut Ctx, m: (i32, i32), right: bool) {
                 return;
             }
             if right || st.ui.mode == Mode::Look {
-                st.game.msg(format!("You see the {} rune, meaning '{}'.", RUNE_NAMES[r], crate::game::magic::RUNE_MEANINGS[r]));
+                st.game.msg(t!("You see the {} rune, meaning '{}'.", RUNE_NAMES[r], t!(crate::game::magic::RUNE_MEANINGS[r])));
                 return;
             }
             let shelf = &mut st.game.player.shelf;
@@ -142,7 +142,7 @@ fn click_inventory(st: &mut PlayState, ctx: &mut Ctx, m: (i32, i32), right: bool
     if near(m, WEIGHT_C, 6) {
         let p = &st.game.player;
         let left = (p.capacity() - p.load()) as f32 / 10.0;
-        st.game.msg(format!("You can carry {:.1} more stones.", left.max(0.0)));
+        st.game.msg(t!("You can carry {} more stones.", format!("{:.1}", left.max(0.0))));
         return;
     }
     // Equipment circles and rings.
@@ -176,8 +176,9 @@ fn equip_click(st: &mut PlayState, ctx: &mut Ctx, slot: EqSlot, right: bool) {
     let p = &mut st.game.player;
     if right {
         if st.ui.mode == Mode::Look {
-            if let Some(it) = p.equip.get(slot).clone() {
-                st.game.msg(format!("You see {}.", crate::game::actions::describe_item(&it)));
+            if let Some(mut it) = p.equip.get_mut(slot).take() {
+                st.game.examine(&mut it);
+                *st.game.player.equip.get_mut(slot) = Some(it);
             }
             return;
         }
@@ -190,7 +191,7 @@ fn equip_click(st: &mut PlayState, ctx: &mut Ctx, slot: EqSlot, right: bool) {
     match st.ui.held.take() {
         Some(h) => {
             if !Equip::accepts(slot, &h) {
-                st.game.msg("That does not fit there.");
+                st.game.msg(t!("That does not fit there."));
                 st.ui.held = Some(h);
                 return;
             }
@@ -224,7 +225,7 @@ fn pack_click(st: &mut PlayState, ctx: &mut Ctx, i: usize, right: bool) {
                 cont.contents.push(h);
                 ctx.sounds.push(Sfx::Drop);
             } else {
-                st.game.msg("It is full.");
+                st.game.msg(t!("It is full."));
                 st.ui.held = Some(h);
             }
             return;
@@ -238,7 +239,11 @@ fn pack_click(st: &mut PlayState, ctx: &mut Ctx, i: usize, right: bool) {
             st.ui.held = held;
             if let Some(it) = cont.contents.get(idx).cloned() {
                 if mode == Mode::Look {
-                    st.game.msg(format!("You see {}.", crate::game::actions::describe_item(&it)));
+                    let mut it = it;
+                    st.game.examine(&mut it);
+                    if let Some(c) = open_container(&mut st.game.player, &path).and_then(|c| c.contents.get_mut(idx)) {
+                        c.identified = it.identified;
+                    }
                 } else if it.def().capacity > 0 {
                     st.ui.open.push(idx);
                 } else {
@@ -261,13 +266,13 @@ fn pack_click(st: &mut PlayState, ctx: &mut Ctx, i: usize, right: bool) {
                 } else if cont.contents.len() < cap {
                     if cont.kind == ItemKind::RuneBag && h.kind != ItemKind::RuneStone {
                         st.ui.held = Some(h);
-                        st.game.msg("Only rune stones go in the rune bag.");
+                        st.game.msg(t!("Only rune stones go in the rune bag."));
                         return;
                     }
                     cont.contents.push(h);
                 } else {
                     st.ui.held = Some(h);
-                    st.game.msg("It is full.");
+                    st.game.msg(t!("It is full."));
                     return;
                 }
                 ctx.sounds.push(Sfx::Drop);
@@ -284,9 +289,12 @@ fn pack_click(st: &mut PlayState, ctx: &mut Ctx, i: usize, right: bool) {
     // Plain pack slots.
     let p = &mut st.game.player;
     if right {
-        let Some(it) = p.pack[i].clone() else { return };
+        let Some(mut it) = p.pack[i].clone() else { return };
         if st.ui.mode == Mode::Look {
-            st.game.msg(format!("You see {}.", crate::game::actions::describe_item(&it)));
+            st.game.examine(&mut it);
+            if let Some(slot) = st.game.player.pack[i].as_mut() {
+                slot.identified = it.identified;
+            }
             return;
         }
         match it.def().class {
@@ -322,7 +330,7 @@ fn pack_click(st: &mut PlayState, ctx: &mut Ctx, i: usize, right: bool) {
                     ctx.sounds.push(Sfx::Drop);
                 } else {
                     st.ui.held = Some(h);
-                    st.game.msg("It is full.");
+                    st.game.msg(t!("It is full."));
                 }
             }
             Some(target) if target.kind == ItemKind::RuneBag && h.kind == ItemKind::RuneStone => {
@@ -363,7 +371,7 @@ pub fn draw(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
     }
 }
 
-fn draw_item_at(ctx: &mut Ctx, fb: &mut Bitmap, it: &Item, cx: i32, cy: i32) {
+pub fn draw_item_at(ctx: &mut Ctx, fb: &mut Bitmap, it: &Item, cx: i32, cy: i32) {
     let b = ctx.cache.icon_mut(it).clone();
     fb.blit(&b, cx - b.w / 2, cy - b.h / 2);
     if it.qty > 1 && it.def().stack {
@@ -447,7 +455,7 @@ fn draw_stats(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
     f.draw(fb, x0, y, &p.class.name().to_uppercase(), INK);
     right(fb, y, &crate::game::actions::ordinal(p.level).to_uppercase());
     y += 7;
-    for (label, val) in [("STR", p.st.to_string()), ("DEX", p.dex.to_string()), ("INT", p.int.to_string()), ("VIT", format!("{}/{}", p.vit, p.max_vit)), ("MANA", format!("{}/{}", p.mana, p.max_mana)), ("EXP", p.exp.to_string())] {
+    for (label, val) in [(t!("STR"), p.st.to_string()), (t!("DEX"), p.dex.to_string()), (t!("INT"), p.int.to_string()), (t!("VIT"), format!("{}/{}", p.vit, p.max_vit)), (t!("MANA"), format!("{}/{}", p.mana, p.max_mana)), (t!("EXP"), p.exp.to_string())] {
         f.draw(fb, x0, y, label, INK);
         right(fb, y, &val);
         y += 6;
@@ -464,13 +472,13 @@ fn draw_stats(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
         }
         let s = ALL_SKILLS[idx];
         let yy = inset.y + 2 + row * 7;
-        f.draw(fb, inset.x + 3, yy, &s.name().to_uppercase(), skill_col);
+        f.draw(fb, inset.x + 3, yy, &s.label().to_uppercase(), skill_col);
         let v = p.skills[s as usize].to_string();
         let w = f.text_width(&v);
         f.draw(fb, inset.x + inset.w - 4 - w, yy, &v, skill_col);
     }
     if p.skill_points > 0 {
-        let s = format!("{} PTS", p.skill_points);
+        let s = t!("{} PTS", p.skill_points);
         f.draw(fb, PANEL.x + 4, PANEL.y + 106, &s, c(Ramp::Gold, 14));
     }
     for (k, x) in [(0, PANEL.x + 33), (1, PANEL.x + 49)] {
@@ -492,6 +500,6 @@ fn draw_runes(st: &mut PlayState, ctx: &mut Ctx, fb: &mut Bitmap) {
             fb.rect(x, y, 17, 13, c(Ramp::Copper, 5));
         }
     }
-    f.draw_centered(fb, PANEL.x + PANEL.w / 2, PANEL.y + 102, "RUNE BAG", INK);
-    f.draw_centered(fb, PANEL.x + PANEL.w / 2, PANEL.y + 108, "(click here to close)", c(Ramp::Copper, 3));
+    f.draw_centered(fb, PANEL.x + PANEL.w / 2, PANEL.y + 102, t!("RUNE BAG"), INK);
+    f.draw_centered(fb, PANEL.x + PANEL.w / 2, PANEL.y + 108, t!("(click here to close)"), c(Ramp::Copper, 3));
 }

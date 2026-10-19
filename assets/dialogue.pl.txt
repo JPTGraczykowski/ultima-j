@@ -1,0 +1,470 @@
+// Rozmowy w Otchłani, po polsku. Format opisuje src/game/dialogue.rs.
+// Węzły, warunki i akcje muszą być takie same jak w dialogue.txt; zmienia
+// się tylko tekst. {m|f} daje formę dla gracza i dla graczki.
+
+// ----------------------------------------------------------- level 1
+
+=== elsmore
+-- start
+Bogowie, miejcie nas w opiece - kolejny trup wypełzł ze starych grobów! Nie zbliżaj się! ... Zaraz. Ty mówisz? Więc nie jesteś jeszcze {wydrążony|wydrążona}. Jestem Elsmore, niegdyś uczony z powierzchni, teraz tylko kolejny wyrzutek grzejący ręce przy tym nędznym ogniu.
+* Kim jesteś? -> who
+* Kim ja jestem? -> self
+* Jak się stąd wydostać? -> out ? !flag:elsmore_out
+* Opowiedz mi jeszcze raz o drodze w dół. -> out2 ? flag:elsmore_out
+* Masz może trochę jedzenia? -> food ? !flag:elsmore_food
+* Bywaj. -> end
+
+-- who
+Zszedłem tu przed laty, by badać ruiny kolonii lorda Variana. Potem Wielkie Wrota zamknęły się za mną, jak zamykają się za każdą duszą od tamtej pory. Żywi nie opuszczają Otchłani, {name}. A ostatnio i umarli nie chcą pozostać martwi.
+* Co się stało z kolonią? -> place
+* Jak działa tu na dole magia? -> magic
+* Wróćmy do innych spraw. -> start
+
+-- place
+To jest Otchłań. Lord Varian zbudował tu kolonię, w której ludzie, górski lud, gobliny i jaszczuroludzie żyli razem, złączeni światłem Kamienia Lumen. Pewnej nocy Kamień rozpadł się na trzy odłamki, a ludy zwróciły się przeciwko sobie.
+* Gdzie są teraz odłamki? -> shards
+* Co się stało z lordem Varianem? -> varian
+* Wróćmy do innych spraw. -> start
+
+-- shards
+Męstwo trafiło do górskiego ludu, poziom niżej. Mądrość do jaszczuroludzi z zalanych nor. Miłosierdzie spoczywa z umarłymi w kryptach. Tak przynajmniej mówią stare opowieści.
+! flag know_shards 1
+* Dziękuję. -> start
+
+-- varian
+Opowieści mówią, że nie umarł. Zszedł w dół, poniżej nawet krypt, i zasiadł na tronie umarłych, by ich dusze nie błąkały się bez celu. Pan Dusz, tak go nazywają gobliny. Ale coś tam na dole jest nie tak. Umarli znów chodzą - co roku jest ich więcej - a większość ma w głowie tyle co żuk.
+! flag know_lord 1
+* Wróćmy do innych spraw. -> start
+
+-- self
+Skąd mam wiedzieć? Wygrzebał{eś|aś} się z grobu przy zamkniętych wrotach, {szary|szara} jak popiół. Pochowano cię dawno temu, sądząc po twoim ekwipunku. Większość tych, którzy tak powstają, to wydrążeni - puści, bezmyślni, głodni. Ty jesteś... {inny|inna}. Trzymaj się swojego rozumu, bo inaczej go stracisz.
+* Wróćmy do innych spraw. -> start
+
+-- out
+Wydostać? Ha! Wielkie Wrota nie otworzyły się, odkąd pękł Kamień. Tylko Pan Dusz ma do nich klucz - i tylko on, jak mówią, może przywrócić umarłemu życie. Ale jego tron leży za bramą zapieczętowaną światłem Kamienia, a otworzą ją tylko wszystkie trzy odłamki naraz. Jeśli chcesz go znaleźć, idź w dół. Droga w dół wiedzie za salę szarych goblinów, na północny wschód.
+! flag elsmore_out 1
+! exp 20
+* Jak przejść obok szarych goblinów? -> goblins
+* Wróćmy do innych spraw. -> start
+
+-- out2
+Schody w dół są za salą szarych goblinów. Znajdź ich wodza, Rhugga. Z nim da się porozmawiać, w przeciwieństwie do tych zielonych bydlaków na zachodzie.
+* Jak przejść obok szarych goblinów? -> goblins
+* Wróćmy do innych spraw. -> start
+
+-- goblins
+Rhugg pilnuje kraty przy schodach. Nienawidzi Gnarla, wodza zielonych goblinów z nory za zachodnimi drzwiami, bardziej niż nas. Przynieś mu dowód śmierci Gnarla, a może cię przepuści. Zielone gobliny ukradły też klucz do naszej biblioteki - na północ od tego ogniska.
+! flag know_rhugg 1
+* Dziękuję, Elsmore. -> start
+
+-- magic
+Magię w Otchłani tworzy się kamieniami runicznymi. Włóż je do woreczka na runy, wybierz do trzech na półkę i rzuć czar. IN LOR daje światło - bardzo przydatne tu na dole. ORT JUX ciska pociskiem mocy. Potężniejsze zaklęcia wymagają doświadczenia.
+* Wróćmy do innych spraw. -> start
+
+-- food
+Wygląda na to, że tu na dole nawet umarli bywają głodni. Weź ten bochenek - i nie mów pozostałym.
+! give Bread
+! flag elsmore_food 1
+* Dziękuję. -> start
+
+=== tobin
+-- start
+Psst! Nazywam się Tobin, a handel to moja gra. Nawet tu na dole człowiek potrzebuje grosza - albo tego, co za grosz można kupić. Rzucisz okiem na moje towary?
+* Pokaż, co masz. -> wares
+* Skąd bierzesz te rzeczy? -> where
+* Człowiek z takim gustem z pewnością ma jakiś drobiazg dla przyjaciół. -> charm ? skill:Charm>=4 & !flag:tobin_charmed
+* Bywaj. -> end
+
+-- charm
+Ha! Srebrny język, i to akurat tutaj. Dobrze robisz interesom. Masz - świeca, na koszt firmy. A dla przyjaciół moje ceny zawsze są uczciwsze.
+! flag tobin_charmed 1
+! give Candle
+* Pokaż, co masz. -> wares
+* Bywaj. -> end
+
+-- where
+Tu i tam. Umarłym pochodnie na nic, a gobliny nie liczą swoich zapasów. No to jak, kupujesz czy nie?
+* Pokaż, co masz. -> wares
+* Bywaj. -> end
+
+-- wares
+! barter
+Rozejrzyj się, przyjacielu. Wybierz, co chcesz, i połóż obok swoją ofertę - złoto czy towar, nie jestem wybredny. Zapytaj, ile coś jest warte, jeśli nie masz pewności.
+* Skąd bierzesz te rzeczy? -> where
+* Bywaj. -> end
+
+=== rhugg
+-- start
+Hrrm. Człowiek. Rhugg wódz szarych goblinów. Czemu ty przyjść do sali Rhugga?
+* Muszę przejść do schodów. -> stairs ? !flag:rhugg_open
+* Przyniosł{em|am} ci medalion Gnarla. -> medallion ? item:Medallion & !flag:rhugg_open
+* Co wiesz o chodzących umarłych? -> dead
+* Czemu twój lud nienawidzi zielonych goblinów? -> green
+* Bywaj. -> end
+
+-- stairs
+Schody należeć do szarych goblinów. Nikt nie przejść! Chyba że... Gnarl, zielony wódz, on kraść od nas, zabijać nasze młode. Ty przynieść Rhuggowi medalion Gnarla, Rhugg otworzyć bramę. Albo ty płacić. {buy 50} sztuk złota.
+* Zajmę się Gnarlem. -> end
+* Oto złoto. -> pay ? afford:50
+* Wódz tak potężny jak Rhugg nie potrzebuje od przyjaciela tyle złota. -> haggle ? skill:Charm>=4
+* Wróć. -> start
+
+-- haggle
+Hrrm! Przyjaciel, ty mówić. Rhugg potężny, tak, potężny i hojny. Dla przyjaciela Rhugga... {buy 25} sztuk złota.
+* Oto złoto. -> pay_friend ? afford:25
+* Zajmę się Gnarlem. -> end
+* Wróć. -> start
+
+-- pay_friend
+Hrrm! Złoto dobre, przyjaciel dobry. Brama otwarta. Idź, idź!
+! pay 25
+! door 55
+! flag rhugg_open 1
+* Dziękuję. -> end
+
+-- pay
+Hrrm! Złoto dobre. Brama otwarta. Idź, idź!
+! pay 50
+! door 55
+! flag rhugg_open 1
+* Dziękuję. -> end
+
+-- medallion
+Medalion Gnarla! Gnarl martwy! Ha! Ty teraz przyjaciel szarych goblinów. Rhugg otworzyć dla ciebie bramę. Weź też to.
+! take Medallion
+! door 55
+! flag rhugg_open 1
+! give Coin 0 30
+! exp 60
+* Dziękuję, Rhuggu. -> end
+
+-- dead
+Martwi chodzić, coraz więcej. Lud Rhugga ich palić. Ty też pachnieć trupem, człowieku. Ale ty mówić. Mówiących trupów Rhugg nie palić - jeszcze nie.
+* Wróć. -> start
+
+-- green
+Dawniej, kiedy Kamień Lumen świecić, szare i zielone gobliny żyć jako jedno plemię. Kamień pęknąć, Gnarl mówić, że zielone gobliny mają rządzić. Teraz my walczyć.
+* Wróć. -> start
+
+// ----------------------------------------------------------- level 2
+
+=== thorgrim
+-- start
+Stój! Stoisz przed Thorgrimem, synem Thraina, Królem pod Górą. {Umarły, który|Umarła, która} mówi... Mów więc, z czym przychodzisz.
+* Co wiesz o Panu Dusz? -> lord
+* Szukam odłamka Męstwa. -> shard ? !flag:thorgrim_done
+* Znalazł{em|am} twój Młot. -> hammer ? item:Hammer & flag:thorgrim_quest & !flag:thorgrim_done
+* Czy mogę pomóc twojemu ludowi? -> quest ? !flag:thorgrim_quest
+* W sprawie wschodnich chodników... -> remind ? flag:thorgrim_quest & !flag:thorgrim_done
+* Bywaj, królu Thorgrimie. -> end
+
+-- lord
+Gdy krasnolud umiera, jego dusza schodzi do Pana Dusz, tak jest, odkąd pękł Kamień. Tyle krasnoludowi trzeba wiedzieć. A jednak ty wrócił{eś|aś} na górę, chodzący trupie, i chodzisz jak jeden z rycerzy samego Variana. Dziwne czasy.
+* Wróć. -> start
+
+-- shard
+Odłamek Męstwa powierzył mojemu dziadowi sam lord Varian. Nie oddam go pierwszemu lepszemu wędrowcy, który o niego poprosi. Najpierw udowodnij swoje męstwo.
+* Jak mam się wykazać? -> quest ? !flag:thorgrim_quest
+* Wróć. -> start
+
+-- quest
+Olbrzymie pająki opanowały nasze wschodnie chodniki. W ich głębi leży Młot Góry, pamiątka mojego rodu. Zamknąłem szyb, by ratować swój lud. Oto klucz. Przynieś Młot, a odłamek Męstwa będzie twój.
+! give IronKey 21
+! flag thorgrim_quest 1
+* Wrócę z Młotem. -> end
+
+-- remind
+Zamknięte drzwi są na wschód od tej sali. Strzeż się królowej pająków; jej ukąszenie jest jadowite.
+* Wróć. -> start
+
+-- hammer
+Młot Góry! Na moją brodę! Masz odwagę dziesięciu żywych krasnoludów, {umarły|umarła}. Jak obiecałem, weź odłamek Męstwa - i wdzięczność górskiego ludu.
+! take Hammer
+! give ShardOfValor
+! flag thorgrim_done 1
+! exp 200
+* To dla mnie zaszczyt, królu Thorgrimie. -> end
+
+=== hilda
+-- start
+Och! Gość. I to taki blady. Uważaj na łóżka, dopiero je posłałam. Jestem Hilda. {Głodny|Głodna} jesteś, co? Żywy czy martwy, każdy, kto tu schodzi, jest głodny.
+* Tak, jestem {głodny|głodna}. -> food ? !flag:hilda_food
+* Opowiedz mi o kopalniach. -> mines
+* Co jest niżej? -> below
+* Bywaj. -> end
+
+-- food
+Masz, ser i chleb. Jedz, jedz! Sama skóra i kości.
+! give Cheese
+! give Bread
+! flag hilda_food 1
+* Serdecznie dziękuję. -> start
+
+-- mines
+Nasz lud wykopał te sale długo przed kolonią. Wschodnie chodniki były najbogatsze - dopóki nie przyszły pająki. Bodric przy kuźni kupuje samorodki złota, jeśli jakieś znajdziesz.
+* Wróć. -> start
+
+-- below
+Jaszczuroludzie mieszkają niżej, w zalanych norach. Syczą, kiedy mówią, ale są całkiem porządni, jeśli jest się grzecznym. Pod nimi... stare krypty. Tam nie chodzimy.
+* Wróć. -> start
+
+=== bodric
+-- start
+Brzdęk! Brzdęk! Co? A. Klient. Jestem Bodric, kowal górskiego ludu. Wykuwam najlepszą stal w Otchłani i chętnie wymienię ją na złoto.
+* Pokaż mi swoje towary. -> wares
+* Mam samorodki złota na sprzedaż. -> nugget ? item:GoldNugget
+* Naprawisz moją broń i pancerz? -> mend
+* Twoja kowalska robota to najpiękniejsza, jaką widział{em|am}, mistrzu. -> flatter ? skill:Charm>=3 & !flag:bodric_flattered
+* Bywaj. -> end
+
+-- mend
+Ano, za {buy 15} sztuk złota wyklepię wszystko, co przy sobie nosisz. Tu na dole stal potrzebuje opieki.
+* Zrób to. -> mended ? afford:15
+* Nie teraz. -> start
+
+-- mended
+! pay 15
+Brzdęk! Brzdęk! ... Proszę. Jak w dniu, w którym zeszło z kowadła.
+! mend
+* Dziękuję. -> start
+
+-- flatter
+Ha! Masz oko do dobrej stali, a do tego gładki język. Dawaj - tym razem zajmę się twoim sprzętem za darmo.
+! flag bodric_flattered 1
+! mend
+* Dziękuję, mistrzu kowalski. -> start
+
+-- wares
+! barter
+Stal i skóra, wszystko z mojej kuźni. Wybierz, co chcesz, i pokaż złoto - albo coś, co warto przetopić.
+* Naprawisz moją broń i pancerz? -> mend
+* Bywaj. -> end
+
+-- nugget
+Złoto z góry! Dam ci za to {sell 30} monet.
+! take GoldNugget
+! earn 30
+* Mam więcej samorodków. -> nugget ? item:GoldNugget
+* Pokaż mi towary. -> wares
+* Bywaj. -> end
+
+// ----------------------------------------------------------- level 3
+
+=== hissk
+-- start
+Ssstój, {ciepłokrwisssty|ciepłokrwissssta}. To jessst wiosssska Ludu. Czemu przychodzisz?
+* Przychodzę w pokoju. -> peace
+* Szukam odłamka Mądrości. -> shard
+* Czym są czyhacze? -> lurkers
+* Bywaj. -> end
+
+-- peace
+Pokój jessst dobry. Pokój jessst rzadki. Mędrzec Ssssrath z tobą porozmawia, w sssadzawce myślenia, na północ od wiosssski.
+* Dziękuję. -> start
+
+-- shard
+Zielonego odłamka ssstrzeże Mędrzec Ssrath. Idź na północ, do sssadzawki myślenia. Okaż ssszacunek.
+* Dziękuję. -> start
+
+-- lurkers
+Wielkie gryzące ssstwory w głębokiej wodzie, na wschodzie. Ukradły jaja z naszego lęgu. Lud jessst w żałobie.
+* Wróć. -> start
+
+=== ssrath
+-- start
+Ahhh. {Ciepłokrwisssty|Ciepłokrwissssta} przychodzi do sssadzawki myślenia. Jessstem Ssrath, Mędrzec Ludu. Ssssiądź. Czego ssszukasz?
+* Szukam odłamka Mądrości. -> shard ? !flag:ssrath_done & !item:LizardEgg
+* Znalazł{em|am} skradzione jaja. -> eggs ? item:LizardEgg & !flag:ssrath_done
+* Co wiesz o Panu Dusz? -> lord
+* Kim był{em|am}, zanim umarł{em|am}? -> self
+* Naucz mnie czegoś o magii. -> teach ? !flag:ssrath_teach
+* Bywaj. -> end
+
+-- shard
+Mądrości ssię nie dostaje; trzeba na nią zasssłużyć. Czyhacze ze wschodniej groty ukradły jaja z naszego lęgu. Zwróć je Ludowi, a okażesz mądrość - i miłosssierdzie. Wtedy odłamek będzie twój.
+! flag ssrath_quest 1
+* Znajdę te jaja. -> end
+* Wróć. -> start
+
+-- eggs
+Jaja! Młode Ludu jednak się wyklują. Masz wdzięczność lęgu, {ciepłokrwisssty|ciepłokrwissssta}. Weź odłamek Mądrości. Niech oświetla ci drogę.
+! take LizardEgg
+! give ShardOfWisdom
+! flag ssrath_done 1
+! exp 250
+* To dla mnie zaszczyt, Mędrcze. -> end
+
+-- lord
+Ten, który sssiedzi na tronie umarłych, pod kryptami. Kiedyś był Varianem, lordem kolonii. Jego płomień przygasssa, a umarli nie zaznają już ssspokoju. Dlatego się obudził{eś|aś}, {zimnokrwisssty|zimnokrwissssta}. Tędy przechodził inny czarownik, głodny tego tronu. Malchor. Chciałby zasssiąść na miejscu Pana.
+! flag know_lord 1
+* Jak dotrzeć do Pana Dusz? -> reach
+* Wróćmy do innych spraw. -> start
+
+-- reach
+Drogę do jego tronu zamyka światło Lumen. Weź wszystkie trzy odłamki, a brama się otworzy. Tylko Kamień może go dosssięgnąć.
+* Wróćmy do innych spraw. -> start
+
+-- self
+Lud nie zna twojej twarzy. Ale umarli pamiętają, jeśli im na to pozwolisz. Zapytaj rycerza, który ssstrzeże krypt w dole. Czuwa dłużej, niż ktokolwiek z nasss żyje.
+* Wróćmy do innych spraw. -> start
+
+-- teach
+Mądrość: runa WIS znaczy wiedzę, AN znaczy zaprzeczenie. Powiedz AN NOX, a trucizna ucieknie z twojej krwi. Daję ci runę wiedzy.
+! rune 22
+! flag ssrath_teach 1
+* Dziękuję, Mędrcze. -> start
+
+// ----------------------------------------------------------- level 4
+
+=== aldric
+-- start
+Kto zakłóca spokój umarłych? ... Ach. Dusza żywa, a na rabusia grobów nie wyglądasz. Jestem sir Aldric, niegdyś Rycerz Lumen. Nie mogę zaznać spokoju.
+* Czemu nie możesz zaznać spokoju? -> why
+* Szukam odłamka Miłosierdzia. -> shard ? !flag:aldric_done & !item:RelicBones
+* Przyniosł{em|am} twoje kości. -> bones ? item:RelicBones & !flag:aldric_done
+* Czy mnie znasz? -> know
+* Czy jest coś jeszcze, co powinien{em|nam} wiedzieć? -> advice
+* Bywaj, panie rycerzu. -> end
+
+-- why
+Trolle ze wschodnich jaskiń wywlekły moje kości z tego grobowca. Bez nich mój duch jest przykuty do tego miejsca i na zawsze strzeże odłamka Miłosierdzia.
+* Odzyskam twoje kości. -> end
+* Wróć. -> start
+
+-- shard
+Przysiągłem strzec odłamka Miłosierdzia, dopóki moje kości nie spoczną w pokoju. Odbierz moje kości z nory trolli, a chętnie ci go oddam.
+* Odzyskam twoje kości. -> end
+* Wróć. -> start
+
+-- bones
+Moje kości... nareszcie. Okazał{eś|aś} umarłym prawdziwe miłosierdzie. Weź odłamek Miłosierdzia, a z nim moje błogosławieństwo. Teraz... mogę odpocząć.
+! take RelicBones
+! give ShardOfMercy
+! flag aldric_done 1
+! exp 300
+! heal
+* Spoczywaj w pokoju, sir Aldricu. -> end
+
+-- know
+Twarz masz szarą, a oczy puste, a jednak... {name}! Na Lumen, to ty! Staliśmy ramię w ramię jako Rycerze Lumen, zaprzysiężone tarcze lorda Variana. Tej nocy, gdy pękł Kamień, nadworny mag Malchor uderzył w niego, by zagarnąć jego moc. Rzucił{eś|aś} się między nich. Wybuch, który roztrzaskał Kamień, zabił cię. Sam cię pochowałem, przy Wielkich Wrotach.
+! flag know_self 1
+! exp 100
+* Z grobu obudził mnie głos. -> voice
+* Co się stało z lordem Varianem? -> varian
+* Co się stało z Malchorem? -> malchor
+* Wróć. -> start
+
+-- voice
+Głos Variana? Być może. Twoja dusza była mu najdroższa. Ale uważaj, {name}. Malchor ma srebrny język i zna umarłych lepiej niż ktokolwiek żywy.
+* Co się stało z Malchorem? -> malchor
+* Wróć. -> start
+
+-- varian
+Nie zdołał naprawić Kamienia. Zszedł więc do Tronu Dusz, by wziąć umarłych Otchłani pod swoją opiekę, żeby żadna dusza nie błąkała się wydrążona. Trzyma ich przez wszystkie te lata. Teraz opadają go siły - i dlatego umarli powstają. Dlatego i ty powstał{eś|aś}.
+* Wróć. -> start
+
+-- malchor
+Wybuch zniszczył i jego, ale Malchor nie umarł tak, jak umierają inni ludzie. Trzyma się swojego zrujnowanego ciała, pijąc dusze. Krąży po Głębokim Sanktuarium, przed zapieczętowaną bramą Pana. Światło bramy pamięta, co zrobił, i nie pozwoli mu przejść.
+* Wróć. -> start
+
+-- advice
+W zachodnim grobowcu leży srebrna sadzonka, odrośl wielkiego drzewa życia. Zasadź ją w bezpiecznym miejscu - połóż ją na ziemi - a jeśli polegniesz, przywoła twego ducha z powrotem.
+* Dziękuję, panie rycerzu. -> start
+
+// ----------------------------------------------------------- level 5
+
+=== malchor
+-- start
+Dziękuję ci, {name}. Dwadzieścia lat ta brama mnie paliła, a ty otworzył{eś|aś} ją jednym dotknięciem. Naprawdę wierzył{eś|aś}, że obudził cię Pan Dusz? Varian od lat nie ma głosu. To był mój głos.
+* Głos w moim grobie należał do ciebie? -> voice
+* Po co był{em|am} ci potrzebn{y|a}? -> why
+* Czym są wydrążeni, którzy cię strzegą? -> thralls
+* To ty rozbiłeś Kamień Lumen. -> broke
+* Nigdy nie oddam ci odłamków. -> fight
+
+-- voice
+Mój w twoim grobie i mój w twoich snach. Nosiłem w nich jego koronę i nazywałem cię moim rycerzem, a ty przypełzł{eś|aś} aż tutaj z odłamkami, {wierny|wierna} po śmierci tak samo jak za życia. Umarli są tacy ufni.
+* Po co był{em|am} ci potrzebn{y|a}? -> why
+* Nigdy nie oddam ci odłamków. -> fight
+
+-- why
+Odłamki są Kamieniem Lumen, a Kamień zapieczętował tę bramę za Varianem. Jego światło pamięta, co zrobiłem, i mnie pali. Ale brama otworzyłaby się przed tobą, Rycerzem Lumen, który za niego zginął. Ludy nigdy nie oddałyby swoich odłamków mnie. Tobie dały je z radością.
+* A teraz chcesz je zabrać. -> shards
+* To ty rozbiłeś Kamień Lumen. -> broke
+
+-- shards
+Oddaj mi je i odejdź. Zasiądę na tronie, a ty możesz gnić, gdzie ci się podoba.
+* Nigdy! -> fight
+* To ty rozbiłeś Kamień Lumen. -> broke
+
+-- thralls
+Moi słudzy. Wydrążone dusze, które porwałem, zanim Varian zdążył je zabrać. Chodzą dzięki mojej mocy i będą chodzić tak długo jak ja. Mógł{eś|aś} być jednym z nich, rycerzu. Wciąż możesz.
+* Nigdy! -> fight
+* Po co był{em|am} ci potrzebn{y|a}? -> why
+
+-- broke
+Rozbiłem? Uwolniłem go! Varian chował to światło jak skąpiec. Uczyniłbym z nas bogów. Twoja dusza jest stara i silna, rycerzu. Będzie z niej wyborny posiłek.
+* To chodź i weź ją! -> fight
+
+-- fight
+Zatem wyrwę odłamki z twoich kości!
+! hostile
+* (Dobądź broni.) -> end
+
+=== lord
+-- start
+Kto przychodzi do Tronu Dusz, niosąc światło Lumen? ... {name}. Mój rycerz. Myślałem, że dawno spoczywasz w pokoju. Jestem Pan Dusz. Co wyciągnęło cię z grobu?
+* Obudził mnie głos. Mówił, że jest twój. -> voice
+* Kim jestem? -> who
+* Kim jesteś? -> what
+* Czy możesz przywrócić mi życie? -> live
+* Bywaj. -> end
+
+-- who
+Był{eś|aś} moim rycerzem i moją tarczą. Gdy Malchor uderzył w Kamień Lumen, stan{ąłeś|ęłaś} przede mną, a wybuch, który rozbił Kamień, zabrał twoje życie zamiast mojego. Ze wszystkich umarłych pod moją opieką twoja dusza była mi najdroższa.
+! flag know_self 1
+* Wróć. -> start
+
+-- voice
+Nie mój. Od lat nie mam siły nikogo wołać; ledwie starcza mi jej, by utrzymać umarłych. Ktoś chciał, by odłamki przyniesiono pod moje drzwi - ktoś, kogo brama nie przepuściłaby.
+* To był Malchor. -> malchor
+* Wróć. -> start
+
+-- malchor
+Malchor. Oczywiście. Brama pamięta, co zrobił Kamieniowi, i go pali. Ale otworzyłaby się przed jednym z moich rycerzy, niosącym odłamki. Wykorzystał cię, {name}, tak jak kiedyś próbował wykorzystać Kamień. Przykro mi.
+* Wróć. -> start
+
+-- what
+Kiedyś byłem Varianem, lordem kolonii, w której wszystkie ludy żyły razem. Gdy pękł Kamień, zszedłem tutaj i zasiadłem na Tronie Dusz, by umarli Otchłani mogli spoczywać w pokoju. Od tamtej pory ich trzymam. Ale jestem stary, {name}, a mój płomień przygasa.
+* Dlaczego umarli powstają? -> rise
+* Wróć. -> start
+
+-- rise
+Mój uścisk słabnie. Dusze wymykają się i wpełzają z powrotem do swoich kości, puste i wydrążone. Wkrótce zawiodę całkiem, a każda dusza w Otchłani będzie się błąkać wydrążona na zawsze - chyba że ktoś inny zajmie moje miejsce.
+* Wróć. -> start
+
+-- live
+Trzy odłamki są Kamieniem Lumen, a Kamień to życie. Złóż je w mojej dłoni, a na nowo rozpalę płomień w twojej piersi i otworzę przed tobą Wielkie Wrota. Wyjdziesz na słońce jako żywa dusza. Ale bez Kamienia nie utrzymam długo swojego tronu.
+* Weź odłamki i oddaj mi życie. -> kindle ? item:ShardOfValor & item:ShardOfWisdom & item:ShardOfMercy
+* A jeśli nie zechcę odejść? -> throne_info
+* Wróć. -> start
+
+-- throne_info
+Wtedy poznasz najstarsze prawo umarłych, takie, jakie mnie przekazano. Tronu Dusz się nie dostaje; Tron Dusz się zdobywa. Zabij mnie światłem odłamków i zasiądź na moim miejscu - nigdy żyw{y|a}, nigdy martw{y|a}, {pan|pani} każdej duszy, która padnie w ciemności. Wybieraj, mój rycerzu. Nie będę cię winił, cokolwiek wybierzesz.
+* Zatem zabiorę ci tron. -> throne ? item:ShardOfValor & item:ShardOfWisdom & item:ShardOfMercy
+* Oddaj mi raczej życie. -> kindle ? item:ShardOfValor & item:ShardOfWisdom & item:ShardOfMercy
+* Wróć. -> start
+
+-- kindle
+Niech tak będzie. Daj mi odłamki... Proszę. Czujesz? Ciepło w członkach. Oddech w piersi. Serce, które bije. Idź, {name}. Wielkie Wrota stoją otworem. Żyj - i pamiętaj o umarłych.
+! take ShardOfValor
+! take ShardOfWisdom
+! take ShardOfMercy
+! flag ending 2
+! victory
+* (Wspinaj się ku światłu.) -> end
+
+-- throne
+Zatem wstań, mój rycerzu, i weź go - jeśli zdołasz. Nie ułatwię ci tego. Pan Dusz musi być silny.
+! hostile
+* (Dobądź broni.) -> end

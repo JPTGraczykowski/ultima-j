@@ -1,0 +1,1244 @@
+# Polish translation of Ultima-J. See src/lang.rs for the format.
+#
+# Phrases: an English line exactly as in the code, then "= " and the Polish
+# line. {} and {N} are filled in by the game; in Polish a noun may take a
+# case, {:acc} or {:gen} ({:Nom} also capitalises it), {a|b} gives the male
+# and female forms for the player, and {N?m|f|n|p} picks by the gender of
+# noun N. \n is a line break.
+#
+# Nouns: @english = nominative | genitive | accusative | nominative plural |
+# genitive plural | gender (m, ma = animate, mp = personal, f, n, p = plural
+# only). Adjectives are kept in the masculine nominative and inflected by the
+# game (a word starting with _ is left as it is).
+
+# ------------------------------------------------------------ weapons
+
+@dagger = sztylet | sztyletu | sztylet | sztylety | sztyletów | m
+@shortsword = krótki miecz | krótkiego miecza | krótki miecz | krótkie miecze | krótkich mieczy | m
+@longsword = długi miecz | długiego miecza | długi miecz | długie miecze | długich mieczy | m
+@broadsword = pałasz | pałasza | pałasz | pałasze | pałaszy | m
+@hand axe = toporek | toporka | toporek | toporki | toporków | m
+@axe = topór | topora | topór | topory | toporów | m
+@cudgel = pałka | pałki | pałkę | pałki | pałek | f
+@mace = buzdygan | buzdygana | buzdygan | buzdygany | buzdyganów | m
+@jeweled sword = miecz wysadzany klejnotami | miecza wysadzanego klejnotami | miecz wysadzany klejnotami | miecze wysadzane klejnotami | mieczy wysadzanych klejnotami | m
+@sling = proca | procy | procę | proce | proc | f
+@crossbow = kusza | kuszy | kuszę | kusze | kusz | f
+@sling stone = kamień do procy | kamienia do procy | kamień do procy | kamienie do procy | kamieni do procy | m
+@crossbow bolt = bełt | bełtu | bełt | bełty | bełtów | m
+@Hammer of the Mountain = Młot Góry | Młota Góry | Młot Góry | Młoty Góry | Młotów Góry | m
+
+# ------------------------------------------------------------- armour
+
+@leather cap = skórzana czapka | skórzanej czapki | skórzaną czapkę | skórzane czapki | skórzanych czapek | f
+@chain cowl = kolczy kaptur | kolczego kaptura | kolczy kaptur | kolcze kaptury | kolczych kapturów | m
+@plate helm = hełm płytowy | hełmu płytowego | hełm płytowy | hełmy płytowe | hełmów płytowych | m
+@leather vest = skórzana kamizela | skórzanej kamizeli | skórzaną kamizelę | skórzane kamizele | skórzanych kamizel | f
+@chain shirt = kolczuga | kolczugi | kolczugę | kolczugi | kolczug | f
+@breastplate = napierśnik | napierśnika | napierśnik | napierśniki | napierśników | m
+@pair of leather leggings = para skórzanych nogawic | pary skórzanych nogawic | parę skórzanych nogawic | pary skórzanych nogawic | par skórzanych nogawic | f
+@pair of chain leggings = para kolczych nogawic | pary kolczych nogawic | parę kolczych nogawic | pary kolczych nogawic | par kolczych nogawic | f
+@pair of plate leggings = para płytowych nagolenników | pary płytowych nagolenników | parę płytowych nagolenników | pary płytowych nagolenników | par płytowych nagolenników | f
+@pair of leather boots = para skórzanych butów | pary skórzanych butów | parę skórzanych butów | pary skórzanych butów | par skórzanych butów | f
+@pair of plate boots = para płytowych butów | pary płytowych butów | parę płytowych butów | pary płytowych butów | par płytowych butów | f
+@pair of leather gloves = para skórzanych rękawic | pary skórzanych rękawic | parę skórzanych rękawic | pary skórzanych rękawic | par skórzanych rękawic | f
+@pair of gauntlets = para rękawic płytowych | pary rękawic płytowych | parę rękawic płytowych | pary rękawic płytowych | par rękawic płytowych | f
+@buckler = puklerz | puklerza | puklerz | puklerze | puklerzy | m
+@wooden shield = drewniana tarcza | drewnianej tarczy | drewnianą tarczę | drewniane tarcze | drewnianych tarcz | f
+@tower shield = pawęż | pawęży | pawęż | pawęże | pawęży | f
+@gold ring = złoty pierścień | złotego pierścienia | złoty pierścień | złote pierścienie | złotych pierścieni | m
+@silver ring = srebrny pierścień | srebrnego pierścienia | srebrny pierścień | srebrne pierścienie | srebrnych pierścieni | m
+
+# ------------------------------------------------------- food and drink
+
+@apple = jabłko | jabłka | jabłko | jabłka | jabłek | n
+@loaf of bread = bochenek chleba | bochenka chleba | bochenek chleba | bochenki chleba | bochenków chleba | m
+@piece of cheese = kawałek sera | kawałka sera | kawałek sera | kawałki sera | kawałków sera | m
+@piece of meat = kawałek mięsa | kawałka mięsa | kawałek mięsa | kawałki mięsa | kawałków mięsa | m
+@fish = ryba | ryby | rybę | ryby | ryb | f
+@mushroom = grzyb | grzyba | grzyba | grzyby | grzybów | ma
+@flask of water = bukłak z wodą | bukłaka z wodą | bukłak z wodą | bukłaki z wodą | bukłaków z wodą | m
+@bottle of wine = butelka wina | butelki wina | butelkę wina | butelki wina | butelek wina | f
+@red potion = czerwona mikstura | czerwonej mikstury | czerwoną miksturę | czerwone mikstury | czerwonych mikstur | f
+@blue potion = niebieska mikstura | niebieskiej mikstury | niebieską miksturę | niebieskie mikstury | niebieskich mikstur | f
+@green potion = zielona mikstura | zielonej mikstury | zieloną miksturę | zielone mikstury | zielonych mikstur | f
+@yellow potion = żółta mikstura | żółtej mikstury | żółtą miksturę | żółte mikstury | żółtych mikstur | f
+
+# --------------------------------------------------------------- things
+
+@torch = pochodnia | pochodni | pochodnię | pochodnie | pochodni | f
+@candle = świeca | świecy | świecę | świece | świec | f
+@lantern = latarnia | latarni | latarnię | latarnie | latarni | f
+@bag = sakwa | sakwy | sakwę | sakwy | sakw | f
+@pack = plecak | plecaka | plecak | plecaki | plecaków | m
+@small box = szkatułka | szkatułki | szkatułkę | szkatułki | szkatułek | f
+@rune bag = woreczek na runy | woreczka na runy | woreczek na runy | woreczki na runy | woreczków na runy | m
+@iron key = żelazny klucz | żelaznego klucza | żelazny klucz | żelazne klucze | żelaznych kluczy | m
+@gold key = złoty klucz | złotego klucza | złoty klucz | złote klucze | złotych kluczy | m
+@silver key = srebrny klucz | srebrnego klucza | srebrny klucz | srebrne klucze | srebrnych kluczy | m
+@rune stone = kamień runiczny | kamienia runicznego | kamień runiczny | kamienie runiczne | kamieni runicznych | m
+@wand = różdżka | różdżki | różdżkę | różdżki | różdżek | f
+@gold coin = złota moneta | złotej monety | złotą monetę | złote monety | złotych monet | f
+@ruby = rubin | rubinu | rubin | rubiny | rubinów | m
+@sapphire = szafir | szafiru | szafir | szafiry | szafirów | m
+@emerald = szmaragd | szmaragdu | szmaragd | szmaragdy | szmaragdów | m
+@diamond = diament | diamentu | diament | diamenty | diamentów | m
+@gold nugget = samorodek złota | samorodka złota | samorodek złota | samorodki złota | samorodków złota | m
+@scroll = zwój | zwoju | zwój | zwoje | zwojów | m
+@book = księga | księgi | księgę | księgi | ksiąg | f
+@map = mapa | mapy | mapę | mapy | map | f
+@bedroll = posłanie | posłania | posłanie | posłania | posłań | n
+@rock = kamień | kamienia | kamień | kamienie | kamieni | m
+@bone = kość | kości | kość | kości | kości | f
+@skull = czaszka | czaszki | czaszkę | czaszki | czaszek | f
+@lockpick = wytrych | wytrycha | wytrych | wytrychy | wytrychów | m
+@coil of rope = zwój liny | zwoju liny | zwój liny | zwoje liny | zwojów liny | m
+@pole = drąg | drąga | drąg | drągi | drągów | m
+@shovel = łopata | łopaty | łopatę | łopaty | łopat | f
+@shard of Valor = odłamek Męstwa | odłamka Męstwa | odłamek Męstwa | odłamki Męstwa | odłamków Męstwa | m
+@shard of Wisdom = odłamek Mądrości | odłamka Mądrości | odłamek Mądrości | odłamki Mądrości | odłamków Mądrości | m
+@shard of Mercy = odłamek Miłosierdzia | odłamka Miłosierdzia | odłamek Miłosierdzia | odłamki Miłosierdzia | odłamków Miłosierdzia | m
+@silver sapling = srebrna sadzonka | srebrnej sadzonki | srebrną sadzonkę | srebrne sadzonki | srebrnych sadzonek | f
+@medallion = medalion | medalionu | medalion | medaliony | medalionów | m
+@clutch of lizard eggs = lęg jaszczurzych jaj | lęgu jaszczurzych jaj | lęg jaszczurzych jaj | lęgi jaszczurzych jaj | lęgów jaszczurzych jaj | m
+@bundle of ancient bones = wiązka prastarych kości | wiązki prastarych kości | wiązkę prastarych kości | wiązki prastarych kości | wiązek prastarych kości | f
+
+# ------------------------------------------------- furniture and fixtures
+
+@barrel = beczka | beczki | beczkę | beczki | beczek | f
+@table = stół | stołu | stół | stoły | stołów | m
+@chest = skrzynia | skrzyni | skrzynię | skrzynie | skrzyń | f
+@fountain = fontanna | fontanny | fontannę | fontanny | fontann | f
+@pile of bones = stos kości | stosu kości | stos kości | stosy kości | stosów kości | m
+@plant = roślina | rośliny | roślinę | rośliny | roślin | f
+@shrine = kapliczka | kapliczki | kapliczkę | kapliczki | kapliczek | f
+@lever = dźwignia | dźwigni | dźwignię | dźwignie | dźwigni | f
+@campfire = ognisko | ogniska | ognisko | ogniska | ognisk | n
+@bed = łóżko | łóżka | łóżko | łóżka | łóżek | n
+@brazier = kosz z żarem | kosza z żarem | kosz z żarem | kosze z żarem | koszy z żarem | m
+@statue = posąg | posągu | posąg | posągi | posągów | m
+@bookshelf = regał z księgami | regału z księgami | regał z księgami | regały z księgami | regałów z księgami | m
+@pillar = kolumna | kolumny | kolumnę | kolumny | kolumn | f
+@gravestone = nagrobek | nagrobka | nagrobek | nagrobki | nagrobków | m
+@cauldron = kocioł | kotła | kocioł | kotły | kotłów | m
+@strange orb = dziwna kula | dziwnej kuli | dziwną kulę | dziwne kule | dziwnych kul | f
+@corpse = zwłoki | zwłok | zwłoki | zwłoki | zwłok | p
+@bloodstain = plama krwi | plamy krwi | plamę krwi | plamy krwi | plam krwi | f
+@stalagmite = stalagmit | stalagmitu | stalagmit | stalagmity | stalagmitów | m
+@spider web = pajęczyna | pajęczyny | pajęczynę | pajęczyny | pajęczyn | f
+@rune of warding = runa ochronna | runy ochronnej | runę ochronną | runy ochronne | run ochronnych | f
+
+# ------------------------------------------------------------ creatures
+
+@creature = stworzenie | stworzenia | stworzenie | stworzenia | stworzeń | n
+@giant rat = olbrzymi szczur | olbrzymiego szczura | olbrzymiego szczura | olbrzymie szczury | olbrzymich szczurów | ma
+@cave bat = jaskiniowy nietoperz | jaskiniowego nietoperza | jaskiniowego nietoperza | jaskiniowe nietoperze | jaskiniowych nietoperzy | ma
+@green goblin = zielony goblin | zielonego goblina | zielonego goblina | zielone gobliny | zielonych goblinów | ma
+@gray goblin = szary goblin | szarego goblina | szarego goblina | szare gobliny | szarych goblinów | ma
+@skeleton = szkielet | szkieletu | szkielet | szkielety | szkieletów | m
+@giant spider = olbrzymi pająk | olbrzymiego pająka | olbrzymiego pająka | olbrzymie pająki | olbrzymich pająków | ma
+@acid slug = żrący ślimak | żrącego ślimaka | żrącego ślimaka | żrące ślimaki | żrących ślimaków | ma
+@lizardman = jaszczuroczłek | jaszczuroczłeka | jaszczuroczłeka | jaszczuroludzie | jaszczuroludzi | mp
+@mountainman = krasnolud | krasnoluda | krasnoluda | krasnoludowie | krasnoludów | mp
+@outcast = wyrzutek | wyrzutka | wyrzutka | wyrzutkowie | wyrzutków | mp
+@mage = mag | maga | maga | magowie | magów | mp
+@ghoul = ghul | ghula | ghula | ghule | ghuli | ma
+@troll = troll | trolla | trolla | trolle | trolli | ma
+@ghost = duch | ducha | ducha | duchy | duchów | ma
+@earth golem = ziemny golem | ziemnego golema | ziemnego golema | ziemne golemy | ziemnych golemów | ma
+@headless = bezgłowy | bezgłowego | bezgłowego | bezgłowi | bezgłowych | mp
+@lurker = czyhacz | czyhacza | czyhacza | czyhacze | czyhaczy | ma
+@imp = chochlik | chochlika | chochlika | chochliki | chochlików | ma
+@reaper = żniwiarz | żniwiarza | żniwiarza | żniwiarze | żniwiarzy | ma
+@lord of souls = Pan Dusz | Pana Dusz | Pana Dusz | Panowie Dusz | Panów Dusz | mp
+@the spider queen = królowa pająków | królowej pająków | królową pająków | królowe pająków | królowych pająków | f
+@Malchor = Malchor | Malchora | Malchora | Malchorowie | Malchorów | mp
+@Varian = Varian | Variana | Variana | Varianowie | Varianów | mp
+@Sir Aldric = sir Aldric | sir Aldrica | sir Aldrica | sir Aldricowie | sir Aldriców | mp
+@Gnarl = Gnarl | Gnarla | Gnarla | Gnarlowie | Gnarlów | mp
+@Rhugg = Rhugg | Rhugga | Rhugga | Rhuggowie | Rhuggów | mp
+@Elsmore = Elsmore | Elsmore'a | Elsmore'a | Elsmore'owie | Elsmore'ów | mp
+@Tobin = Tobin | Tobina | Tobina | Tobinowie | Tobinów | mp
+@Thorgrim = Thorgrim | Thorgrima | Thorgrima | Thorgrimowie | Thorgrimów | mp
+@Hilda = Hilda | Hildy | Hildę | Hildy | Hild | f
+@Bodric = Bodric | Bodrica | Bodrica | Bodricowie | Bodriców | mp
+@Hissk = Hissk | Hisska | Hisska | Hisskowie | Hissków | mp
+@Ssrath = Ssrath | Ssratha | Ssratha | Ssrathowie | Ssrathów | mp
+
+# ----------------------------------------------------------- adjectives
+
+hostile
+= wrogi
+upset
+= rozdrażniony
+mellow
+= spokojny
+friendly
+= przyjazny
+unhurt
+= nietknięty
+wounded
+= ranny
+badly wounded
+= ciężko ranny
+near death
+= bliski _śmierci
+badly worn
+= mocno zużyty
+worn
+= zużyty
+somewhat used
+= nieco używany
+lit
+= zapalony
+burnt out
+= wypalony
+poisoned
+= zatruty
+in good health
+= w dobrym zdrowiu
+starving
+= wygłodzony
+hungry
+= głodny
+a little hungry
+= nieco głodny
+fed
+= syty
+well fed
+= najedzony
+rested
+= wypoczęty
+somewhat tired
+= nieco zmęczony
+exhausted
+= wyczerpany
+and
+= i
+
+# --------------------------------------------- what the Look command sees
+# (in the accusative: "Widzisz ...")
+
+a rough hewn stone wall
+= ścianę z grubo ciosanego kamienia
+a stone wall
+= kamienną ścianę
+a mossy stone wall
+= omszałą kamienną ścianę
+an irregular stone wall
+= ścianę z nieregularnych kamieni
+a cobblestone wall
+= ścianę z otoczaków
+a brick wall
+= ceglaną ścianę
+a red brick wall
+= ścianę z czerwonej cegły
+a rocky cave wall
+= skalną ścianę jaskini
+a wooden wall
+= drewnianą ścianę
+a panelled wall
+= ścianę wyłożoną boazerią
+a marble wall
+= marmurową ścianę
+a wall with writing upon it
+= ścianę, na której coś napisano
+a lever set into the wall
+= dźwignię osadzoną w ścianie
+a carved stone frieze
+= rzeźbiony kamienny fryz
+a sandstone wall
+= ścianę z piaskowca
+a wall of dressed stone
+= ścianę z obrobionego kamienia
+a sturdy door
+= solidne drzwi
+a massive iron door
+= masywne żelazne drzwi
+a portcullis
+= kratę
+a secret door
+= ukryte drzwi
+a dirt floor
+= klepisko
+a flagstone floor
+= posadzkę z kamiennych płyt
+a cobblestone floor
+= brukowaną posadzkę
+a wooden floor
+= drewnianą podłogę
+a mossy floor
+= omszałe podłoże
+a gravel floor
+= żwirowe podłoże
+a tiled floor
+= posadzkę z płytek
+a muddy floor
+= błotniste podłoże
+a rocky ceiling
+= skalne sklepienie
+a timbered ceiling
+= belkowany strop
+water
+= wodę
+lava
+= lawę
+a wooden bridge
+= drewniany most
+
+# ------------------------------------------------------- conversations
+
+Let us trade.
+= Pohandlujmy.
+What is mine offer worth to thee?
+= Ile jest dla ciebie warta moja oferta?
+Show me thy other goods.
+= Pokaż mi inne towary.
+Have a look at these, then.
+= Zatem rzuć okiem na te.
+You receive {} (it is at your feet).
+= Otrzymujesz {:acc} (u twoich stóp).
+You receive {}.
+= Otrzymujesz {:acc}.
+Your weapons and armour are as good as new.
+= Twoja broń i pancerz są jak nowe.
+You learn the {} rune.
+= Poznajesz runę {}.
+Your {} skill improves.
+= Rośnie twoja umiejętność: {}.
+
+# ---------------------------------------------------------------- items
+
+an enchantment of accuracy (+{})
+= zaklęcie celności (+{})
+an enchantment of damage (+{})
+= zaklęcie obrażeń (+{})
+an enchantment of protection (+{})
+= zaklęcie ochrony (+{})
+the {} spell
+= zaklęcie {}
+You see {}.
+= Widzisz {:acc}.
+
+# --------------------------------------------------------------- barter
+
+I have no use for {}.
+= Na nic mi {}.
+Empty the {} first; I'll not buy what I cannot see.
+= Najpierw opróżnij {:acc}. Nie kupię tego, czego nie widzę.
+{}, for {}.
+= {:Nom} za {}.
+{}. Gold is always welcome.
+= {:Nom}. Złoto zawsze mile widziane.
+For {} I would give thee {}.
+= Za {:acc} dam ci {}.
+Thou hast offered me nothing yet.
+= Jeszcze nic mi nie {zaoferowałeś|zaoferowałaś}.
+Thine offer is worth {} to me.
+= Twoja oferta jest dla mnie warta {}.
+ For {} I ask {}.
+=  Za {} chcę {}.
+Choose what thou wouldst have from my goods, and lay thine offer beside them.
+= Wybierz, co chcesz z moich towarów, i połóż obok swoją ofertę.
+For {} I ask {}. Lay thine offer on the table.
+= Za {} chcę {}. Połóż swoją ofertę na stole.
+For {} I ask {}, and thine offer is worth but {}. Thou art {} short.
+= Za {} chcę {}, a twoja oferta jest warta ledwie {}. Brakuje ci {}.
+Done! Here are {} gold coins for {}.
+= Załatwione! Oto {2} za {1}.
+Done! Take {}, and {} gold in change.
+= Załatwione! Weź {0}, a do tego {2} reszty.
+Done! {} is thine.
+= Załatwione! {} - to teraz twoje.
+You cannot carry {}; it is at your feet.
+= Nie uniesiesz {:gen}, więc zostawiasz to u swoich stóp.
+
+# ---------------------------------------------------------- professions
+
+Fighter
+= Wojownik
+Mage
+= Mag
+Bard
+= Bard
+Tinker
+= Majster
+Druid
+= Druid
+Paladin
+= Paladyn
+Ranger
+= Tropiciel
+Shepherd
+= Pasterz
+
+# --------------------------------------------------------------- skills
+
+Attack
+= Atak
+Defense
+= Obrona
+Unarmed
+= Wręcz
+Sword
+= Miecz
+Axe
+= Topór
+Mace
+= Obuch
+Missile
+= Strzelanie
+Mana
+= Mana
+Lore
+= Wiedza
+Casting
+= Czarowanie
+Traps
+= Pułapki
+Search
+= Szukanie
+Track
+= Tropienie
+Sneak
+= Skradanie
+Repair
+= Naprawa
+Charm
+= Urok
+Picklock
+= Zamki
+Acrobat
+= Akrobatyka
+Appraise
+= Wycena
+Swimming
+= Pływanie
+
+# ---------------------------------------------------------------- runes
+
+Negate
+= Zaprzeczenie
+Small
+= Małość
+Death
+= Śmierć
+Down
+= W dół
+Freedom
+= Wolność
+Flame
+= Płomień
+Energy
+= Energia
+Wind
+= Wiatr
+Create
+= Tworzenie
+Danger
+= Zagrożenie
+Summon
+= Przywołanie
+Light
+= Światło
+Life
+= Życie
+Poison
+= Trucizna
+Magic
+= Magia
+Movement
+= Ruch
+Illusion
+= Iluzja
+Change
+= Zmiana
+Protect
+= Ochrona
+Time
+= Czas
+Raise
+= Wzniesienie
+Great
+= Wielkość
+Knowledge
+= Wiedza
+Matter
+= Materia
+
+# --------------------------------------------------------------- spells
+# (Light and Poison are runes too, above.)
+
+Create Food
+= Stworzenie jedzenia
+Magic Arrow
+= Magiczna strzała
+Resist Blows
+= Odporność na ciosy
+Stealth
+= Skradanie
+Cause Fear
+= Strach
+Detect Monster
+= Wykrycie potworów
+Lesser Heal
+= Mniejsze uzdrowienie
+Rune of Warding
+= Runa ochronna
+Slow Fall
+= Powolne opadanie
+Conceal
+= Ukrycie
+Lightning
+= Błyskawica
+Night Vision
+= Widzenie w mroku
+Speed
+= Szybkość
+Strengthen Door
+= Wzmocnienie drzwi
+Heal
+= Uzdrowienie
+Levitate
+= Lewitacja
+Remove Trap
+= Usunięcie pułapki
+Resist Fire
+= Odporność na ogień
+Cure Poison
+= Leczenie zatrucia
+Fireball
+= Kula ognia
+Missile Protection
+= Ochrona przed pociskami
+Name Enchantment
+= Rozpoznanie zaklęć
+Open
+= Otwarcie
+Daylight
+= Światło dnia
+Gate Travel
+= Podróż przez wrota
+Greater Heal
+= Większe uzdrowienie
+Paralyze
+= Paraliż
+Telekinesis
+= Telekineza
+Ally
+= Sojusznik
+Confusion
+= Zamęt
+Fly
+= Lot
+Invisibility
+= Niewidzialność
+Reveal
+= Odkrycie
+Flame Wind
+= Ognisty wiatr
+Freeze Time
+= Zatrzymanie czasu
+Iron Flesh
+= Żelazne ciało
+Roaming Sight
+= Wędrujące spojrzenie
+Tremor
+= Wstrząs
+
+# -------------------------------------------------------------- actions
+
+Behind you, someone laughs softly - and you know the voice.
+= Ktoś za tobą cicho się śmieje - i znasz ten głos.
+You see nothing of interest.
+= Nie widzisz nic ciekawego.
+You see a pressure plate set into the floor. It is a trap.
+= Widzisz płytę naciskową w posadzce. To pułapka.
+The writing reads: {}
+= Napis głosi: {}
+You see {} ({}).
+= Widzisz {:acc} ({}).
+You see the corpse of a {}.
+= Widzisz zwłoki {:gen}.
+You see a stone wall.
+= Widzisz kamienną ścianę.
+You see {} (open).
+= Widzisz {} - przejście jest otwarte.
+That is too far away to take.
+= To jest za daleko, by to wziąć.
+You cannot pick that up.
+= Nie możesz tego podnieść.
+You plant the silver sapling. Should you fall, it will call you back.
+= Sadzisz srebrną sadzonkę. Jeśli polegniesz, przywoła cię z powrotem.
+The dead tell no tales.
+= Umarli nie mówią.
+You are too far away to talk.
+= Jesteś za daleko, by rozmawiać.
+The {} is in no mood to talk.
+= {:Nom} nie ma ochoty na rozmowę.
+You get no response.
+= Nikt nie odpowiada.
+The door does not reply.
+= Drzwi milczą.
+There is no one there to talk to.
+= Nie ma tu nikogo, z kim można porozmawiać.
+You cannot talk to that.
+= Z tym nie da się rozmawiać.
+That is too far away.
+= To jest za daleko.
+You cannot use that.
+= Nie możesz tego użyć.
+You drink from the fountain. The cool water refreshes you.
+= Pijesz z fontanny. Chłodna woda cię orzeźwia.
+You kneel at the shrine. You feel able to improve your skills (see the statistics panel).
+= Klękasz przy kapliczce. Czujesz, że możesz rozwinąć swoje umiejętności (zajrzyj do statystyk).
+You kneel at the shrine and feel at peace.
+= Klękasz przy kapliczce i ogarnia cię spokój.
+It is empty.
+= W środku nic nie ma.
+You open it. Its contents spill out.
+= Otwierasz to. Zawartość wysypuje się na ziemię.
+Peering into the orb, you glimpse the deepest hall of the abyss: a pit of fire, and something vast stirring within it. A voice whispers: 'Bring the three shards together, and the way shall open.'
+= Wpatrując się w kulę, dostrzegasz najgłębszą salę Otchłani: ognistą jamę, a w niej coś ogromnego, co się porusza. Głos szepcze: 'Złącz trzy odłamki, a droga stanie otworem.'
+The fire crackles warmly.
+= Ogień trzaska i grzeje.
+You must pick that up to use it.
+= Musisz to podnieść, żeby tego użyć.
+You notice a pressure plate hidden in the floor. A trap!
+= Zauważasz płytę naciskową ukrytą w posadzce. Pułapka!
+A dart shoots out of the wall! You are hurt.
+= Ze ściany wystrzeliwuje strzałka! Jesteś {ranny|ranna}.
+Spikes jab up from the floor! You are hurt.
+= Z posadzki wyskakują kolce! Jesteś {ranny|ranna}.
+A blade springs from the floor! You are hurt.
+= Z posadzki wyskakuje ostrze! Jesteś {ranny|ranna}.
+You carefully disarm the trap.
+= Ostrożnie rozbrajasz pułapkę.
+Your hand slips!
+= Ręka ci się omsknęła!
+You fail to disarm the trap.
+= Nie udaje ci się rozbroić pułapki.
+It holds {} ({} charges left).
+= Kryje w sobie {} (pozostało ładunków: {}).
+It bears {}.
+= Spoczywa na tym {}.
+It seems to be enchanted, but you cannot tell how.
+= To chyba coś zaczarowanego, ale nie potrafisz powiedzieć, jak.
+You judge it to be worthless.
+= Oceniasz, że to nic niewarte.
+You judge it to be worth about {}.
+= Oceniasz, że to warte około {}.
+The {} is in good condition.
+= {:Nom} jest w dobrym stanie.
+You do not know how to mend the {} any better.
+= Nie wiesz, jak lepiej naprawić {:acc}.
+Your skill cannot improve the {} any further.
+= Lepiej {:acc} już nie naprawisz.
+You repair the {}. It is as good as new.
+= Naprawiasz {0:acc}. {0?Jest jak nowy|Jest jak nowa|Jest jak nowe|Są jak nowe}.
+You repair the {}. It is now {}.
+= Naprawiasz {0:acc}. {0?Jest|Jest|Jest|Są} teraz {1}.
+You slip and damage the {} further.
+= Ręka ci się omsknęła i jeszcze bardziej uszkadzasz {:acc}.
+You fail to repair the {}.
+= Nie udaje ci się naprawić {:gen}.
+The three shards blaze with light! The great gate grinds open.
+= Trzy odłamki rozbłyskują światłem! Wielka brama otwiera się ze zgrzytem.
+The gate is sealed by a powerful magic. Three hollows in its surface glow faintly: red, blue and green.
+= Bramę zamyka potężna magia. Trzy wgłębienia w jej powierzchni słabo się żarzą: czerwone, niebieskie i zielone.
+You found a secret door!
+= Znajdujesz ukryte drzwi!
+You see nothing unusual about the wall.
+= Nie widzisz w tej ścianie nic niezwykłego.
+The door will not budge. Perhaps it is opened by some mechanism.
+= Drzwi ani drgną. Może otwiera je jakiś mechanizm.
+You unlock the door with your key.
+= Otwierasz drzwi kluczem.
+You succeed in picking the lock.
+= Udaje ci się otworzyć zamek wytrychem.
+You fail to pick the lock.
+= Nie udaje ci się otworzyć zamka.
+The door is locked.
+= Drzwi są zamknięte na klucz.
+You are in the way.
+= Stoisz w przejściu.
+You pull the lever, but nothing seems to happen.
+= Pociągasz dźwignię, ale nic się nie dzieje.
+You pull the lever. You hear a grinding noise.
+= Pociągasz dźwignię. Słychać zgrzyt.
+You are too full to eat that now.
+= Jesteś zbyt {najedzony|najedzona}, by teraz to zjeść.
+That mushroom tasted rather odd.
+= Ten grzyb smakował dość dziwnie.
+That meat was tough, but filling.
+= Mięso było twarde, ale sycące.
+That was delicious.
+= Pyszne.
+You feel a bit light-headed.
+= Trochę kręci ci się w głowie.
+The wine warms you. You feel a little drunk.
+= Wino cię rozgrzewa. Czujesz lekki szmerek w głowie.
+You drink the water. It is refreshing.
+= Pijesz wodę. Orzeźwia cię.
+You feel much better.
+= Czujesz się znacznie lepiej.
+Your mind feels clear and powerful.
+= Twój umysł staje się jasny i potężny.
+You feel the poison leave your body.
+= Czujesz, jak trucizna opuszcza twoje ciało.
+Your eyes tingle. The darkness seems to recede.
+= Mrowią cię oczy. Ciemność jakby się cofa.
+The {} is burnt out.
+= {:Nom} jest {0?wypalony|wypalona|wypalone|wypalone}.
+You light the {}.
+= Zapalasz {:acc}.
+You place it on your shoulder.
+= Kładziesz to na ramieniu.
+Place it in a hand or on a shoulder for it to light your way.
+= Weź to do ręki albo połóż na ramieniu, żeby oświetlało ci drogę.
+You put out the {}.
+= Gasisz {:acc}.
+You already have the {} rune.
+= Masz już runę {}.
+You place the {} rune in your rune bag.
+= Wkładasz runę {} do woreczka na runy.
+The wand is out of charges.
+= W różdżce nie ma już ładunków.
+Nothing happens.
+= Nic się nie dzieje.
+{} worth about {}.
+= {:Nom} - wartość około {}.
+This item holds the power of {}.
+= W tym przedmiocie drzemie moc zaklęcia {}.
+You cannot rest with enemies nearby!
+= Nie możesz odpoczywać, gdy w pobliżu są wrogowie!
+You are not tired.
+= Nie jesteś {zmęczony|zmęczona}.
+You wake, but your hunger kept you from resting well.
+= Budzisz się, ale głód nie dał ci dobrze wypocząć.
+You wake feeling refreshed.
+= Budzisz się {wypoczęty|wypoczęta}.
+You have no runes on your rune shelf.
+= Na półce runicznej nie masz żadnych run.
+Those runes do not form a spell.
+= Te runy nie tworzą zaklęcia.
+You are not experienced enough to cast that spell.
+= Masz za mało doświadczenia, by rzucić to zaklęcie.
+You do not have enough mana to cast that spell.
+= Masz za mało many, by rzucić to zaklęcie.
+The spell fizzles.
+= Zaklęcie gaśnie z sykiem.
+The creature is frozen in place!
+= Stworzenie zastyga w miejscu!
+The creature becomes your ally.
+= Stworzenie staje się twoim sojusznikiem.
+The spell finds no target.
+= Zaklęcie nie znajduje celu.
+You feel better.
+= Czujesz się lepiej.
+You are completely healed.
+= Twoje rany całkiem się goją.
+You are cured of poison.
+= Trucizna cię opuszcza.
+Food appears before you.
+= Przed tobą pojawia się jedzenie.
+You sense no hostile creatures nearby.
+= Nie wyczuwasz w pobliżu wrogich stworzeń.
+You sense one hostile creature nearby.
+= Wyczuwasz w pobliżu jedno wrogie stworzenie.
+You sense {} hostile creatures nearby.
+= Wyczuwasz w pobliżu wrogie stworzenia: {}.
+Nothing seems affected.
+= Chyba nic się nie zmieniło.
+Your foes flee in terror!
+= Twoi wrogowie uciekają w przerażeniu!
+Your foes forget their quarrel with you.
+= Twoi wrogowie zapominają o sporze z tobą.
+Hidden passages are revealed to you!
+= Ukryte przejścia stają przed tobą otworem!
+Nothing hidden is revealed.
+= Nic ukrytego się nie ujawnia.
+Your spirit soars through the level. Your map is complete.
+= Twój duch szybuje przez cały poziom. Mapa jest kompletna.
+You are whisked away through a moongate!
+= Księżycowa brama przenosi cię gdzie indziej!
+The ground heaves violently!
+= Ziemia gwałtownie się trzęsie!
+A wind of flame roars about you!
+= Wokół ciebie huczy ognisty wiatr!
+The gate's light swallows your spell. Only the three shards will open it.
+= Światło bramy pochłania twoje zaklęcie. Otworzą ją tylko trzy odłamki.
+The door swings open.
+= Drzwi się otwierają.
+The door is magically sealed.
+= Drzwi zapieczętowano magią.
+You disarm a trap.
+= Rozbrajasz pułapkę.
+You find no traps.
+= Nie znajdujesz pułapek.
+There is no door nearby.
+= W pobliżu nie ma drzwi.
+The nature of your enchanted belongings is revealed. Look at them to learn more.
+= Poznajesz naturę swoich zaczarowanych rzeczy. Obejrzyj je, by dowiedzieć się więcej.
+You carry nothing whose nature is hidden.
+= Nie masz przy sobie niczego, co skrywałoby swoją naturę.
+You trace a rune of warding upon the floor. It will snare the next foe to cross it.
+= Kreślisz na posadzce runę ochronną. Pochwyci pierwszego wroga, który ją przekroczy.
+You cast {}.
+= Rzucasz zaklęcie: {}.
+You dream of nothing at all. The voice that woke you is silent now.
+= Nic ci się nie śni. Głos, który cię obudził, teraz milczy.
+Seek the mountain folk below. Their king keeps the shard of Valor, and he will test thy courage.
+= Szukaj górskiego ludu w głębi. Ich król strzeże odłamka Męstwa i wystawi twoją odwagę na próbę.
+The lizard folk of the flooded warrens grieve for their stolen young. Their Sage holds the shard of Wisdom.
+= Jaszczuroludzie z Zalanych Nor opłakują swoje skradzione młode. Ich Mędrzec strzeże odłamka Mądrości.
+In the crypts a knight cannot rest. Return to him what was taken, and Mercy shall be thine.
+= W kryptach pewien rycerz nie może zaznać spokoju. Zwróć mu to, co mu odebrano, a Miłosierdzie będzie twoje.
+The three shards are thine, my knight. Bring them down to the Deep Sanctum and lay them upon my gate. I am waiting.
+= Trzy odłamki są twoje, mój rycerzu. Znieś je do Głębokiego Sanktuarium i połóż na mojej bramie. Czekam.
+You dream. A crowned figure on a throne of bones, its face in shadow, speaks with the voice that woke you: "{}"
+= Śnisz. Postać w koronie, na tronie z kości, z twarzą w cieniu, przemawia głosem, który cię obudził: "{}"
+You search for tracks, but find nothing you can read.
+= Szukasz śladów, ale nie znajdujesz niczego, co dałoby się odczytać.
+You find no fresh tracks nearby.
+= W pobliżu nie ma świeżych śladów.
+north
+= północ
+north-east
+= północny wschód
+east
+= wschód
+south-east
+= południowy wschód
+south
+= południe
+south-west
+= południowy zachód
+west
+= zachód
+north-west
+= północny zachód
+very close
+= bardzo blisko
+nearby
+= w pobliżu
+some distance away
+= w pewnej odległości
+You find the tracks of a {} to the {}, {}.
+= Znajdujesz ślady {:gen}, prowadzące na {}, {}.
+ You are overburdened.
+=  Dźwigasz za dużo.
+You are {}, {} and {}.{}
+= Jesteś {}, {} i {}.{}
+It is the {} day of your imprisonment. You are on level {} of the abyss.
+= Trwa {} dzień twojego uwięzienia. Jesteś na poziomie {} Otchłani.
+
+# ------------------------------------------------------------ creatures
+
+named {}
+= o imieniu {}
+the spider queen
+= królowa pająków
+The {} hits you.
+= {:Nom} trafia cię.
+You have been poisoned!
+= Zatruto cię!
+The {} misses you.
+= {:Nom} chybia.
+With {} gone, his thralls crumble to dust.
+= Gdy {:gen} już nie ma, jego słudzy rozsypują się w proch.
+Your blow passes harmlessly through the Lord of Souls! Only the light of the Lumen Stone can touch him.
+= Twój cios przechodzi przez Pana Dusz, nie czyniąc mu krzywdy! Dosięgnąć go może tylko światło Kamienia Lumen.
+{} is dead.
+= {:Nom} ginie.
+You have no ammunition for that weapon.
+= Nie masz amunicji do tej broni.
+A critical hit!
+= Trafienie krytyczne!
+
+# ---------------------------------------------------------------- world
+
+You land hard and hurt yourself.
+= Lądujesz ciężko i robisz sobie krzywdę.
+You roll as you land and come up unhurt.
+= Przetaczasz się przy lądowaniu i wstajesz bez szwanku.
+You are swimming.
+= Płyniesz.
+You are drowning!
+= Toniesz!
+The lava burns you!
+= Lawa cię parzy!
+You descend to {}.
+= Schodzisz niżej: {}.
+You climb to {}.
+= Wspinasz się wyżej: {}.
+You have attained experience level {}! You may improve your skills.
+= Osiągasz poziom doświadczenia {}! Możesz rozwinąć swoje umiejętności.
+You are getting hungry.
+= Robisz się {głodny|głodna}.
+You are starving!
+= Głodujesz!
+The poison has worn off.
+= Trucizna przestaje działać.
+Your {} has burned out.
+= {:Nom} się wypala.
+The {} spell has worn off.
+= Zaklęcie {} przestaje działać.
+The rune of warding flares as the {} crosses it!
+= Runa ochronna rozbłyska, gdy przekracza ją {}!
+You are caught in the blast!
+= Dosięga cię wybuch!
+You are burned by fire!
+= Parzy cię ogień!
+You are struck by lightning!
+= Razi cię błyskawica!
+You are hit by poison!
+= Trafia cię trucizna!
+You are hit!
+= Obrywasz!
+
+# ---------------------------------------------------------- the screens
+
+[MORE]
+= [DALEJ]
+(click or press a key to continue)
+= (kliknij lub naciśnij klawisz, by czytać dalej)
+(click or press a key to end the conversation)
+= (kliknij lub naciśnij klawisz, by zakończyć rozmowę)
+{}, level {} {}, day {}
+= {}, poziom {}, {}, dzień {}
+Save game succeeded.
+= Zapisano grę.
+Save failed: {}
+= Nie udało się zapisać gry: {}
+Level {}
+= Poziom {}
+N
+= N
+E
+= E
+S
+= S
+W
+= W
+Explored: {}%
+= Zbadano: {}%
+Click the map to
+= Kliknij mapę, by
+write a note.
+= dodać notatkę.
+CLOSE
+= ZAMKNIJ
+Welcome to the Abyss.
+= Witaj w Otchłani.
+You claw your way out of a shallow grave. You are cold, and grey, and dead.
+= Wygrzebujesz się z płytkiego grobu. Jesteś {zimny|zimna}, {szary|szara} i {martwy|martwa}.
+(Press H for help on the controls.)
+= (Naciśnij H, by zobaczyć opis sterowania.)
+Game restored.
+= Wczytano grę.
+Could not restore: {}
+= Nie udało się wczytać gry: {}
+No saved game found.
+= Nie znaleziono zapisanej gry.
+You are already holding something.
+= Już coś trzymasz.
+Select a target for the spell.
+= Wskaż cel zaklęcia.
+Your current vitality is {} out of {}.
+= Twoja witalność wynosi {} z {}.
+Your current mana points are {} out of {}.
+= Twoja mana wynosi {} z {}.
+Music is on.
+= Muzyka włączona.
+Music is off.
+= Muzyka wyłączona.
+Sound effects are on.
+= Efekty dźwiękowe włączone.
+Sound effects are off.
+= Efekty dźwiękowe wyłączone.
+Modern controls: WASD to move, Q/E sidestep, 1-5 for commands (H for help).
+= Nowoczesne sterowanie: WASD - ruch, Q/E - krok w bok, 1-5 - polecenia (H - pomoc).
+Classic controls, as in the original.
+= Klasyczne sterowanie, jak w oryginale.
+Could not save the settings: {}
+= Nie udało się zapisać ustawień: {}
+The game is now in English.
+= Gra jest teraz po polsku.
+The silver sapling has called you back from death!
+= Srebrna sadzonka przywołuje cię ze śmierci!
+- Game Options -
+= - Opcje gry -
+On
+= wł.
+Off
+= wył.
+Music: {}
+= Muzyka: {}
+Sound: {}
+= Dźwięk: {}
+Controls: {}
+= Sterowanie: {}
+Modern
+= nowoczesne
+Classic
+= klasyczne
+Language: {}
+= Język: {}
+Save Game
+= Zapisz grę
+Restore Game
+= Wczytaj grę
+Music
+= Muzyka
+Sound
+= Dźwięk
+Controls
+= Sterowanie
+Language
+= Język
+Help
+= Pomoc
+Return to Game
+= Powrót do gry
+Quit to Title
+= Wyjdź do menu
+Quit Game
+= Zakończ grę
+- Save Game -
+= - Zapisz grę -
+- Restore Game -
+= - Wczytaj grę -
+(empty)
+= (pusty)
+Cancel
+= Anuluj
+You have died.
+= Nie żyjesz.
+Click to return to the silver sapling.
+= Kliknij, by wrócić do srebrnej sadzonki.
+Click to restore your last game.
+= Kliknij, by wczytać ostatnią grę.
+(Esc returns to the title)
+= (Esc - powrót do ekranu tytułowego)
+The Lord of Souls closes his hand about the shards. Light floods your cold limbs, and for the first time in an age your heart beats. Far above, the great doors grind open. You climb toward the daylight, alive - and behind you, in the dark, an old lord's flame burns low.
+= Pan Dusz zaciska dłoń na odłamkach. Światło zalewa twoje zimne członki i po raz pierwszy od wieków bije ci serce. Daleko w górze Wielkie Wrota otwierają się ze zgrzytem. Wspinasz się ku światłu dnia, {żywy|żywa} - a za tobą, w ciemności, płomień starego lorda ledwie się tli.
+- The End -
+= - Koniec -
+Your {} skill is now {}.
+= Umiejętność {} wynosi teraz {}.
+You see the {} rune, meaning '{}'.
+= Widzisz runę {}, która oznacza '{}'.
+You can carry {} more stones.
+= Uniesiesz jeszcze {} kamienia.
+That does not fit there.
+= To tu nie pasuje.
+It is full.
+= Nic więcej się tu nie zmieści.
+Only rune stones go in the rune bag.
+= Do woreczka na runy pasują tylko kamienie runiczne.
+STR
+= SIŁA
+DEX
+= ZRĘCZ
+INT
+= INT
+VIT
+= WITAL
+MANA
+= MANA
+EXP
+= DOŚW
+{} PTS
+= {} PKT
+RUNE BAG
+= RUNY
+(click here to close)
+= (kliknij, by zamknąć)
+
+# ------------------------------------------------- title and new character
+
+Introduction
+= Wprowadzenie
+Create Character
+= Stwórz postać
+Acknowledgements
+= Podziękowania
+Journey Onward
+= Wznów podróż
+A tribute to the 1992 classic. Made with Rust.
+= Hołd dla klasyki z 1992 roku. Napisane w Ruście.
+Male
+= Mężczyzna
+Female
+= Kobieta
+Fair
+= Jasna
+Golden
+= Złocista
+Dusky
+= Śniada
+Bronze
+= Brązowa
+Yes
+= Tak
+No
+= Nie
+Choose thy sex:
+= Wybierz płeć:
+Choose thy profession:
+= Wybierz profesję:
+Choose thine appearance:
+= Wybierz wygląd:
+What is thy name?
+= Jak brzmi twe imię?
+Keep this character?
+= Zachować tę postać?
+Str:
+= Sił:
+Dex:
+= Zrę:
+Int:
+= Int:
+Vit:
+= Wit:
+Done
+= Gotowe
+Type a name and press Enter.
+= Wpisz imię i naciśnij Enter.
+Strong and skilled with weapons.
+= Silny i biegły we władaniu bronią.
+A wielder of rune magic.
+= Włada magią run.
+Charming, learned, a little of all.
+= Czarujący, uczony, zna się na wszystkim po trochu.
+Clever with locks, traps and tools.
+= Zręczny z zamkami, pułapkami i narzędziami.
+Magic, lore and the wild.
+= Magia, wiedza i dzika natura.
+A holy warrior.
+= Święty wojownik.
+Tracker, archer, swordsman.
+= Tropiciel, strzelec, szermierz.
+Humble, hardy and resourceful.
+= Skromny, wytrzymały i zaradny.
+(click to return)
+= (kliknij, by wrócić)
+A loving tribute to Ultima Underworld: The Stygian Abyss
+= Hołd złożony z miłości grze Ultima Underworld: The Stygian Abyss
+(Blue Sky Productions / ORIGIN Systems, 1992).
+= (Blue Sky Productions / ORIGIN Systems, 1992).
+Engine, art and sound: all generated procedurally in Rust.
+= Silnik, grafika i dźwięk: wszystko generowane proceduralnie w Ruście.
+Software renderer: 320x200, 256 colours, light tables.
+= Renderer programowy: 320x200, 256 kolorów, tablice oświetlenia.
+Creatures: ray-cast clay models, pixelated and outlined.
+= Stwory: gliniane modele rzutowane promieniami, z pikselami i obrysem.
+Story, characters and dialogue are original to this game.
+= Fabuła, postacie i dialogi powstały specjalnie dla tej gry.
+Thank you for playing.
+= Dziękujemy za grę.
+
+# ------------------------------------------------------------- help
+
+MOVING: W run, S walk, X back, A/D turn, Z/C sidestep (or the arrow keys). Hold the left mouse button in the view: the cursor arrow shows the direction, and further from the centre is faster. J or Space jumps. 1/3 look down/up, 2 centres the view. E/Q fly up/down when flying.\n\nCOMMANDS: click an icon on the left (or F2 Talk, F3 Get, F4 Look, F5 Fight, F6 Use), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or F7) for your statistics; spend skill points there after gaining a level.\n\nBARTER: when a trader shows you their goods, click the ones you want (top left of the conversation), put gold or items from your inventory in your own trade area (top right), and choose Let us trade. Right-click either side to ask what something is worth.\n\nFIGHTING: select Fight (F5), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or P, ; and . keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or F8) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. F9 tracks, F10 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, F1/Esc opens the options. F11 toggles fullscreen, F12 toggles the 4:3 aspect.\n\nThe options menu switches to modern controls.
+= RUCH: W - bieg, S - marsz, X - w tył, A/D - obrót, Z/C - krok w bok (albo strzałki). Przytrzymaj lewy przycisk myszy w widoku: strzałka kursora pokazuje kierunek, a im dalej od środka, tym szybciej. J lub spacja - skok. 1/3 - patrzenie w dół/w górę, 2 - na wprost. E/Q - w górę/w dół podczas lotu.\n\nPOLECENIA: kliknij ikonę po lewej (albo F2 Rozmowa, F3 Weź, F4 Patrz, F5 Walka, F6 Użyj), a potem kliknij prawym przyciskiem coś w widoku. Bez wybranej ikony prawy przycisk służy do patrzenia; przytrzymaj go i przeciągnij, by wziąć, użyć albo porozmawiać.\n\nEKWIPUNEK: lewy przycisk podnosi i odkłada przedmioty. Zbroję połóż na postaci, broń i światło w kręgach dłoni i ramion. Prawy przycisk na przedmiocie go używa: jedzenie, picie, czytanie, zapalanie pochodni, otwieranie sakwy, naprawa zużytej broni i zbroi. Kliknij lewym przyciskiem woreczek na runy, by zobaczyć runy. Kliknij łańcuszek (albo F7), by zobaczyć statystyki; tam też wydajesz punkty umiejętności po zdobyciu poziomu.\n\nHANDEL: gdy kupiec pokaże ci towary, kliknij te, które chcesz (u góry po lewej), połóż złoto albo przedmioty z ekwipunku w swoim polu wymiany (u góry po prawej) i wybierz Pohandlujmy. Prawy przycisk po którejś stronie pozwala zapytać o wartość rzeczy.\n\nWALKA: wybierz Walkę (F5), wyceluj, przytrzymaj prawy przycisk, by wziąć zamach, i patrz na klejnot mocy; puść, by uderzyć. Wysoko w widoku - cios obuchem, pośrodku - cięcie, nisko - pchnięcie (albo klawisze P, ; i .).\n\nMAGIA: kliknij runy w woreczku, by położyć je na półce, a potem kliknij półkę (albo F8), by rzucić czar. Niektóre zaklęcia wymagają celu. Prawy przycisk na półce ją czyści.\n\nINNE: M lub Tab otwiera mapę. F9 - tropienie, F10 - sen. Użyj wykrytej pułapki, by spróbować ją rozbroić. Kliknij kompas, by poznać swój stan, a flaszki - witalność i manę. Ctrl+S - szybki zapis, Ctrl+R - wczytanie, F1/Esc - opcje. F11 - pełny ekran, F12 - proporcje 4:3.\n\nW opcjach można włączyć nowoczesne sterowanie.
+MOVING (modern controls): W/S or Up/Down forward and back (hold Shift to walk), A/D or Left/Right turn, Q/E sidestep. J or Space jumps. Z/C look down/up, X centres the view. R/T fly up/down when flying. Hold the left mouse button in the view to move as in the classic controls.\n\nCOMMANDS: 1 Talk, 2 Get, 3 Look, 4 Fight, 5 Use (or click an icon on the left), then right-click things in the view. With no icon selected, right-click looks; hold and drag the right button to get, use or talk.\n\nINVENTORY: left-click picks items up and puts them down. Drop armour on your body, weapons and lights in the hand and shoulder circles. Right-click an item to use it: eat, drink, read, light a torch, open a bag, repair worn weapons and armour. Left-click the rune bag to see your runes. Click the chain (or 6) for your statistics; spend skill points there after gaining a level.\n\nBARTER: when a trader shows you their goods, click the ones you want (top left of the conversation), put gold or items from your inventory in your own trade area (top right), and choose Let us trade. Right-click either side to ask what something is worth.\n\nFIGHTING: select Fight (4), aim, hold the right button to draw back and watch the power gem, release to strike. High in the view bashes, middle slashes, low thrusts (or V, B and N keys).\n\nMAGIC: click runes in the rune bag to put them on the shelf, then click the shelf (or 7) to cast. Some spells ask for a target. Right-click the shelf to clear it.\n\nOTHER: M or Tab opens the map. 8 tracks, 9 sleeps. Use a trap you have spotted to try to disarm it. Click the compass for your condition, the flasks for vitality and mana. Ctrl+S quick-saves, Ctrl+R restores, Esc opens the options, where you can switch back to the classic controls. The F-keys work as in the classic layout. F11 toggles fullscreen, F12 toggles the 4:3 aspect.
+= RUCH (nowoczesne sterowanie): W/S lub strzałki w górę/w dół - naprzód i w tył (z Shiftem - marsz), A/D lub strzałki w lewo/w prawo - obrót, Q/E - krok w bok. J lub spacja - skok. Z/C - patrzenie w dół/w górę, X - na wprost. R/T - w górę/w dół podczas lotu. Przytrzymaj lewy przycisk myszy w widoku, by poruszać się jak przy klasycznym sterowaniu.\n\nPOLECENIA: 1 Rozmowa, 2 Weź, 3 Patrz, 4 Walka, 5 Użyj (albo kliknij ikonę po lewej), a potem kliknij prawym przyciskiem coś w widoku. Bez wybranej ikony prawy przycisk służy do patrzenia; przytrzymaj go i przeciągnij, by wziąć, użyć albo porozmawiać.\n\nEKWIPUNEK: lewy przycisk podnosi i odkłada przedmioty. Zbroję połóż na postaci, broń i światło w kręgach dłoni i ramion. Prawy przycisk na przedmiocie go używa: jedzenie, picie, czytanie, zapalanie pochodni, otwieranie sakwy, naprawa zużytej broni i zbroi. Kliknij lewym przyciskiem woreczek na runy, by zobaczyć runy. Kliknij łańcuszek (albo 6), by zobaczyć statystyki; tam też wydajesz punkty umiejętności po zdobyciu poziomu.\n\nHANDEL: gdy kupiec pokaże ci towary, kliknij te, które chcesz (u góry po lewej), połóż złoto albo przedmioty z ekwipunku w swoim polu wymiany (u góry po prawej) i wybierz Pohandlujmy. Prawy przycisk po którejś stronie pozwala zapytać o wartość rzeczy.\n\nWALKA: wybierz Walkę (4), wyceluj, przytrzymaj prawy przycisk, by wziąć zamach, i patrz na klejnot mocy; puść, by uderzyć. Wysoko w widoku - cios obuchem, pośrodku - cięcie, nisko - pchnięcie (albo klawisze V, B i N).\n\nMAGIA: kliknij runy w woreczku, by położyć je na półce, a potem kliknij półkę (albo 7), by rzucić czar. Niektóre zaklęcia wymagają celu. Prawy przycisk na półce ją czyści.\n\nINNE: M lub Tab otwiera mapę. 8 - tropienie, 9 - sen. Użyj wykrytej pułapki, by spróbować ją rozbroić. Kliknij kompas, by poznać swój stan, a flaszki - witalność i manę. Ctrl+S - szybki zapis, Ctrl+R - wczytanie, Esc - opcje, gdzie można wrócić do klasycznego sterowania. Klawisze F działają jak w układzie klasycznym. F11 - pełny ekran, F12 - proporcje 4:3.
+
+# ---------------------------------------------------- scrolls and books
+
+The writing is too faded to read.
+= Pismo jest zbyt wyblakłe, by je odczytać.
+Enscribed upon the scroll is your map.
+= Na zwoju wyrysowano twoją mapę.
+To whoever finds this: the green goblins and the gray have warred since the Baron's colony fell. Neither will forgive the other. Trust neither, but the gray chief Rhugg can be bargained with.
+= Do tego, kto to znajdzie: zielone gobliny i szare walczą ze sobą, odkąd upadła kolonia barona. Żadne nie przebaczy drugim. Nie ufaj ani jednym, ani drugim, ale z szarym wodzem Rhuggiem da się dobić targu.
+Runes of power: IN means create, LOR means light. Speak them together upon the rune shelf, and darkness shall be driven back. ORT is magic, JUX is danger; together they make a bolt of force.
+= Runy mocy: IN znaczy tworzenie, LOR znaczy światło. Wypowiedz je razem na półce runicznej, a ciemność się cofnie. ORT to magia, JUX to zagrożenie; razem tworzą pocisk mocy.
+The Lumen Stone was broken into three shards: Valor, Wisdom and Mercy. I cannot make it whole. I go down to the Throne of Souls, to keep the dead of the Abyss until another can bear the light. - from the journal of Lord Varian
+= Kamień Lumen rozpadł się na trzy odłamki: Męstwo, Mądrość i Miłosierdzie. Nie potrafię go scalić. Schodzę do Tronu Dusz, by strzec umarłych Otchłani, dopóki ktoś inny nie zdoła udźwignąć światła. - z dziennika lorda Variana
+Mountain folk mining log, day 312: The spiders have overrun the lower galleries. King Thorgrim has sealed the eastern shaft. The hammer of our fathers lies beyond it still.
+= Dziennik kopalni górskiego ludu, dzień 312: Pająki opanowały dolne chodniki. Król Thorgrim kazał zamknąć wschodni szyb. Młot naszych ojców wciąż leży za nim.
+Ssss... the Sage keeps the green shard in the pool of thinking. Answer true and ye shall have it. - lizard scratchings, translated by a patient scholar
+= Ssss... Mędrzec trzyma zielony odłamek w sadzawce myślenia. Odpowiedz prawdziwie, a go dostaniesz. - jaszczurze bazgroły w przekładzie cierpliwego uczonego
+Here lies Sir Aldric, knight of the Lumen. He swore to guard the shard of Mercy until his bones were laid to rest in consecrated ground.
+= Tu spoczywa sir Aldric, rycerz Lumen. Przysiągł strzec odłamka Miłosierdzia, dopóki jego kości nie spoczną w poświęconej ziemi.
+Malchor's notes: Varian weakens. The gate to his Throne burns me, but it will open to the three shards in the hands of one of his own knights - and the peoples would give their shards to a knight, never to me. The one who took my blast lies in the old graves by the doors. Wake it. Speak to it in Varian's voice. Wait by the gate.
+= Notatki Malchora: Varian słabnie. Brama do jego Tronu mnie pali, ale otworzy się przed trzema odłamkami w rękach jednego z jego rycerzy - a ludy oddałyby swoje odłamki rycerzowi, nigdy mnie. Ten, który przyjął mój cios, leży w starych grobach przy wrotach. Obudzić go. Przemówić do niego głosem Variana. Czekać przy bramie.
+IN MANI heals the body. AN NOX cures poison. POR FLAM hurls fire. VAS means great; with it, many spells grow mighty.
+= IN MANI leczy ciało. AN NOX usuwa truciznę. POR FLAM ciska ogniem. VAS znaczy wielkość; z nią wiele zaklęć nabiera potęgi.
+A child's drawing of the sun, labelled 'what the sky looks like'. Someone was born down here.
+= Dziecięcy rysunek słońca podpisany 'tak wygląda niebo'. Ktoś się tu na dole urodził.
+Recipe: mushrooms from the lower caves, boiled thrice, are safe to eat. Boiled once, you will see colours that do not exist.
+= Przepis: grzyby z dolnych jaskiń, gotowane trzy razy, można bezpiecznie jeść. Gotowane raz - zobaczysz kolory, których nie ma.
+A list in Malchor's hand, every line crossed out but the last: 'Aldric - the bones taken, the ghost bound. Corwin - drunk. Elsmore - too thin to bother. The knight who took the blast - risen, and walking. Save for last.'
+= Lista spisana ręką Malchora, każda linijka skreślona poza ostatnią: 'Aldric - kości zabrane, duch związany. Corwin - pijany. Elsmore - zbyt chudy, szkoda zachodu. Rycerz, który przyjął cios - powstał i chodzi. Zostawić na koniec.'
+
+# --------------------------------------------------- intro and ending
+
+Awaken, my knight. I am the Lord of Souls, and I speak to thee from beyond the veil of death...
+= Przebudź się, mój rycerzu. Jestem Pan Dusz i przemawiam do ciebie zza zasłony śmierci...
+Long ago, Lord Varian founded a colony deep within the great Abyss, where all peoples might live as one, bound by the light of the Lumen Stone.
+= Dawno temu lord Varian założył kolonię głęboko w wielkiej Otchłani, gdzie wszystkie ludy mogły żyć razem, złączone światłem Kamienia Lumen.
+Then the Stone was broken into three shards, and the colony fell into ruin and war. Varian went down to the Throne of Souls, to keep the dead of the Abyss at rest.
+= Potem Kamień rozpadł się na trzy odłamki, a kolonia pogrążyła się w ruinie i wojnie. Varian zszedł do Tronu Dusz, by umarli Otchłani zaznali spokoju.
+But the Lord of Souls grows weak. The dead no longer rest. One by one they rise from their graves - hollow, nameless, lost.
+= Lecz Pan Dusz słabnie. Umarli nie zaznają już spokoju. Jeden po drugim wstają z grobów - wydrążeni, bezimienni, zagubieni.
+You open your eyes in cold earth. You remember nothing: not your name, not your death. Only a voice, calling from far below.
+= Otwierasz oczy w zimnej ziemi. Nie pamiętasz niczego: ani swojego imienia, ani swojej śmierci. Tylko głos, który woła z głębin.
+The great doors above are sealed. "Bring me the three shards of the Lumen Stone," the voice whispers, "and I shall give thee back thy life." The Abyss is waiting...
+= Wielkie Wrota w górze są zamknięte. "Przynieś mi trzy odłamki Kamienia Lumen", szepcze głos, "a oddam ci życie". Otchłań czeka...
+The Lord of Souls falls. His crown rings once upon the stone. "So be it, my knight," he breathes, and the old king is still.
+= Pan Dusz pada. Jego korona raz dźwięczy o kamień. "Niech tak będzie, mój rycerzu", szepcze, i stary król nieruchomieje.
+You climb onto the Throne of Souls and wait for its power. Nothing comes. The shards flicker in your hand and go dark. There was no law - only an old man's will, and it is spent.
+= Siadasz na Tronie Dusz i czekasz na jego moc. Nic się nie dzieje. Odłamki migoczą ci w dłoni i gasną. Nie było żadnego prawa - była tylko wola starego człowieka, a ta się wyczerpała.
+Far above, the great doors groan. Their seal was Varian's, and it has died with him. For the first time since the Stone broke, daylight falls into the Abyss.
+= Daleko w górze jęczą Wielkie Wrota. Ich pieczęć była dziełem Variana i umarła razem z nim. Po raz pierwszy od rozbicia Kamienia do Otchłani wpada światło dnia.
+The Stone is dead, the doors are open, and no one rules the Abyss. The mountain folk march up from the mines, the lizardmen rise from the warrens, the goblins hold the upper halls. Old neighbours kill each other in the ruins of the colony.
+= Kamień jest martwy, wrota stoją otworem i nikt nie rządzi Otchłanią. Górski lud maszeruje w górę z kopalń, jaszczuroludzie wychodzą z nor, a gobliny trzymają Górne Sale. Dawni sąsiedzi zabijają się nawzajem w ruinach kolonii.
+At the great doors the three peoples meet, weapons drawn, in the first daylight any of them has seen. Whoever holds the doorway will take the world above - and none of them will let the others go first.
+= Przy Wielkich Wrotach spotykają się trzy ludy, z bronią w ręku, w pierwszym świetle dnia, jakie którykolwiek z nich widział. Kto utrzyma przejście, ten weźmie świat na górze - a żaden z nich nie przepuści pozostałych przodem.
+
+# --------------------------------------------------------------- levels
+
+the Upper Halls
+= Górne Sale
+the Mines of the Mountain Folk
+= Kopalnie Górskiego Ludu
+the Flooded Warrens
+= Zalane Nory
+the Crypts
+= Krypty
+the Deep Sanctum
+= Głębokie Sanktuarium
+We attacked the doors with every tool we had, but they gave not a hair. Hence we have resigned ourselves to live in this hellish pit. - Corwin
+= Atakowaliśmy wrota każdym narzędziem, jakie mieliśmy, ale nie ustąpiły ani o włos. Pogodziliśmy się więc z życiem w tej piekielnej jamie. - Corwin
+Rest here, weary soul. The Virtues watch over thee. Kneel, and thy skills may grow.
+= Odpocznij tu, znużona duszo. Cnoty czuwają nad tobą. Uklęknij, a twoje umiejętności mogą wzrosnąć.
+Beside you gapes a shallow, empty grave. The earth inside still holds the shape of a body - your body.
+= Obok ciebie zieje płytki, pusty grób. Ziemia wciąż zachowała kształt ciała - twojego ciała.
+You smell wood smoke. Someone has made a camp nearby.
+= Czujesz dym z drewna. Ktoś rozbił w pobliżu obóz.
+Steps lead down into the depths. You hear the distant ring of hammers.
+= Schody prowadzą w głąb. Słychać odległy dźwięk młotów.
+Hall of the Mountain King. Strangers, show respect, or show the door your back.
+= Sala Króla pod Górą. Obcy, okażcie szacunek albo pokażcie drzwiom plecy.
+DANGER - the old fissure runs hot. Use the bridge.
+= NIEBEZPIECZEŃSTWO - stara szczelina jest gorąca. Idź po moście.
+The tunnel widens. Torchlight flickers ahead.
+= Tunel się rozszerza. Przed tobą migocze światło pochodni.
+Temple of the Deep Waters. The faithful drowned here rather than flee. They do not rest.
+= Świątynia Głębokich Wód. Wierni woleli tu utonąć, niż uciec. Nie zaznają spokoju.
+The air is damp and smells of rot. Water drips from above.
+= Powietrze jest wilgotne i cuchnie zgnilizną. Z góry kapie woda.
+Here lies Sir Aldric, Knight of the Lumen, Keeper of Mercy. May he rest in peace.
+= Tu spoczywa sir Aldric, Rycerz Lumen, Strażnik Miłosierdzia. Niech spoczywa w pokoju.
+A chill runs down your spine. This is a place of the dead.
+= Po plecach przebiega ci dreszcz. To miejsce umarłych.
+None shall pass but the bearer of Valor, Wisdom and Mercy.
+= Nikt nie przejdzie prócz tego, kto niesie Męstwo, Mądrość i Miłosierdzie.
+Heat rises from below. A cold voice drifts up out of the darkness: "Come to me, my knight."
+= Z dołu bije żar. Z ciemności dobiega zimny głos: "Przyjdź do mnie, mój rycerzu".
+Hollow soldiers turn toward you, a violet light burning in their empty eyes. Some will other than their own holds them here.
+= Wydrążeni żołnierze odwracają się ku tobie, w ich pustych oczach płonie fioletowe światło. Trzyma ich tu czyjaś obca wola.

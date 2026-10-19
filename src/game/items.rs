@@ -1,5 +1,6 @@
 //! Item definitions and item instances.
 
+use crate::lang::{self, Noun};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -74,6 +75,11 @@ impl Skill {
             Skill::Appraise => "Appraise",
             Skill::Swimming => "Swimming",
         }
+    }
+
+    /// The name shown to the player (`name` is also the key used in dialogue).
+    pub fn label(self) -> &'static str {
+        lang::tr(self.name())
     }
 }
 
@@ -238,6 +244,8 @@ pub enum ItemKind {
     Blood,
     Stalagmite,
     Web,
+    /// A rune of warding laid on the floor by the spell.
+    Ward,
 }
 
 pub struct ItemDef {
@@ -448,6 +456,7 @@ impl ItemKind {
             Blood => fixture("bloodstain", (0.5, 0.08)),
             Stalagmite => fixture("stalagmite", (0.35, 0.6)),
             Web => fixture("spider web", (0.7, 0.7)),
+            Ward => fixture("rune of warding", (0.5, 0.08)),
         }
     }
 
@@ -463,6 +472,37 @@ pub enum Enchant {
     Damage(u8),
     Protection(u8),
     Spell(crate::game::magic::Spell),
+}
+
+impl Enchant {
+    /// How hard the enchantment is to identify with Lore.
+    pub fn difficulty(self) -> i32 {
+        match self {
+            Enchant::None => 0,
+            Enchant::Accuracy(n) | Enchant::Damage(n) | Enchant::Protection(n) => 10 + n as i32 * 8,
+            Enchant::Spell(sp) => 10 + sp.def().circle * 7,
+        }
+    }
+
+    /// Extra worth in gold.
+    pub fn value(self) -> i32 {
+        match self {
+            Enchant::None => 0,
+            Enchant::Accuracy(n) | Enchant::Damage(n) | Enchant::Protection(n) => n as i32 * 50,
+            Enchant::Spell(sp) => sp.def().circle * 30,
+        }
+    }
+
+    /// "an enchantment of protection (+2)", "the Fireball spell".
+    pub fn describe(self) -> String {
+        match self {
+            Enchant::None => String::new(),
+            Enchant::Accuracy(n) => t!("an enchantment of accuracy (+{})", n),
+            Enchant::Damage(n) => t!("an enchantment of damage (+{})", n),
+            Enchant::Protection(n) => t!("an enchantment of protection (+{})", n),
+            Enchant::Spell(sp) => t!("the {} spell", sp.label()),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -561,6 +601,25 @@ impl Item {
         format!("{} {}", art, n)
     }
 
+    /// The item as a noun phrase, with its article in English: "a sword",
+    /// "an apple", "5 gold coins".
+    pub fn noun(&self) -> Noun {
+        self.polish(Noun::new(self.name_with_article(), self.def().name).qty(self.qty as u32))
+    }
+
+    /// The item without an article, for "the ...": "lit torch".
+    pub fn bare(&self) -> Noun {
+        self.polish(Noun::new(self.display_name(), self.def().name))
+    }
+
+    fn polish(&self, n: Noun) -> Noun {
+        match self.kind {
+            ItemKind::RuneStone => n.suffix(crate::game::magic::RUNE_NAMES[self.data as usize % 24]),
+            ItemKind::Torch | ItemKind::Candle | ItemKind::Lantern if self.lit => n.adj("lit"),
+            _ => n,
+        }
+    }
+
     pub fn display_name(&self) -> String {
         let d = self.def();
         match self.kind {
@@ -568,6 +627,16 @@ impl Item {
             ItemKind::Torch | ItemKind::Candle | ItemKind::Lantern if self.lit => format!("lit {}", d.name),
             _ => d.name.to_string(),
         }
+    }
+
+    /// What the item is worth in gold: worn gear is worth less, enchantments more.
+    pub fn value(&self) -> i32 {
+        let d = self.def();
+        let mut v = d.value * self.qty as i32;
+        if matches!(d.class, Class::Weapon | Class::Missile | Class::Armor) {
+            v = v * (20 + self.quality as i32 * 4 / 5) / 100;
+        }
+        v + self.enchant.value() + self.charges as i32 * 10
     }
 
     pub fn condition_word(&self) -> &'static str {
@@ -590,6 +659,22 @@ mod tests {
         assert_eq!(Item::new(ItemKind::Longsword).name_with_article(), "a longsword");
         assert_eq!(Item::new(ItemKind::Coin).qty(5).name_with_article(), "5 gold coins");
         assert_eq!(Item::new(ItemKind::LeatherBoots).name_with_article(), "a pair of leather boots");
+    }
+
+    #[test]
+    fn every_item_and_skill_has_a_polish_name() {
+        lang::set(lang::Lang::Pl);
+        for k in crate::game::dialogue::ALL_ITEM_KINDS {
+            let n = k.def().name;
+            assert!(lang::has_noun(n), "no Polish noun for '{}'", n);
+        }
+        for s in ALL_SKILLS {
+            assert!(lang::has_phrase(s.name()), "no Polish name for the {} skill", s.name());
+        }
+        let mut lit = Item::new(ItemKind::Torch);
+        lit.lit = true;
+        assert_eq!(t!("You see {}.", lit.noun()), "Widzisz zapaloną pochodnię.");
+        lang::set(lang::Lang::En);
     }
 
     #[test]

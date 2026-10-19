@@ -13,6 +13,15 @@ No original game data is used. Every texture, sprite, icon, font, sound and piec
 of music is generated procedurally at start-up, styled after screenshots of the
 original. The story and characters are original.
 
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Title screen](screenshots/title.png) | ![Character creation](screenshots/character-creation.png) |
+| ![The outcasts' camp](screenshots/outcasts-camp.png) | ![An underground lake](screenshots/underground-lake.png) |
+| ![Bartering](screenshots/barter.png) | ![The Lord of Souls](screenshots/lord-of-souls.png) |
+| ![The automap](screenshots/automap.png) | ![The ending: the Lord of Souls falls](screenshots/ending-fallen-king.png) |
+
 ## Building and running
 
 Requires Rust (stable). From this directory:
@@ -26,7 +35,9 @@ Saved games go to `~/.ultima-j/`.
 
 ## Controls
 
-The controls follow the original's reference card.
+The controls follow the original's reference card. For everything else (skills,
+spells, items, creatures, and a walkthrough) see the
+[player's handbook](HANDBOOK.md).
 
 | Action | Keys / mouse |
 | --- | --- |
@@ -39,23 +50,85 @@ The controls follow the original's reference card.
 | Talk, Get, Look, Fight, Use | click an icon (or `F2`–`F6`), then right-click in the view |
 | Default mode | right-click looks; hold/drag the right button to get, use or talk |
 | Attack | in Fight mode hold the right button, watch the power gem, release; high bashes, middle slashes, low thrusts (keys `P`, `;`, `.`) |
-| Inventory | left-click to pick up / put down; right-click to use (eat, drink, read, light, open) |
+| Inventory | left-click to pick up / put down; right-click to use (eat, drink, read, light, open, repair worn gear) |
+| Barter | with a trader, click their goods (top left) to pick them, put gold or items from your inventory in your trade area (top right), then choose "Let us trade"; right-click either side to ask what a thing is worth |
 | Statistics | click the pull chain (or `F7`); spend skill points after levelling up |
 | Runes and spells | left-click the rune bag, click runes onto the shelf, click the shelf (or `F8`) to cast; right-click the shelf to clear it |
 | Map | `M` or `Tab` |
 | Track / sleep | `F9` / `F10` |
+| Disarm a trap | once spotted, Use the floor tile it is on |
 | Status | click the compass (condition), the flasks (vitality, mana) |
 | Options, save, restore | `F1`/`Esc`; `Ctrl+S` quick-save, `Ctrl+R` restore |
 | Help | `H` |
 | Fullscreen / aspect | `F11` / `F12` (4:3 like a CRT, or square pixels) |
 
+### Modern controls
+
+Choose *Controls* in the options menu (`F1`/`Esc`) to switch to a modern
+layout (the game remembers your choice). Anything not listed here works as
+above, and the `F` keys still work.
+
+| Action | Keys / mouse |
+| --- | --- |
+| Forward / back, turn | `W`/`S` or `Up`/`Down` (hold `Shift` to walk), `A`/`D` or `Left`/`Right` |
+| Sidestep | `Q` / `E` |
+| Look down / centre / up | `Z` / `X` / `C` |
+| Fly up / down (when flying) | `R` / `T` |
+| Talk, Get, Look, Fight, Use | `1`–`5` (or click an icon), then right-click in the view |
+| Statistics / cast | `6` / `7` |
+| Attack | `V`, `B`, `N` (bash, slash, thrust), or hold the right button in Fight mode |
+| Track / sleep | `8` / `9` |
+
+## Skills
+
+All twenty skills do something. Besides the combat, magic and lock skills:
+
+- **Lore** names an item's enchantment when you look at it.
+- **Appraise** tells you what an item is worth and gets you better prices.
+- **Charm** lowers prices and opens friendlier lines in conversation.
+- **Repair** mends worn weapons and armour (use them from the inventory);
+  the higher the skill, the closer to new.
+- **Traps** spots hidden pressure plates as you approach (marked on the map)
+  and disarms them.
+- **Swimming** lets you swim faster, keep your head higher and carry more.
+- **Acrobat** makes you jump higher and fall farther without harm.
+- **Sneak** lets you get closer before creatures notice you.
+
 ## The quest
 
-The wizard Malchor has carried Lady Rowena, daughter of Baron Aldwin, into the
-Abyss. Thrown in after her, you must win the three shards of the Lumen Stone —
-Valor from the mountain folk, Wisdom from the lizardmen, Mercy from the dead in
-the crypts — and carry them into the Deep Sanctum, where Malchor means to wake
-the Shadow Fiend.
+You wake up dead. You claw your way out of a shallow grave at the top of the
+Abyss, one of the hollow dead who have begun to rise, but unlike them you can
+still think. You don't know who you were, the great doors above are sealed,
+and a voice from far below is calling you. To find out who you were, and how
+to live again, you must win the three shards of the Lumen Stone from the
+peoples of the Abyss and carry them down to the Throne of Souls. What you do
+when you get there is up to you.
+
+The whole story, both endings included, is in [STORY.md](STORY.md)
+([po polsku](STORY.pl.md)). It gives everything away.
+
+## Differences from the original
+
+Ultima-J copies the original's look and controls. The story, characters and
+maps are new.
+
+**Shared with the original:** the screen layout and visual style; movement,
+the look/get/use/talk/fight icons, the paperdoll inventory, rune magic, the
+automap with notes and sleeping with dream hints; and the basic setup, in which
+you are trapped in an underground abyss whose peoples have fallen into war.
+
+**Different:**
+
+| | Ultima Underworld (1992) | Ultima-J |
+| --- | --- | --- |
+| Story | Baron Almric's daughter Arial is taken by Tyball; you have to stop the Slasher of Veils from being summoned | Inspired by Dark Souls: you rise from the grave as one of the undead, learn who you were, and decide what becomes of the Abyss |
+| Goal | Collect the eight talismans of virtue and cast them into the volcano | Collect three shards of the Lumen Stone (Valor, Wisdom and Mercy) and bring them to the Lord of Souls |
+| Size | 8 levels | 5 levels: the Upper Halls, the Mines of the Mountain Folk, the Flooded Warrens, the Crypts and the Deep Sanctum |
+| Characters | The original cast | New characters, among them Elsmore, Tobin, Gnarl, Rhugg, Thorgrim, Hilda, Bodric, Hissk, Ssrath, Sir Aldric, Malchor and Varian, the Lord of Souls |
+
+Some ideas are borrowed loosely, such as goblins, dwarves (the "mountain folk"),
+lizardmen and a crypt full of the dead, but the maps, conversations and quests
+were written from scratch.
 
 ## Development tools
 
