@@ -108,16 +108,50 @@ captures are on oldgames.sk; the reference card is on mocagh.org).
   armour set) and `portraits.png`; the headless script has
   `spawn Race DIST [LOOK]` to put a creature in front of the player.
 
-## Next steps (review of 2026-10-15), in suggested order
+## Roadmap (agreed 2026-10-22)
 
-1. **Balance playthrough of levels 2–5 by hand.** The scripted runs only show
-   the levels can be finished; difficulty, loot, food and light supply are
-   untested. Barter prices are now `Item::value` (Tobin's red potion is 40
-   gold, Bodric's chain shirt 100) and gold is scarce (about 112 coins
-   placed, plus nuggets and whatever the player sells), so check that the
-   traders are worth visiting.
-2. Creature bodies are still smooth "clay": the originals have chunkier,
-   hand-shaded bodies and more varied poses (weapons held out, crouching
-   goblins). The golem has no visible head/face (the original's does).
-3. Paperdoll arms are a little stiff and pale next to the original's.
-4. Intro vignettes could be richer.
+Replaces the "next steps" of the 2026-10-15 review. For each feature: design
+it, play it by hand, then fix and improve.
+
+### Version 1.0, in this order
+
+1. **Check item identification and map notes.** Both are in the code
+   already: Lore identifies enchantments on look (`Game::look` in
+   `src/game/actions.rs`, `Item::identified`), and the automap takes notes
+   (`src/ui/overlay.rs`, `Level::notes`, saved with the game). Play them by
+   hand. If either one doesn't work and can't be fixed cheaply, leave it
+   out of 1.0 and move it to 2.0.
+2. **Bigger levels with gaps to jump.** Maps are fixed at 64×64 tiles
+   (`MAP_SIZE` in `src/world/map.rs`, the original's size). First fill the
+   unused space in each level. Raising `MAP_SIZE` touches path-finding, the
+   automap and the save format. Jumping, falling and Acrobat already work,
+   so the gaps are level design only.
+3. **NPC backstories, side quests and puzzles.** Per level: 2 side quests
+   and 2 puzzles or finding tasks, plus one collection that spans all five
+   levels. Write the backstories together with the quests, since the quests
+   come from the NPCs. Conversation menus show only 5 options per node.
+   Keep `STORY.md`, `STORY.pl.md` and the Polish translation in step.
+4. **Art.** Creature bodies are still smooth "clay": the originals have
+   chunkier, hand-shaded bodies and more varied poses (weapons held out,
+   crouching goblins). The golem has no visible head or face (the
+   original's does). The paperdoll's arms are a little stiff and pale next
+   to the original's.
+5. **Player classes.** Review the eight classes (`PClass` in
+   `src/game/state.rs`) so each one plays differently.
+6. **Combat balance, magic balance, a bit more difficulty.** Do this last,
+   as one playthrough of all five levels: steps 2–5 change experience,
+   loot, food and light supply. The scripted runs only show the levels can
+   be finished. Barter prices are `Item::value` (Tobin's red potion is 40
+   gold, Bodric's chain shirt 100), and gold is scarce, so check that the
+   traders are worth visiting. Keep `HANDBOOK.md` in step.
+
+### Version 2.0
+
+- An optional hidden area on a level.
+- Depths below the levels: deep water, pits, and so on. The renderer has
+  one floor height per tile with no stacked floors, so these have to be
+  deep areas in the same map or separate sub-levels. Decide which before
+  designing them.
+- New side quests.
+- Richer intro pictures.
+- Item identification and map notes, if they were left out of 1.0.
