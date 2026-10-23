@@ -1,11 +1,11 @@
 ---
 id: TASK-1
 title: Check item identification and map notes
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-10-22T11:17:00Z'
-updated_date: '2026-10-23T14:55:00Z'
+updated_date: '2026-10-23T14:57:00Z'
 labels: []
 milestone: m-0
 dependencies: []
@@ -24,9 +24,9 @@ Both features are already in the code but have never been played by hand. Lore i
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Item identification played by hand: enchantments are revealed on look according to Lore
-- [ ] #2 Map notes played by hand: notes can be added, shown on the automap and survive save/restore
-- [ ] #3 Any feature that cannot be fixed cheaply is removed from 1.0 and tracked in the v2.0 milestone
+- [x] #1 Item identification played by hand: enchantments are revealed on look according to Lore
+- [x] #2 Map notes played by hand: notes can be added, shown on the automap and survive save/restore
+- [x] #3 Any feature that cannot be fixed cheaply is removed from 1.0 and tracked in the v2.0 milestone
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -59,4 +59,18 @@ Hand play (user), 2026-10-23:
 - BUG: no mouse cursor on the automap, so a note cannot be placed. Cause: PlayState::draw (ui/play.rs) draws the automap and returns before draw_cursor. Cheap fix.
 
 Fixed (2026-10-23): the automap now draws the cursor (plain cross, also over the view area); the note limit counts letters, not bytes. New test headless::tests::automap_cursor_and_notes (fails without the fixes). cargo test --release: 74 passed.
+
+Hand play (user), 2026-10-23: map notes and item identification both work after the fixes. Nothing had to move to 2.0.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Played both features by hand (user) after a scripted headless pre-check.
+
+Item identification worked as built: Lore x 6 + INT/2 against the enchantment's difficulty, remembered on the item in the world, pack, containers, paperdoll and through save/restore; Name Enchantment identifies carried items. No changes.
+
+Map notes had two bugs, both fixed cheaply (41c83e3): the automap returned before drawing the cursor, so a note could not be placed; and the 24-letter limit counted bytes, cutting Polish notes short. New test headless::tests::automap_cursor_and_notes (fails without the fixes); cargo test --release: 74 passed. Both features stay in 1.0; nothing moved to v2.0.
+
+Possible follow-ups (not created): long notes near the right edge overlap the compass rose; clicking near a note erases it without asking; an identified item's inventory name does not show its enchantment; only 3 enchanted items exist and Accuracy/Damage enchantments are never placed (fits TASK-3/TASK-6 loot work).
+<!-- SECTION:FINAL_SUMMARY:END -->
