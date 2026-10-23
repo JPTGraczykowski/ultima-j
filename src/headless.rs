@@ -355,6 +355,32 @@ mod tests {
         assert!(matches!(app.screen, Screen::Credits(_)), "five scenes, then the credits");
     }
 
+    /// The automap draws the mouse cursor, and a note keeps 24 letters, Polish ones too.
+    #[test]
+    fn automap_cursor_and_notes() {
+        let dt = 1.0 / 30.0;
+        let mut app = GameApp::new_playing(11);
+        app.update(&Input { keys_pressed: vec![Key::M], keys_down: vec![Key::M], ..Default::default() }, dt);
+        assert!(matches!(&app.screen, Screen::Play(st) if matches!(st.overlay, crate::ui::Overlay::Map(_))));
+        let near = |fb: &Bitmap| (56..72).flat_map(|y| (56..72).map(move |x| fb.px[(y * SCREEN_W + x) as usize])).collect::<Vec<u8>>();
+        let mut here = Bitmap::new(SCREEN_W, SCREEN_H);
+        let mut away = Bitmap::new(SCREEN_W, SCREEN_H);
+        app.update(&Input { mouse: (60, 60), ..Default::default() }, dt);
+        app.draw(&mut here);
+        app.update(&Input { mouse: (150, 150), ..Default::default() }, dt);
+        app.draw(&mut away);
+        assert_ne!(near(&here), near(&away), "no cursor on the map");
+
+        app.update(&Input { mouse: (60, 60), pressed: [true, false, false], down: [true, false, false], ..Default::default() }, dt);
+        let text = "Zażółć gęślą jaźń i więcej liter";
+        app.update(&Input { mouse: (60, 60), chars: text.chars().collect(), ..Default::default() }, dt);
+        app.update(&Input { keys_pressed: vec![Key::Enter], keys_down: vec![Key::Enter], ..Default::default() }, dt);
+        let Screen::Play(st) = &app.screen else { unreachable!() };
+        let notes = &st.game.levels[st.game.cur].notes;
+        assert_eq!(notes.len(), 1);
+        assert_eq!(notes[0].2, text.chars().take(24).collect::<String>());
+    }
+
     /// Modern controls: the number row picks commands and Q/E sidestep instead of flying.
     #[test]
     fn modern_controls() {

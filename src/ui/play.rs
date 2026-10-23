@@ -620,6 +620,7 @@ impl PlayState {
     pub fn draw(&mut self, ctx: &mut Ctx, fb: &mut Bitmap, input_mouse: (i32, i32)) {
         if let Overlay::Map(lvl) = self.overlay {
             super::automap::draw(ctx, fb, &self.game, lvl, self.ui.note.clone());
+            self.draw_cursor(ctx, fb, input_mouse);
             return;
         }
         fb.blit_opaque(&ctx.art.ui.frame, 0, 0);
@@ -889,7 +890,7 @@ impl PlayState {
         }
         let cur = if self.ui.targeting.is_some() {
             if self.ui.targeting.map(|s| s.def().target == Targeting::Combat).unwrap_or(false) { Cursor::Target } else { Cursor::Spell }
-        } else if VIEW.contains(m) && !matches!(self.overlay, Overlay::Conversation(..) | Overlay::Text(..)) {
+        } else if VIEW.contains(m) && !matches!(self.overlay, Overlay::Conversation(..) | Overlay::Text(..) | Overlay::Map(..)) {
             self.ui.cursor_dir
         } else {
             Cursor::Cross

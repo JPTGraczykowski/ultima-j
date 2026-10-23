@@ -155,7 +155,7 @@ pub fn update(st: &mut PlayState, ctx: &mut Ctx, input: &Input, dt: f32) -> Opti
             let lvl_now = *lvl;
             if let Some((nl, x, z, text)) = st.ui.note.as_mut() {
                 for ch in &input.chars {
-                    if text.len() < 24 {
+                    if text.chars().count() < 24 {
                         text.push(*ch);
                     }
                 }
