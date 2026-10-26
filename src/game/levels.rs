@@ -232,6 +232,43 @@ impl<'a> B<'a> {
         }
     }
 
+    /// A gap to jump: drop the floor of open tiles `depth` steps, keeping the
+    /// ceiling. A running jump clears one tile (see `JUMP_UP`),
+    /// or two onto a ledge `LEAP_DOWN` lower. Every gap needs a way out of the
+    /// bottom back to the side it is jumped from, so a missed jump costs a
+    /// fall, not the game.
+    pub fn gap(&mut self, x: i32, z: i32, w: i32, h: i32, depth: i16) {
+        for zz in z..z + h {
+            for xx in x..x + w {
+                if let Some(t) = self.lv.map.get_mut(xx, zz) {
+                    if !t.is_solid() {
+                        t.floor -= depth;
+                        t.shape = Shape::Open;
+                        t.slope = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    /// A ramp of `n` slope tiles from (x, z) in direction (dx, dz), rising
+    /// from floor `lo` to `hi` with a ceiling `height` steps above `hi`.
+    pub fn ramp(&mut self, x: i32, z: i32, (dx, dz): (i32, i32), n: i32, lo: i16, hi: i16, height: i16) {
+        let shape = match (dx, dz) {
+            (0, -1) => Shape::SlopeN,
+            (0, 1) => Shape::SlopeS,
+            (1, 0) => Shape::SlopeE,
+            _ => Shape::SlopeW,
+        };
+        let rise = (hi - lo) / n as i16;
+        for i in 0..n {
+            let (tx, tz) = (x + dx * i, z + dz * i);
+            let fl = lo + rise * i as i16;
+            self.tile(tx, tz, fl, hi - fl + height);
+            self.slope(tx, tz, shape, fl, rise);
+        }
+    }
+
     pub fn light(&mut self, x: i32, z: i32, w: i32, h: i32, l: u8) {
         for zz in z..z + h {
             for xx in x..x + w {
@@ -367,6 +404,14 @@ impl<'a> B<'a> {
         self.lv
     }
 }
+
+/// Height steps a running jump over one tile may land above its take-off
+/// floor (pinned to the physics by `game::fuzz_tests::jump_reach`).
+pub const JUMP_UP: i16 = 2;
+/// How far below its take-off floor a running leap over two tiles must land.
+pub const LEAP_DOWN: i16 = 8;
+/// Headroom a jump needs above its take-off floor, in height steps.
+pub const JUMP_HEADROOM: i16 = 14;
 
 /// Build every level of the abyss.
 pub fn build_all() -> Vec<Level> {
@@ -977,42 +1022,111 @@ fn level5(db: &DialogueDb) -> Level {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::game::physics::{MAX_STEP, SWIM_CLIMB};
+    use crate::world::map::{EDGE_DIR, HSTEP};
     use std::collections::VecDeque;
 
+    /// Tiles the player can reach from (x, z) in one move: a step up to
+    /// `MAX_STEP` (`SWIM_CLIMB` out of water), a running jump over one tile,
+    /// or a leap over two tiles onto a ledge well below.
+    fn moves(m: &Map, x: i32, z: i32) -> Vec<(i32, i32)> {
+        let lo = |t: &Tile| t.corner_floor().iter().cloned().fold(f32::MAX, f32::min);
+        let hi = |t: &Tile| t.corner_floor().iter().cloned().fold(f32::MIN, f32::max);
+        let here = m.get(x, z);
+        let mut out = Vec::new();
+        for (e, (dx, dz)) in EDGE_DIR.iter().enumerate() {
+            let next = |i: i32| (x + dx * i, z + dz * i);
+            let passable = |i: i32| {
+                let (a, b) = (m.get(next(i - 1).0, next(i - 1).1), m.get(next(i).0, next(i).1));
+                Map::in_bounds(next(i).0, next(i).1) && !b.is_solid() && a.edge_open(e) && b.edge_open((e + 2) % 4)
+            };
+            if !passable(1) {
+                continue;
+            }
+            let t = m.get(next(1).0, next(1).1);
+            let climb = match here.liquid {
+                Liquid::Water => SWIM_CLIMB,
+                _ => MAX_STEP,
+            };
+            if lo(t) - hi(here) <= climb + 0.01 {
+                out.push(next(1));
+            }
+            // Jumps take off from dry, level floor with room overhead.
+            if here.liquid != Liquid::None || here.shape != Shape::Open {
+                continue;
+            }
+            let floor = here.floor;
+            let roomy = |i: i32| m.get(next(i).0, next(i).1).ceil >= floor + JUMP_HEADROOM;
+            for span in 1..=2 {
+                let path_ok = (0..=span + 1).all(roomy) && (1..=span + 1).all(passable) && (1..=span).all(|i| hi(m.get(next(i).0, next(i).1)) <= floor as f32 * HSTEP);
+                let land = m.get(next(span + 1).0, next(span + 1).1);
+                let land_ok = if span == 1 { hi(land) <= (floor + JUMP_UP) as f32 * HSTEP } else { hi(land) <= (floor - LEAP_DOWN) as f32 * HSTEP };
+                if path_ok && land_ok {
+                    out.push(next(span + 1));
+                }
+            }
+        }
+        out
+    }
+
+    /// Every tile reachable from `from` (all `false` if it is in rock).
+    fn reachable(m: &Map, from: (i32, i32)) -> Vec<bool> {
+        let idx = |x: i32, z: i32| (z * MAP_SIZE + x) as usize;
+        let mut seen = vec![false; (MAP_SIZE * MAP_SIZE) as usize];
+        if m.get(from.0, from.1).is_solid() {
+            return seen;
+        }
+        let mut q = VecDeque::from([from]);
+        seen[idx(from.0, from.1)] = true;
+        while let Some((x, z)) = q.pop_front() {
+            for (nx, nz) in moves(m, x, z) {
+                if !seen[idx(nx, nz)] {
+                    seen[idx(nx, nz)] = true;
+                    q.push_back((nx, nz));
+                }
+            }
+        }
+        seen
+    }
+
+    /// Every tile from which `to` can be reached.
+    fn leads_to(m: &Map, to: (i32, i32)) -> Vec<bool> {
+        let idx = |x: i32, z: i32| (z * MAP_SIZE + x) as usize;
+        let mut back: Vec<Vec<(i32, i32)>> = vec![Vec::new(); (MAP_SIZE * MAP_SIZE) as usize];
+        for z in 0..MAP_SIZE {
+            for x in 0..MAP_SIZE {
+                if !m.get(x, z).is_solid() {
+                    for (nx, nz) in moves(m, x, z) {
+                        back[idx(nx, nz)].push((x, z));
+                    }
+                }
+            }
+        }
+        let mut seen = vec![false; (MAP_SIZE * MAP_SIZE) as usize];
+        let mut q = VecDeque::from([to]);
+        seen[idx(to.0, to.1)] = true;
+        while let Some((x, z)) = q.pop_front() {
+            for &(px, pz) in &back[idx(x, z)] {
+                if !seen[idx(px, pz)] {
+                    seen[idx(px, pz)] = true;
+                    q.push_back((px, pz));
+                }
+            }
+        }
+        seen
+    }
+
     /// Every level's NPCs, items and stairs must be reachable from its start
-    /// (treating doors as passable and allowing steps of up to 3 height units).
+    /// (treating doors as passable), walking, swimming and jumping.
     #[test]
     fn levels_are_connected() {
         let levels = build_all();
         for (li, lv) in levels.iter().enumerate() {
             let m = &lv.map;
             let idx = |x: i32, z: i32| (z * MAP_SIZE + x) as usize;
-            let mut seen = vec![false; (MAP_SIZE * MAP_SIZE) as usize];
             let start = (lv.start.0.floor() as i32, lv.start.1.floor() as i32);
             assert!(!m.get(start.0, start.1).is_solid(), "level {} start is in rock", li);
-            let mut q = VecDeque::new();
-            q.push_back(start);
-            seen[idx(start.0, start.1)] = true;
-            while let Some((x, z)) = q.pop_front() {
-                let here = m.get(x, z);
-                for (e, (dx, dz)) in crate::world::map::EDGE_DIR.iter().enumerate() {
-                    let (nx, nz) = (x + dx, z + dz);
-                    if !Map::in_bounds(nx, nz) || seen[idx(nx, nz)] {
-                        continue;
-                    }
-                    let t = m.get(nx, nz);
-                    if t.is_solid() || !here.edge_open(e) || !t.edge_open((e + 2) % 4) {
-                        continue;
-                    }
-                    let hmax = here.corner_floor().iter().cloned().fold(f32::MIN, f32::max);
-                    let tmin = t.corner_floor().iter().cloned().fold(f32::MAX, f32::min);
-                    if tmin - hmax > 0.4 && here.liquid == Liquid::None {
-                        continue;
-                    }
-                    seen[idx(nx, nz)] = true;
-                    q.push_back((nx, nz));
-                }
-            }
+            let seen = reachable(m, start);
             let reach = |x: f32, z: f32| seen[idx(x.floor() as i32, z.floor() as i32)];
             for n in &lv.npcs {
                 assert!(reach(n.pos.x, n.pos.z), "level {} npc {:?} {:?} at ({:.1},{:.1}) unreachable", li, n.race, n.name, n.pos.x, n.pos.z);
@@ -1030,8 +1144,31 @@ mod tests {
                 }
                 if let TriggerKind::Stairs { level, x, z, .. } = t.kind {
                     assert!(seen[idx(t.tx, t.tz)], "level {} stairs at ({},{}) unreachable", li, t.tx, t.tz);
-                    let dest = &levels[level].map;
-                    assert!(dest.point_open(x, z), "level {} stairs lead into rock on level {}", li, level);
+                    let dest = &levels[level];
+                    assert!(dest.map.point_open(x, z), "level {} stairs lead into rock on level {}", li, level);
+                    let ds = (dest.start.0.floor() as i32, dest.start.1.floor() as i32);
+                    let arrive = (x.floor() as i32, z.floor() as i32);
+                    assert!(reachable(&dest.map, ds)[idx(arrive.0, arrive.1)], "level {} stairs arrive at an unreachable spot on level {}", li, level);
+                }
+            }
+        }
+    }
+
+    /// No pit, ledge or pool is a trap: from every tile the player can reach,
+    /// they can get back to the start (except from lava, which kills).
+    #[test]
+    fn no_dead_ends() {
+        for (li, lv) in build_all().iter().enumerate() {
+            let m = &lv.map;
+            let start = (lv.start.0.floor() as i32, lv.start.1.floor() as i32);
+            let there = reachable(m, start);
+            let back = leads_to(m, start);
+            for z in 0..MAP_SIZE {
+                for x in 0..MAP_SIZE {
+                    let i = (z * MAP_SIZE + x) as usize;
+                    if there[i] && !back[i] && m.get(x, z).liquid != Liquid::Lava {
+                        panic!("level {}: no way back to the start from ({},{})", li, x, z);
+                    }
                 }
             }
         }

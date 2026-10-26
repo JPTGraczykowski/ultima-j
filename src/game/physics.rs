@@ -9,6 +9,8 @@ pub const PLAYER_HEIGHT: f32 = 0.86;
 pub const EYE_HEIGHT: f32 = 0.64;
 pub const SWIM_SINK: f32 = 0.22;
 pub const MAX_STEP: f32 = 0.27;
+/// A swimmer can pull themselves up onto a higher bank than a walker can step.
+pub const SWIM_CLIMB: f32 = 0.45;
 pub const GRAVITY: f32 = 11.0;
 pub const JUMP_SPEED: f32 = 3.5;
 

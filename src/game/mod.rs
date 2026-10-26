@@ -69,7 +69,8 @@ impl Game {
 
     fn player_body(&self) -> Body {
         let flying = self.player.has_spell(Spell::Fly) || self.player.has_spell(Spell::Levitate);
-        Body { radius: PLAYER_RADIUS, height: PLAYER_HEIGHT, max_step: MAX_STEP, self_id: 0, flying, avoid_water: false, avoid_lava: false }
+        let max_step = if self.player.swimming { SWIM_CLIMB } else { MAX_STEP };
+        Body { radius: PLAYER_RADIUS, height: PLAYER_HEIGHT, max_step, self_id: 0, flying, avoid_water: false, avoid_lava: false }
     }
 
     pub fn npc_obstacles(&self) -> Vec<(u32, V3, f32)> {
@@ -158,6 +159,9 @@ impl Game {
                     p.on_ground = false;
                     p.vel_y = 0.0;
                     p.fall_from = p.pos.y;
+                } else if p.swimming && floor - p.pos.y > MAX_STEP {
+                    // Pulled up out of the water onto a high bank.
+                    p.pos.y = floor;
                 } else {
                     // Follow slopes and small steps smoothly.
                     let diff = floor - p.pos.y;
@@ -668,5 +672,61 @@ mod fuzz_tests {
                 }
             }
         }
+    }
+
+    /// Run east along a strip with a deep pit `gap` tiles wide and the far
+    /// side at `land` height steps, jumping near the edge: can the player get
+    /// across? Tries take-off points from half a tile before the edge to the
+    /// last frame before the player would drop.
+    fn jump_across(acrobat: i32, gap: i32, land: i16) -> bool {
+        use crate::art::textures::Tex;
+        use crate::world::map::{Map, Tile};
+        (0..35).any(|k| {
+            let mut p = Player::new("Jumper", PClass::Fighter, false);
+            p.skills[items::Skill::Acrobat as usize] = acrobat;
+            p.vit = 1000;
+            let mut g = Game::new(p, 1);
+            let mut m = Map::new();
+            for x in 2..20 {
+                let floor = if x < 10 { 0 } else if x < 10 + gap { -24 } else { land };
+                m.set(x, 10, Tile::open(floor, levels::JUMP_HEADROOM, Tex::Dirt, Tex::CeilingRock, Tex::RoughStone));
+            }
+            let lv = &mut g.levels[0];
+            lv.map = m;
+            lv.npcs.clear();
+            lv.doors.clear();
+            lv.triggers.clear();
+            g.change_level(0, 6.5, 10.5, std::f32::consts::FRAC_PI_2);
+            let take_off = 9.5 + k as f32 * 0.02;
+            let mut jumped = false;
+            for _ in 0..120 {
+                let jump = !jumped && g.player.pos.x >= take_off;
+                jumped |= jump;
+                g.update(&MoveInput { forward: 2.0, strafe: 0.0, turn: 0.0, jump, fly_up: false, fly_down: false }, 1.0 / 30.0);
+                g.events.clear();
+            }
+            g.player.pos.x >= (10 + gap) as f32 && g.player.on_ground
+        })
+    }
+
+    /// The jumps the level designs (and `levels_are_connected`) count on.
+    #[test]
+    fn jump_reach() {
+        use levels::{JUMP_UP, LEAP_DOWN};
+        assert!(jump_across(0, 1, JUMP_UP), "a running jump should clear one tile");
+        assert!(jump_across(0, 2, -LEAP_DOWN), "a running leap should clear two tiles onto a lower ledge");
+        assert!(!jump_across(10, 2, 0), "two tiles across level ground should be too far, even for an acrobat");
+    }
+
+    /// A swimmer can pull themselves out onto a bank three steps above the
+    /// water, as in the Flooded Warrens.
+    #[test]
+    fn swimmers_climb_out() {
+        let mut g = Game::new(Player::new("Swimmer", PClass::Fighter, false), 1);
+        g.change_level(2, 8.5, 19.5, 0.0);
+        for _ in 0..60 {
+            g.update(&MoveInput { forward: 2.0, strafe: 0.0, turn: 0.0, jump: false, fly_up: false, fly_down: false }, 1.0 / 30.0);
+        }
+        assert!(!g.player.swimming && g.player.pos.z < 17.5, "still in the water at {:?}", g.player.pos);
     }
 }
