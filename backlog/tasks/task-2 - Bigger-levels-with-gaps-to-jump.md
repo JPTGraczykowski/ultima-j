@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-22T11:17:00Z'
-updated_date: '2026-10-26T13:21:00Z'
+updated_date: '2026-10-26T13:23:00Z'
 labels: []
 milestone: m-0
 dependencies:
@@ -69,6 +69,8 @@ MAP_SIZE decision (decision-1): stays 64. Filling the unused space roughly doubl
 Note: decision-1 has only its title and status; the CLI cannot fill Context/Decision/Consequences.
 
 Correction to the decision note above: the pass does not double the levels. Measured open tiles, old -> new: L1 567->873 (+54%), L2 677->912 (+35%), L3 1001->1181 (+18%), L4 661->995 (+51%), L5 708->908 (+28%). Every level still has unused space inside 64x64.
+
+decision-1's Context, Decision and Consequences are now written (edited in the file directly, at the user's request, since the CLI cannot set them).
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
@@ -90,6 +92,5 @@ Risks / follow-ups
 - The new loot adds about 200 gold, gems and gold nuggets, and some armour, all before the TASK-6 balance pass.
 - Acrobat barely changes jump reach, so no gap is a skill gate (TASK-5/TASK-6 may want that).
 - Lava pits are exempt from no_dead_ends (lava kills); the L5 crack's exit was checked by hand.
-- decision-1 has only its title; its body sections are empty (the CLI cannot write them).
 - Needs the user's play-through before Done, per the roadmap.
 <!-- SECTION:FINAL_SUMMARY:END -->
