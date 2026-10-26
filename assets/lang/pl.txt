@@ -1238,6 +1238,22 @@ A chill runs down your spine. This is a place of the dead.
 = Po plecach przebiega ci dreszcz. To miejsce umarłych.
 None shall pass but the bearer of Valor, Wisdom and Mercy.
 = Nikt nie przejdzie prócz tego, kto niesie Męstwo, Mądrość i Miłosierdzie.
+A crack splits the hall from wall to wall. With a running start you could leap it.
+= Szczelina przecina salę od ściany do ściany. Z rozbiegu dałoby się ją przeskoczyć.
+The floor gave way when the mountain shook. Who will not leap may climb out by the west.
+= Podłoga zapadła się, gdy góra zadrżała. Kto nie skoczy, wydostanie się z rozpadliny od zachodu.
+DIGGING CLOSED. The east face fell into the old shaft. Gold glints on the ledge beyond, but no fool is to jump for it. - Thorgrim
+= WYROBISKO ZAMKNIĘTE. Wschodnia ściana runęła do starego szybu. Na półce za nim błyszczy złoto, ale żaden głupiec nie ma po nie skakać. - Thorgrim
+The tunnel floor has fallen into an old shaft. A good run and a leap would carry you over.
+= Podłoga tunelu zapadła się do starego szybu. Porządny rozbieg i skok przeniosłyby cię na drugą stronę.
+The aqueduct has broken away ahead. Far below, black water rushes through the gap.
+= Przed tobą akwedukt się urywa. Daleko w dole przez wyrwę pędzi czarna woda.
+The floor of the passage has fallen into the crypts below. You will have to leap.
+= Podłoga korytarza zapadła się do krypt poniżej. Trzeba będzie skoczyć.
+The unworthy dead were thrown into the pit. The worthy were laid on the far side, where none could reach to rob them.
+= Niegodnych zmarłych wrzucano do dołu. Godnych składano po drugiej stronie, gdzie nikt nie mógł sięgnąć, by ich obrabować.
+The floor before the throne is split by a crack. Far below it, lava glows.
+= Posadzkę przed tronem przecina szczelina. Daleko w dole żarzy się lawa.
 Heat rises from below. A cold voice drifts up out of the darkness: "Come to me, my knight."
 = Z dołu bije żar. Z ciemności dobiega zimny głos: "Przyjdź do mnie, mój rycerzu".
 Hollow soldiers turn toward you, a violet light burning in their empty eyes. Some will other than their own holds them here.

@@ -4,7 +4,7 @@
 //! Script commands (separated by `;`):
 //! `title` | `chargen` | `play` - choose the starting screen
 //! `wait N` - run N frames (1/30 s each)
-//! `key K N` - hold key K for N frames (K: W, A, F5, Up, ...)
+//! `key K N` - hold key K for N frames (K: W, A, F5, Up, ...; W+J holds both)
 //! `tap K` - press key K for one frame
 //! `mouse X Y` - move the mouse (320x200 coordinates)
 //! `click X Y` / `rclick X Y` - left/right click
@@ -93,13 +93,13 @@ pub fn run(script: &str) -> Result<(), String> {
                 }
             }
             "key" => {
-                let k = parse_key(arg(1)).ok_or(format!("bad key {}", arg(1)))?;
+                let keys = arg(1).split('+').map(|k| parse_key(k).ok_or(format!("bad key {}", k))).collect::<Result<Vec<_>, _>>()?;
                 let n = num(2) as i32;
                 for i in 0..n {
                     let mut inp = base.clone();
-                    inp.keys_down.push(k);
+                    inp.keys_down.extend(&keys);
                     if i == 0 {
-                        inp.keys_pressed.push(k);
+                        inp.keys_pressed.extend(&keys);
                     }
                     step(&mut app, &inp);
                 }

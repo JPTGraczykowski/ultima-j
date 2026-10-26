@@ -22,6 +22,19 @@ mostly balance.
   save/restore (`~/.ultima-j/`); title, intro, character creation, death, victory.
 - Five levels (`src/game/levels.rs`), three shard quests and two endings,
   all verified with scripted runs.
+- Level pass (2026-10-26, TASK-2): each level's unused space holds new side
+  areas with creatures and modest loot, ready for the side quests of
+  TASK-3. Gaps to jump: `B::gap` drops the floor, and `B::ramp` builds the way
+  back up out of every pit. A running jump clears one tile, or two onto a
+  ledge 8 steps lower (`JUMP_UP`, `LEAP_DOWN`, `JUMP_HEADROOM`, pinned to the
+  physics by `jump_reach`). On level 1 the gaps guard side areas; from level 2
+  on the way down (on level 5 the way to Varian) crosses one. The tests check
+  all this: `levels_are_connected` follows the real physics, `no_dead_ends`
+  makes sure nothing traps the player, and `gaps_must_be_jumped`. New areas
+  go at the end of each level's function, because caves and creatures draw
+  from the level's rng and anything added earlier reshapes the older caves.
+  Swimmers now climb out onto banks up to `SWIM_CLIMB` high (before, the deep
+  water on level 3 was a trap). `MAP_SIZE` stays 64 (decision-1).
 - Story (2026-10-16), inspired by Dark Souls: the player rises from a grave as
   one of the undead, learns who they were (Sir Aldric and the Lord of Souls
   tell them), and brings the three shards to Varian, the Lord of Souls
@@ -77,9 +90,10 @@ mostly balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 73 tests: level connectivity, runes, fuzzers, save round-trip, skills, spells, barter
+cargo test --release                       # 78 tests: level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
+target/release/ultima-j --script "play; level 1 21.5 47.5; goto 21.5 47.5 180; key W 23; key W+J 1; key W 20"   # a running jump
 target/release/ultima-j --maps DIR         # level layouts
 ULTIMA_J_SELFTEST=out.png target/release/ultima-j --play   # real-window capture
 ```

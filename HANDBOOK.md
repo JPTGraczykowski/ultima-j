@@ -208,7 +208,11 @@ container in your pack.
 ### Water, lava and falling
 
 - **Swimming** is slower than walking. If your load is too heavy, you start to
-  drown and lose 2 vitality every few seconds. The Swimming skill helps.
+  drown and lose 2 vitality every few seconds. The Swimming skill helps. You
+  can pull yourself out onto a bank a little higher than a step.
+- **Jumping**: run at a gap and jump at its edge. A running jump clears a gap
+  one tile wide, and two tiles if you land lower down. A jump from a walk
+  falls short. Every pit has a way back up, so a missed jump costs a fall.
 - **Lava** burns for 4 every half-second. *Resist Fire* cuts that to 1.
   *Levitate* or *Fly* lets you cross it safely.
 - **Falling** more than about a body's height hurts. You can land safely in
@@ -621,15 +625,24 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 - **The green goblin den** (behind the door west of the camp): two goblins and
   their chief **Gnarl**. Gnarl carries **Gnarl's medallion** and the **iron key
   to the library**. There's also a cudgel, a leather vest and 12 gold.
+- **The goblins' midden** (south of the den): two rats and a slug. A crevice
+  to the south guards the goblins' hoard: a box with 15 gold and a green
+  potion, a sling with stones, and some meat. If you fall in, a ramp climbs
+  back to the midden.
 - **The library** (locked door north of the camp; the key comes from Gnarl).
   Watch out: there is a trap just inside. Inside are a longsword, a red potion,
   and a chest with 40 gold, the **ORT** and **JUX** runes, and a scroll. The
   **east wall is a secret door**. Use it until you find it. Behind it are an
   enchanted **gold ring of Protection +2**, a blue potion and the **BET** rune.
+- **The old guard hall** (north of the library): a crack splits the hall, so
+  take a running jump. A ramp at the west end climbs out if you fall. Two
+  rats; across the crack, a chest with a buckler, 18 gold and an apple.
 - **The rat cave** (east): three rats and a dagger. The slug tunnel to the
   south-east has a trap, an acid slug, and a box with the **MANI** rune and
   a candle.
 - **The water cave** (north): bats, a fish, and the **IN** and **LOR** runes.
+  East of it is a bat roost with three bats and a dead explorer carrying a
+  leather cap, a rope and 8 gold.
 - **The gray goblin hall** (far north-east): chief **Rhugg** guards the
   portcullis to the stairs. He opens it if you:
   - bring him **Gnarl's medallion**. He also gives you 30 gold and 60 exp.
@@ -642,6 +655,12 @@ explains the IN LOR and ORT JUX spells. Light the torch.
   until you prove yourself. Offer your help and he gives you the **key to the
   eastern galleries**.
 - **Hilda** (living quarters, west) gives you cheese and bread.
+- **The storeroom** (behind a door south of the arrival tunnel): three rats
+  among the barrels, and food and drink.
+- **The old diggings** (north of the quarters): two slugs. Thorgrim closed
+  them when the east face fell into a shaft. Leap from the dig face onto the
+  lower ledge beyond for a box with two gold nuggets and a red gem, and a
+  lantern. To get back, drop into the shaft and climb its ramp.
 - **Bodric the smith** (forge, south): sells a chain shirt, gauntlets, a
   broadsword, a wooden shield and torches. He buys gold nuggets for 30 each,
   and repairs all your gear for 15 gold. With Charm 3 or more he repairs it
@@ -652,11 +671,14 @@ explains the IN LOR and ORT JUX spells. Light the torch.
   plenty of vitality, because their bite is poisonous. Deep inside are the
   **Hammer of the Mountain**, the **HUR** and **SANCT** runes, two gold
   nuggets, and a dead adventurer carrying a **chain shirt, a lantern and a
-  green potion**.
+  green potion**. South of them, a flooded drift holds two more spiders, a
+  gold nugget, and a dead miner with a green potion, a lockpick and a candle.
 - Bring the Hammer back to Thorgrim and he gives you the **Shard of Valor**
   and 200 exp. (You must give the Hammer back, so use it while you have it.)
 - **The way down** is through the deep mine south-west of the hall. There's a
-  trap at its entrance, a lava fissure to cross by the bridge, two slugs, a gold
+  trap at its entrance, and past the forge the tunnel floor has fallen into a
+  shaft: take a running jump (if you fall, a ramp climbs to the forge). Then
+  comes a lava fissure to cross by the bridge, two slugs, a gold
   nugget, a shovel, and the **POR** rune, which you need for Fireball, Levitate
   and Fly.
 
@@ -672,19 +694,27 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 - **The lurkers' grotto** (deep water, far east): two lurkers guard the
   **clutch of lizard eggs**. The **WIS** rune is also here, in case you didn't
   get it from Ssrath. Don't swim with a heavy pack.
+- **The fungus cavern** (south of the village): a lurker in the pool, two
+  bats, mushrooms, and a corpse with leather leggings, a torch and 12 gold.
 - Give the eggs to Ssrath for the **Shard of Wisdom** and 250 exp.
 - **The drowned temple** (south-west): there is a trap at the entrance, and
   two ghouls inside. You'll find a shrine, the **NOX** and **AN** runes, a
   yellow potion and a scroll. A **lever on the west wall** opens a hidden
   reliquary to the east, which holds a **silver ring of Protection +3**, a
-  blue potion and the **QUAS** rune.
+  blue potion and the **QUAS** rune. Below the temple, the ossuary holds a
+  ghoul, a bat, and a chest with a blue potion and 25 gold.
 - **The southern caves**: the **GRAV**, **REL** and **TYM** runes, a trap, a
-  ghoul, a bat, a lone lizardman and a red potion. The stairs down are in the
-  far south.
+  ghoul, a bat, a lone lizardman and a red potion. A span of the old
+  aqueduct to the stairs has fallen: jump the gap, or swim the water below
+  to the ramp that climbs back. The stairs down are in the far south.
 
 ### Level 4 — The Crypts
 
-- **The gallery of tombs**: two skeletons and the **CORP** rune.
+- **The gallery of tombs**: two skeletons and the **CORP** rune. West of it
+  are the catacombs (two skeletons, a chest with 30 gold and a red potion).
+  East of it is the charnel pit (a skeleton and a ghost): leap the pit onto
+  the ledge beyond for a chest with a white gem, 40 gold and a yellow potion.
+  A ramp climbs out of the pit.
 - **Sir Aldric's tomb** (centre; there is a trap on the way in): the
   ghost of **Sir Aldric** is friendly. Trolls have stolen his bones. Ask him
   for advice and he tells you about the silver sapling. Ask whether he knows
@@ -694,14 +724,18 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 - **The west wing** (a trap at the entrance): a ghost and two headless. Here
   you'll find the **DES** and **EX** runes, a chest with a **plate helm, 60
   gold and a blue potion**, and the **silver sapling**. Plant it somewhere safe
-  before the hard fights.
+  before the hard fights. South of the wing are the mass graves: two
+  skeletons, a headless, and a corpse with plate boots and 20 gold.
 - **The troll den** (east wing, a trap at the entrance): two trolls guard
   the **bundle of ancient bones**. There's also a **tower shield**, some meat,
   and the **VAS** rune.
 - Give Aldric his bones for the **Shard of Mercy**, 300 exp and a full heal.
-- **The guardian's hall** (south, a trap at the entrance): a slow **earth
-  golem** (90 hits) waits among the pillars. Here are the **YLEM**, **KAL**
-  and **UUS** runes, **plate leggings**, and the stairs down.
+- **The guardian's hall** (south, a trap on the way): the floor of the
+  passage has fallen in, so take a running jump (a ramp from the bottom leads
+  back to Aldric's tomb). A slow **earth golem** (90 hits) waits among the
+  pillars. Here are the **YLEM**, **KAL** and **UUS** runes, **plate
+  leggings**, and the stairs down. East of the hall are the embalmers' rooms:
+  a ghost, wine and a blue potion.
 
 ### Level 5 — The Deep Sanctum
 
@@ -714,7 +748,11 @@ Shard Gate.
 
 - **The antechamber**: three thralls, lava pools, and a red potion.
 - **Malchor's study** (west, a trap and a headless on the way): two thralls,
-  and Malchor's notes on the table, which give his plan away.
+  and Malchor's notes on the table, which give his plan away. South of it are
+  the cells: two imps, a dead prisoner with leather gloves, and a chest with
+  40 gold and a yellow potion.
+- **The cave of fire** (south-east of the antechamber): a **reaper**, an imp,
+  a blue gem, a gold nugget and a red potion.
 - **Malchor's soul vault** (east, a trap and a ghoul on the way, then an iron
   door that only Malchor's silver key opens): a chest with two red potions and
   50 gold, and Malchor's list of the souls he meant to take.
@@ -724,7 +762,9 @@ Shard Gate.
   you say, he fights you (70 hits, magic bolts). He carries the **silver
   key** to his soul vault, a **wand of Fireball** with 4 charges, and a blue
   potion. Heal at the shrine behind the gate before you face him or Varian.
-- **The Throne of Souls**: **Varian, the Lord of Souls**, waits among the
+- **The Throne of Souls**: just past the shrine, a crack with lava at the
+  bottom splits the cave. Take a running jump; the way out of the crack climbs
+  east, back to the gate. **Varian, the Lord of Souls**, waits among the
   lava pools. He is peaceful and tells you who you were, and that he never
   called you. Ask him to make you
   live again to choose your ending:

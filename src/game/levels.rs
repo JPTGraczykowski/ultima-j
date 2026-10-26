@@ -407,10 +407,13 @@ impl<'a> B<'a> {
 
 /// Height steps a running jump over one tile may land above its take-off
 /// floor (pinned to the physics by `game::fuzz_tests::jump_reach`).
+#[cfg(test)]
 pub const JUMP_UP: i16 = 2;
 /// How far below its take-off floor a running leap over two tiles must land.
+#[cfg(test)]
 pub const LEAP_DOWN: i16 = 8;
 /// Headroom a jump needs above its take-off floor, in height steps.
+#[cfg(test)]
 pub const JUMP_HEADROOM: i16 = 14;
 
 /// Build every level of the abyss.
@@ -577,6 +580,63 @@ fn level1(db: &DialogueDb) -> Level {
     b.tile(60, 18, -4, 12);
     b.message(56, 18, "Steps lead down into the depths. You hear the distant ring of hammers.");
     b.stairs(60, 18, 1, 6.5, 30.5, 90.0);
+
+    // The old guard hall north of the library, split by a crack: the
+    // first jump, with a way back up from the bottom on the west.
+    b.style(Tex::Flagstones, Tex::StoneBlocks, Tex::CeilingRock);
+    b.corridor(18, 27, 18, 20, 2, 9);
+    b.room(11, 10, 16, 10, 2, 12);
+    b.light(11, 10, 16, 10, 5);
+    b.style(Tex::Dirt, Tex::RoughStone, Tex::CeilingRock);
+    b.gap(11, 14, 16, 1, 12);
+    b.ramp(10, 14, (-1, 0), 3, -10, 2, 9);
+    b.corridor(7, 14, 7, 17, 2, 9);
+    b.corridor(7, 17, 10, 17, 2, 9);
+    b.message(18, 19, "A crack splits the hall from wall to wall. With a running start you could leap it.");
+    b.writing(27, 16, "The floor gave way when the mountain shook. Who will not leap may climb out by the west.");
+    b.item(ItemKind::Bedroll, 12.0, 18.6);
+    b.item(ItemKind::Barrel, 25.6, 18.6);
+    b.item(ItemKind::Torch, 24.5, 17.0);
+    b.item(ItemKind::Rock, 15.0, 14.5);
+    b.npc(Race::Rat, 14.5, 11.5);
+    b.npc(Race::Rat, 22.5, 12.0);
+    b.item(ItemKind::BonePile, 12.0, 10.8);
+    b.item(ItemKind::Table, 19.0, 11.0);
+    b.item(ItemKind::Candle, 19.0, 11.0);
+    b.container(ItemKind::Chest, 25.5, 10.8, vec![Item::new(ItemKind::Buckler), Item::new(ItemKind::Coin).qty(18).data(18), Item::new(ItemKind::Apple)]);
+
+    // The goblins' midden below the den, and past a crevice their hoard.
+    b.style(Tex::Mud, Tex::IrregularStone, Tex::CeilingRock);
+    b.cave(8, 54, 4, 3, 0, 9);
+    b.corridor(4, 46, 4, 52, 0, 8);
+    b.corridor(4, 52, 8, 52, 0, 8);
+    b.npc(Race::Rat, 6.5, 53.5);
+    b.npc(Race::Rat, 10.5, 55.0);
+    b.npc(Race::Slug, 8.5, 56.0);
+    b.item(ItemKind::BonePile, 5.5, 55.5);
+    b.item(ItemKind::Bone, 9.5, 52.5);
+    b.item(ItemKind::Mushroom, 11.0, 53.0);
+    b.corridor(8, 57, 8, 60, 0, 12);
+    b.gap(8, 59, 1, 1, 12);
+    b.ramp(9, 59, (1, 0), 3, -12, 0, 9);
+    b.corridor(12, 59, 12, 56, 0, 9);
+    b.corridor(12, 56, 10, 56, 0, 9);
+    b.room(5, 61, 7, 2, 0, 9);
+    b.container(ItemKind::Box, 10.5, 61.6, vec![Item::new(ItemKind::Coin).qty(15).data(15), Item::new(ItemKind::GreenPotion)]);
+    b.item(ItemKind::Sling, 6.0, 61.5);
+    b.item(ItemKind::SlingStone, 6.6, 62.2);
+    b.item(ItemKind::Meat, 8.5, 62.3);
+
+    // A bat roost east of the water cave, where an explorer met their end.
+    b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
+    b.cave(58, 43, 4, 5, 0, 13);
+    b.corridor(49, 37, 56, 42, 0, 8);
+    b.npc(Race::Bat, 57.5, 41.5);
+    b.npc(Race::Bat, 59.5, 45.5);
+    b.npc(Race::Bat, 56.5, 46.0);
+    b.container(ItemKind::Corpse, 59.5, 43.0, vec![Item::new(ItemKind::LeatherCap), Item::new(ItemKind::Rope), Item::new(ItemKind::Coin).qty(8).data(8)]);
+    b.item(ItemKind::WaterFlask, 57.0, 44.5);
+    b.item(ItemKind::Stalagmite, 60.5, 41.0);
     b.finish()
 }
 
@@ -687,6 +747,15 @@ fn level2(db: &DialogueDb) -> Level {
     b.cave(16, 54, 6, 4, 0, 9);
     b.corridor(21, 36, 21, 54, 0, 8);
     b.trap(21, 45, 5);
+    // The tunnel floor fell into an old shaft: jump it, or climb out of the
+    // shaft by the ramp to the forge.
+    for z in 49..=51 {
+        b.tile(21, z, 0, 12);
+    }
+    b.gap(21, 50, 1, 1, 12);
+    b.ramp(22, 50, (1, 0), 3, -12, 0, 9);
+    b.corridor(25, 50, 25, 49, 0, 9);
+    b.message(21, 49, "The tunnel floor has fallen into an old shaft. A good run and a leap would carry you over.");
     b.corridor(21, 54, 16, 54, 0, 8);
     b.corridor(13, 54, 6, 54, 0, 8);
     b.lava(14, 50, 2, 9, -3);
@@ -704,6 +773,59 @@ fn level2(db: &DialogueDb) -> Level {
     b.tile(3, 54, -4, 12);
     b.tile(2, 54, -4, 12);
     b.stairs(2, 54, 2, 8.5, 6.5, 180.0);
+
+    // The old diggings north of the quarters. The east face fell into a
+    // shaft; the ledge beyond is reached only by a leap, and from the
+    // bottom of the shaft a ramp climbs back to the diggings.
+    b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
+    b.cave(10, 10, 5, 4, 0, 10);
+    b.corridor(12, 19, 12, 12, 0, 8);
+    b.room(15, 8, 4, 5, 0, 12);
+    b.corridor(10, 10, 15, 10, 0, 9);
+    b.room(19, 8, 2, 5, 0, 12);
+    b.gap(19, 8, 2, 5, 16);
+    b.room(21, 8, 3, 5, -8, 20);
+    b.ramp(19, 13, (0, 1), 4, -16, 0, 9);
+    b.corridor(19, 17, 12, 17, 0, 8);
+    b.writing(17, 7, "DIGGING CLOSED. The east face fell into the old shaft. Gold glints on the ledge beyond, but no fool is to jump for it. - Thorgrim");
+    b.npc(Race::Slug, 8.5, 9.5);
+    b.npc(Race::Slug, 12.5, 12.0);
+    b.item(ItemKind::Rock, 9.0, 12.5);
+    b.item(ItemKind::Rock, 16.5, 11.5);
+    b.item(ItemKind::BonePile, 7.0, 8.0);
+    b.item(ItemKind::Torch, 16.0, 8.6);
+    b.container(ItemKind::Box, 23.4, 9.6, vec![Item::new(ItemKind::GoldNugget), Item::new(ItemKind::GoldNugget), Item::new(ItemKind::RedGem)]);
+    b.item(ItemKind::Lantern, 22.0, 12.0);
+    // The storeroom off the arrival tunnel, overrun by rats.
+    b.style(Tex::WoodFloor, Tex::WoodPlanks, Tex::CeilingBeams);
+    b.corridor(10, 31, 10, 35, 0, 8);
+    b.door(10, 33, DoorAxis::NS, DoorKind::Wood, 0);
+    b.room(5, 36, 9, 6, 0, 9);
+    b.light(5, 36, 9, 6, 3);
+    for (x, z) in [(5.6, 36.6), (6.6, 36.5), (12.4, 41.4)] {
+        b.item(ItemKind::Barrel, x, z);
+    }
+    for (x, z) in [(7.5, 39.0), (11.0, 37.5), (9.5, 40.5)] {
+        b.npc(Race::Rat, x, z);
+    }
+    b.item(ItemKind::Bread, 8.0, 36.6);
+    b.item(ItemKind::Cheese, 12.6, 36.8);
+    b.item(ItemKind::Wine, 5.6, 40.0);
+    b.item(ItemKind::WaterFlask, 6.0, 41.3);
+    b.item(ItemKind::Candle, 10.5, 41.2);
+
+    // A flooded drift south of the spider galleries.
+    b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
+    b.cave(50, 57, 6, 4, 0, 10);
+    b.corridor(50, 47, 50, 54, 0, 9);
+    b.water(47, 58, 4, 3, -2);
+    b.npc(Race::Spider, 46.5, 56.0);
+    b.npc(Race::Spider, 54.5, 58.5);
+    b.item(ItemKind::Web, 52.0, 55.0);
+    b.item(ItemKind::Web, 45.5, 58.0);
+    b.item(ItemKind::GoldNugget, 55.0, 56.5);
+    b.item(ItemKind::BonePile, 52.5, 60.0);
+    b.container(ItemKind::Corpse, 53.5, 59.5, vec![Item::new(ItemKind::GreenPotion), Item::new(ItemKind::Lockpick), Item::new(ItemKind::Candle)]);
     b.finish()
 }
 
@@ -807,6 +929,16 @@ fn level3(db: &DialogueDb) -> Level {
     b.rune_stone(rune::REL, 31.0, 45.0);
     b.corridor(36, 45, 50, 55, 0, 8);
     b.trap(44, 45, 5);
+    // A span of the old aqueduct has fallen: jump the gap, or swim the
+    // water below to the ramp that climbs back.
+    for z in 49..=51 {
+        b.tile(50, z, 0, 12);
+    }
+    b.gap(50, 50, 1, 1, 12);
+    b.water(50, 50, 1, 1, -12);
+    b.ramp(51, 50, (1, 0), 3, -12, 0, 9);
+    b.corridor(51, 45, 54, 50, 0, 8);
+    b.message(50, 48, "The aqueduct has broken away ahead. Far below, black water rushes through the gap.");
     b.cave(53, 57, 4, 3, 0, 10);
     b.corridor(50, 57, 53, 57, 0, 8);
     b.rune_stone(rune::TYM, 55.0, 56.0);
@@ -821,6 +953,35 @@ fn level3(db: &DialogueDb) -> Level {
     b.tile(57, 60, -4, 12);
     b.tile(58, 60, -4, 12);
     b.stairs(58, 60, 3, 32.5, 6.5, 180.0);
+
+    // A fungus cavern below the village, with a pool and a lurker in it.
+    b.style(Tex::Mud, Tex::CaveRock, Tex::CeilingRock);
+    b.cave(47, 31, 6, 5, 0, 11);
+    b.corridor(44, 22, 44, 29, 0, 9);
+    b.water(45, 32, 4, 3, -2);
+    b.npc(Race::Lurker, 46.5, 33.5);
+    b.npc(Race::Bat, 50.5, 29.5);
+    b.npc(Race::Bat, 43.5, 33.0);
+    b.item(ItemKind::Mushroom, 51.0, 33.0);
+    b.item(ItemKind::Mushroom, 42.5, 30.0);
+    b.item(ItemKind::Plant, 49.5, 27.5);
+    b.container(ItemKind::Corpse, 51.5, 31.0, vec![Item::new(ItemKind::LeatherLeggings), Item::new(ItemKind::Torch), Item::new(ItemKind::Coin).qty(12).data(12)]);
+
+    // The ossuary below the temple.
+    b.style(Tex::Flagstones, Tex::Sandstone, Tex::CeilingRock);
+    b.corridor(13, 46, 13, 50, 0, 8);
+    b.room(6, 51, 12, 6, 0, 10);
+    b.light(6, 51, 12, 6, 2);
+    b.npc(Race::Ghoul, 9.5, 54.5);
+    b.npc(Race::Bat, 15.5, 53.0);
+    for x in [7.0, 10.0, 13.0, 16.0] {
+        b.item(ItemKind::Gravestone, x, 51.3);
+    }
+    b.item(ItemKind::BonePile, 7.0, 55.5);
+    b.item(ItemKind::BonePile, 16.5, 56.0);
+    b.item(ItemKind::Skull, 12.0, 55.0);
+    b.item(ItemKind::Candle, 6.6, 52.4);
+    b.container(ItemKind::Chest, 16.5, 54.5, vec![Item::new(ItemKind::BluePotion), Item::new(ItemKind::Coin).qty(25).data(25)]);
     b.finish()
 }
 
@@ -901,6 +1062,15 @@ fn level4(db: &DialogueDb) -> Level {
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.corridor(32, 31, 32, 40, 0, 9);
     b.trap(32, 35, 6);
+    // The floor has fallen in ahead of the guardian's hall; the way back up
+    // from the bottom comes out in Aldric's chamber.
+    for z in 37..=39 {
+        b.tile(32, z, 0, 12);
+    }
+    b.gap(32, 38, 1, 1, 12);
+    b.ramp(33, 38, (1, 0), 3, -12, 0, 9);
+    b.corridor(36, 38, 36, 31, 0, 9);
+    b.message(32, 37, "The floor of the passage has fallen into the crypts below. You will have to leap.");
     b.room(24, 41, 17, 10, 0, 14);
     b.light(24, 41, 17, 10, 4);
     let golem = b.npc(Race::Golem, 32.5, 46.5);
@@ -920,6 +1090,69 @@ fn level4(db: &DialogueDb) -> Level {
     b.tile(32, 59, -4, 12);
     b.tile(32, 60, -4, 12);
     b.stairs(32, 60, 4, 32.5, 6.5, 180.0);
+
+    // The catacombs west of the gallery.
+    b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
+    b.corridor(23, 12, 15, 12, 0, 9);
+    b.room(5, 5, 10, 8, 0, 10);
+    b.light(5, 5, 10, 8, 2);
+    for z in [5.4, 8.0, 10.6] {
+        b.item(ItemKind::Gravestone, 5.4, z);
+        b.item(ItemKind::Gravestone, 14.6, z + 1.0);
+    }
+    b.npc(Race::Skeleton, 8.5, 8.5);
+    b.npc(Race::Skeleton, 11.5, 11.0);
+    b.item(ItemKind::Skull, 10.0, 6.0);
+    b.item(ItemKind::Bone, 7.0, 11.5);
+    b.container(ItemKind::Chest, 9.5, 5.6, vec![Item::new(ItemKind::Coin).qty(30).data(30), Item::new(ItemKind::RedPotion)]);
+
+    // The charnel pit east of the gallery: a leap down to the reliquary
+    // ledge, and from the bottom a ramp back up.
+    b.corridor(41, 12, 48, 12, 0, 9);
+    b.room(49, 6, 4, 8, 0, 12);
+    b.room(53, 6, 2, 8, 0, 12);
+    b.gap(53, 6, 2, 8, 16);
+    b.room(55, 8, 4, 4, -8, 20);
+    b.ramp(53, 14, (0, 1), 4, -16, 0, 9);
+    b.corridor(49, 18, 53, 18, 0, 9);
+    b.corridor(49, 14, 49, 18, 0, 9);
+    b.light(49, 6, 10, 8, 3);
+    b.npc(Race::Skeleton, 50.5, 8.5);
+    b.npc(Race::Ghost, 51.0, 12.5);
+    b.item(ItemKind::BonePile, 53.5, 10.0);
+    b.item(ItemKind::BonePile, 54.5, 12.5);
+    b.item(ItemKind::Skull, 50.0, 6.6);
+    b.item(ItemKind::Candle, 57.0, 8.6);
+    b.container(ItemKind::Chest, 57.5, 10.5, vec![Item::new(ItemKind::WhiteGem), Item::new(ItemKind::Coin).qty(40).data(40), Item::new(ItemKind::YellowPotion)]);
+    b.writing(52, 5, "The unworthy dead were thrown into the pit. The worthy were laid on the far side, where none could reach to rob them.");
+
+    // The mass graves south of the west wing.
+    b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
+    b.cave(10, 42, 6, 5, 0, 10);
+    b.corridor(8, 32, 8, 40, 0, 9);
+    b.npc(Race::Skeleton, 12.5, 41.5);
+    b.npc(Race::Skeleton, 7.5, 45.0);
+    b.npc(Race::Headless, 13.0, 45.5);
+    for (x, z) in [(6.0, 40.0), (11.0, 46.0), (14.5, 40.5)] {
+        b.item(ItemKind::BonePile, x, z);
+    }
+    b.item(ItemKind::Skull, 9.5, 43.5);
+    b.container(ItemKind::Corpse, 10.5, 39.5, vec![Item::new(ItemKind::PlateBoots), Item::new(ItemKind::Coin).qty(20).data(20)]);
+
+    // The embalmers' rooms east of the guardian's hall.
+    b.style(Tex::MarbleTiles, Tex::CarvedFrieze, Tex::CeilingRock);
+    b.corridor(41, 45, 46, 45, 0, 9);
+    b.room(47, 42, 9, 7, 0, 10);
+    b.light(47, 42, 9, 7, 4);
+    b.npc(Race::Ghost, 52.5, 45.5);
+    b.item(ItemKind::Table, 49.0, 43.0);
+    b.item(ItemKind::Table, 53.0, 43.0);
+    b.item(ItemKind::Cauldron, 54.8, 47.6);
+    b.item(ItemKind::Bookshelf, 47.6, 47.6);
+    b.item(ItemKind::Candle, 49.0, 43.0);
+    b.item(ItemKind::Candle, 53.0, 43.0);
+    b.item(ItemKind::Wine, 48.0, 45.5);
+    b.item(ItemKind::BluePotion, 55.0, 42.6);
     b.finish()
 }
 
@@ -1016,6 +1249,38 @@ fn level5(db: &DialogueDb) -> Level {
     b.item(ItemKind::Shrine, 32.5, 30.0);
     b.item(ItemKind::Stalagmite, 22.0, 33.0);
     b.item(ItemKind::Stalagmite, 42.0, 40.0);
+
+    // A crack across the throne cave, lava glowing at the bottom. The way
+    // out of it climbs east and comes back to the gate.
+    b.gap(30, 31, 7, 1, 12);
+    b.lava(30, 31, 7, 1, -12);
+    b.ramp(37, 31, (1, 0), 4, -12, 0, 9);
+    b.corridor(33, 27, 41, 31, 0, 9);
+    b.message(32, 29, "The floor before the throne is split by a crack. Far below it, lava glows.");
+
+    // The cells south of Malchor's study.
+    b.style(Tex::Flagstones, Tex::RedBricks, Tex::CeilingRock);
+    b.corridor(12, 20, 12, 24, 0, 9);
+    b.room(6, 25, 12, 7, 0, 10);
+    b.light(6, 25, 12, 7, 3);
+    b.npc(Race::Imp, 9.5, 28.5);
+    b.npc(Race::Imp, 15.5, 27.0);
+    b.item(ItemKind::BonePile, 6.6, 30.5);
+    b.item(ItemKind::Skull, 16.5, 30.8);
+    b.container(ItemKind::Corpse, 7.5, 26.0, vec![Item::new(ItemKind::LeatherGloves), Item::new(ItemKind::Candle)]);
+    b.container(ItemKind::Chest, 16.4, 25.6, vec![Item::new(ItemKind::Coin).qty(40).data(40), Item::new(ItemKind::YellowPotion)]);
+
+    // A cave of fire south-east of the antechamber, where a reaper waits.
+    b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
+    b.cave(52, 30, 6, 5, 0, 12);
+    b.corridor(40, 20, 48, 26, 0, 9);
+    b.lava(54, 31, 3, 3, -2);
+    b.npc(Race::Reaper, 51.5, 31.5);
+    b.npc(Race::Imp, 48.5, 28.5);
+    b.item(ItemKind::Stalagmite, 49.0, 33.5);
+    b.item(ItemKind::GoldNugget, 56.0, 28.0);
+    b.item(ItemKind::BlueGem, 50.5, 26.5);
+    b.item(ItemKind::RedPotion, 47.5, 31.5);
     b.finish()
 }
 
@@ -1027,9 +1292,9 @@ mod tests {
     use std::collections::VecDeque;
 
     /// Tiles the player can reach from (x, z) in one move: a step up to
-    /// `MAX_STEP` (`SWIM_CLIMB` out of water), a running jump over one tile,
-    /// or a leap over two tiles onto a ledge well below.
-    fn moves(m: &Map, x: i32, z: i32) -> Vec<(i32, i32)> {
+    /// `MAX_STEP` (`SWIM_CLIMB` out of water) and, with `jumps`, a running
+    /// jump over one tile or a leap over two onto a ledge well below.
+    fn moves(m: &Map, x: i32, z: i32, jumps: bool) -> Vec<(i32, i32)> {
         let lo = |t: &Tile| t.corner_floor().iter().cloned().fold(f32::MAX, f32::min);
         let hi = |t: &Tile| t.corner_floor().iter().cloned().fold(f32::MIN, f32::max);
         let here = m.get(x, z);
@@ -1052,7 +1317,7 @@ mod tests {
                 out.push(next(1));
             }
             // Jumps take off from dry, level floor with room overhead.
-            if here.liquid != Liquid::None || here.shape != Shape::Open {
+            if !jumps || here.liquid != Liquid::None || here.shape != Shape::Open {
                 continue;
             }
             let floor = here.floor;
@@ -1070,7 +1335,7 @@ mod tests {
     }
 
     /// Every tile reachable from `from` (all `false` if it is in rock).
-    fn reachable(m: &Map, from: (i32, i32)) -> Vec<bool> {
+    fn reachable(m: &Map, from: (i32, i32), jumps: bool) -> Vec<bool> {
         let idx = |x: i32, z: i32| (z * MAP_SIZE + x) as usize;
         let mut seen = vec![false; (MAP_SIZE * MAP_SIZE) as usize];
         if m.get(from.0, from.1).is_solid() {
@@ -1079,7 +1344,7 @@ mod tests {
         let mut q = VecDeque::from([from]);
         seen[idx(from.0, from.1)] = true;
         while let Some((x, z)) = q.pop_front() {
-            for (nx, nz) in moves(m, x, z) {
+            for (nx, nz) in moves(m, x, z, jumps) {
                 if !seen[idx(nx, nz)] {
                     seen[idx(nx, nz)] = true;
                     q.push_back((nx, nz));
@@ -1096,7 +1361,7 @@ mod tests {
         for z in 0..MAP_SIZE {
             for x in 0..MAP_SIZE {
                 if !m.get(x, z).is_solid() {
-                    for (nx, nz) in moves(m, x, z) {
+                    for (nx, nz) in moves(m, x, z, true) {
                         back[idx(nx, nz)].push((x, z));
                     }
                 }
@@ -1126,7 +1391,7 @@ mod tests {
             let idx = |x: i32, z: i32| (z * MAP_SIZE + x) as usize;
             let start = (lv.start.0.floor() as i32, lv.start.1.floor() as i32);
             assert!(!m.get(start.0, start.1).is_solid(), "level {} start is in rock", li);
-            let seen = reachable(m, start);
+            let seen = reachable(m, start, true);
             let reach = |x: f32, z: f32| seen[idx(x.floor() as i32, z.floor() as i32)];
             for n in &lv.npcs {
                 assert!(reach(n.pos.x, n.pos.z), "level {} npc {:?} {:?} at ({:.1},{:.1}) unreachable", li, n.race, n.name, n.pos.x, n.pos.z);
@@ -1148,8 +1413,37 @@ mod tests {
                     assert!(dest.map.point_open(x, z), "level {} stairs lead into rock on level {}", li, level);
                     let ds = (dest.start.0.floor() as i32, dest.start.1.floor() as i32);
                     let arrive = (x.floor() as i32, z.floor() as i32);
-                    assert!(reachable(&dest.map, ds)[idx(arrive.0, arrive.1)], "level {} stairs arrive at an unreachable spot on level {}", li, level);
+                    assert!(reachable(&dest.map, ds, true)[idx(arrive.0, arrive.1)], "level {} stairs arrive at an unreachable spot on level {}", li, level);
                 }
+            }
+        }
+    }
+
+    /// Every level has places only a jump reaches. On the first level they
+    /// are side areas; below it the way on (the stairs down, and at the
+    /// bottom Varian) lies across a gap.
+    #[test]
+    fn gaps_must_be_jumped() {
+        for (li, lv) in build_all().iter().enumerate() {
+            let m = &lv.map;
+            let idx = |x: i32, z: i32| (z * MAP_SIZE + x) as usize;
+            let start = (lv.start.0.floor() as i32, lv.start.1.floor() as i32);
+            let walk = reachable(m, start, false);
+            let jump = reachable(m, start, true);
+            assert!(jump.iter().zip(&walk).any(|(j, w)| *j && !*w), "level {} has no gap to jump", li);
+            if li == 0 {
+                continue;
+            }
+            let way_on: Vec<(i32, i32)> = match lv.triggers.iter().find_map(|t| match t.kind {
+                TriggerKind::Stairs { level, .. } if level == li + 1 => Some((t.tx, t.tz)),
+                _ => None,
+            }) {
+                Some(stairs) => vec![stairs],
+                None => lv.npcs.iter().filter(|n| n.name.as_deref() == Some("Varian")).map(|n| (n.pos.x.floor() as i32, n.pos.z.floor() as i32)).collect(),
+            };
+            assert!(!way_on.is_empty(), "level {} has no way on", li);
+            for (x, z) in way_on {
+                assert!(!walk[idx(x, z)], "level {}: the way on at ({},{}) needs no jump", li, x, z);
             }
         }
     }
@@ -1161,7 +1455,7 @@ mod tests {
         for (li, lv) in build_all().iter().enumerate() {
             let m = &lv.map;
             let start = (lv.start.0.floor() as i32, lv.start.1.floor() as i32);
-            let there = reachable(m, start);
+            let there = reachable(m, start, true);
             let back = leads_to(m, start);
             for z in 0..MAP_SIZE {
                 for x in 0..MAP_SIZE {
