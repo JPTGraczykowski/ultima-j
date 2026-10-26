@@ -1,11 +1,11 @@
 ---
 id: TASK-2
 title: Bigger levels with gaps to jump
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-10-22T11:17:00Z'
-updated_date: '2026-10-26T13:23:00Z'
+updated_date: '2026-10-26T13:35:00Z'
 labels: []
 milestone: m-0
 dependencies:
@@ -71,6 +71,8 @@ Note: decision-1 has only its title and status; the CLI cannot fill Context/Deci
 Correction to the decision note above: the pass does not double the levels. Measured open tiles, old -> new: L1 567->873 (+54%), L2 677->912 (+35%), L3 1001->1181 (+18%), L4 661->995 (+51%), L5 708->908 (+28%). Every level still has unused space inside 64x64.
 
 decision-1's Context, Decision and Consequences are now written (edited in the file directly, at the user's request, since the CLI cannot set them).
+
+2026-10-26: the user played the level pass by hand and approved it.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
@@ -82,15 +84,14 @@ What changed
 - levels.rs: B::gap and B::ramp; 16 new areas with themed creatures and modest loot (no quests or talking NPCs; those come with TASK-3); a main-route gap on L2-L5 (L5: a lava crack before Varian), side-area gaps on L1, leaps down to cache ledges on L2 and L4. New areas sit at the end of each level function so the older caves keep their shapes.
 - Physics: swimmers climb out onto banks up to SWIM_CLIMB (0.45). Before, the L3 great hall channel and the grotto trapped a swimmer (agreed with the user).
 - Tests: levels_are_connected follows the real physics; new no_dead_ends, gaps_must_be_jumped, jump_reach, swimmers_climb_out. 78 tests pass.
-- Headless: key accepts W+J to hold several keys (running jumps in scripts).
+- Headless: key accepts W+J to hold several keys (running jumps in scripts); reveal marks a level explored for the automap.
 - Polish lines for 8 new texts; HANDBOOK (jumping rules, walkthrough), HANDOFF.
 
-Verification: cargo test (78/78); --maps renders; tile/item/NPC comparison against 47c82ff (only intended tiles changed); headless runs with real key input cross every main-route gap, take the L2 leap, fail a walking jump, and climb out of pits.
+Verification: cargo test (78/78); --maps renders; tile/item/NPC comparison against 47c82ff (only intended tiles changed); headless runs with real key input cross every main-route gap, take the L2 leap, fail a walking jump, and climb out of pits; the user played it by hand and approved it.
 
 Risks / follow-ups
 - Old saves keep their old maps (levels are saved whole).
 - The new loot adds about 200 gold, gems and gold nuggets, and some armour, all before the TASK-6 balance pass.
 - Acrobat barely changes jump reach, so no gap is a skill gate (TASK-5/TASK-6 may want that).
 - Lava pits are exempt from no_dead_ends (lava kills); the L5 crack's exit was checked by hand.
-- Needs the user's play-through before Done, per the roadmap.
 <!-- SECTION:FINAL_SUMMARY:END -->
