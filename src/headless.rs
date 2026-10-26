@@ -17,6 +17,7 @@
 //! `equip Kind Slot` - equip an item
 //! `set NAME VALUE` - player attribute (vit, mana, level, exp) or skill (traps, lore...)
 //! `runes all` - learn all runes
+//! `reveal` - mark the whole level explored (for the automap)
 //! `shelf A B C` - put runes on the shelf
 //! `shot PATH` - save a screenshot (3x, 4:3 aspect)
 //! `shot1 PATH` - save a 1x screenshot
@@ -153,7 +154,7 @@ pub fn run(script: &str) -> Result<(), String> {
                     }
                 }
             }
-            "goto" | "level" | "give" | "equip" | "set" | "runes" | "shelf" | "spawn" => {
+            "goto" | "level" | "give" | "equip" | "set" | "runes" | "shelf" | "spawn" | "reveal" => {
                 if let Screen::Play(st) = &mut app.screen {
                     let g = &mut st.game;
                     match arg(0) {
@@ -211,6 +212,7 @@ pub fn run(script: &str) -> Result<(), String> {
                             }
                         }
                         "runes" => g.player.runes = [true; 24],
+                        "reveal" => g.level_mut().map.tiles.iter_mut().for_each(|t| t.explored = true),
                         "spawn" => {
                             let race = *crate::game::creatures::ALL_RACES
                                 .iter()
