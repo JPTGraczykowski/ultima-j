@@ -13,6 +13,7 @@
 //! `skill:NAME>=N`. Actions: `flag NAME N`, `flag+ NAME [N]` (add N, default 1),
 //! `give Kind [data] [qty]`, `take Kind [qty]`, `pay N`, `earn N`, `exp N`,
 //! `hostile`, `heal`, `rune N`, `follow`, `mana`, `skill NAME N`, `mend`,
+//! `move X Z [YAW]` (the speaker goes elsewhere on the level, e.g. home),
 //! `barter`, `end`.
 //!
 //! Prices: `{buy N}` and `{sell N}` in text show a base price of N gold as
@@ -82,7 +83,7 @@ pub const ALL_ITEM_KINDS: &[ItemKind] = {
         Bread, Cheese, Meat, Fish, Mushroom, WaterFlask, Wine, RedPotion, BluePotion, GreenPotion, YellowPotion, Torch, Candle,
         Lantern, Bag, Pack, Box, RuneBag, IronKey, GoldKey, SilverKey, RuneStone, Wand, Coin, RedGem, BlueGem, GreenGem,
         WhiteGem, GoldNugget, Scroll, Book, Map, Bedroll, Rock, Bone, Skull, Lockpick, Rope, Pole, Shovel, ShardOfValor,
-        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, CaptainsSword, EngravedRing, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
+        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, CaptainsSword, EngravedRing, ApprenticeHammer, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
         Campfire, Bed, Brazier, Statue, Bookshelf, Pillar, Gravestone, Cauldron, MoonOrb, Corpse, Blood, Stalagmite, Web, Ward,
     ]
 };
@@ -516,6 +517,20 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
             if let Some(d) = g.level_mut().doors.iter_mut().find(|d| d.id == id || d.key == id as u16) {
                 d.locked = false;
                 d.opening = true;
+            }
+        }
+        "move" => {
+            let num = |i: usize| a.get(i).and_then(|s| s.parse::<f32>().ok());
+            if let (Some(x), Some(z)) = (num(1), num(2)) {
+                let y = g.level().map.floor_at(x, z);
+                if let Some(n) = g.level_mut().npc_mut(npc) {
+                    n.pos = crate::util::V3::new(x, y, z);
+                    n.home = (x, z);
+                    n.ai = AiState::Idle;
+                    if let Some(yaw) = num(3) {
+                        n.yaw = yaw.to_radians();
+                    }
+                }
             }
         }
         "victory" => g.events.push(super::Event::Victory),

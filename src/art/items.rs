@@ -692,6 +692,15 @@ pub fn icon(kind: ItemKind, data: u16, lit: bool) -> Bitmap {
             }
             b
         }
+        ApprenticeHammer => {
+            // A small smith's hammer: a plain iron head on a short haft.
+            let mut cv = canvas();
+            let w = wood(&mut cv);
+            let m = metal(&mut cv);
+            cv.capsule((4.0, 13.5), (10.0, 6.0), 0.9, 0.9, 0.0, 1.0, w);
+            cv.poly(&[(7.5, 3.5), (11.5, 2.0), (14.0, 6.0), (10.0, 7.5)], 1.5, 1.4, m);
+            cv.render(true, true)
+        }
         ChroniclePage => {
             // A loose leaf, torn along one edge, with a red seal.
             let mut cv = canvas();

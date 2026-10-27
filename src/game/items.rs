@@ -226,6 +226,8 @@ pub enum ItemKind {
     CaptainsSword,
     /// Wenna's ring, on her body in the bat roost (level 1).
     EngravedRing,
+    /// Dain's hammer, on his body in the flooded drift (level 2).
+    ApprenticeHammer,
     /// A page of the colony's chronicle; `data` is the page, 0-4 (`dialogue::CHRONICLE`).
     ChroniclePage,
     // Fixtures
@@ -443,6 +445,7 @@ impl ItemKind {
             RelicBones => d("bundle of ancient bones", "bundles of ancient bones", Class::Quest, 8, 0),
             CaptainsSword => wpn("captain's sword", 12, 60, K::Sword, [4, 7, 6], 1.0),
             EngravedRing => d("engraved ring", "engraved rings", Class::Quest, 1, 0),
+            ApprenticeHammer => d("apprentice's hammer", "apprentice's hammers", Class::Quest, 6, 0),
             ChroniclePage => d("chronicle page", "chronicle pages", Class::Scroll, 1, 0),
             Barrel => fixture("barrel", (0.42, 0.55)),
             Table => fixture("table", (0.8, 0.45)),

@@ -241,7 +241,22 @@ Och! Gość. I to taki blady. Uważaj na łóżka, dopiero je posłałam. Jestem
 * Tak, jestem {głodny|głodna}. -> food ? !flag:hilda_food
 * Opowiedz mi o kopalniach. -> mines
 * Co jest niżej? -> below
+* Wyglądasz na zmartwioną. -> brann ? !flag:hilda_brann & !flag:brann_saved
+* Brann jest bezpieczny. Wraca do domu. -> brann_home ? flag:brann_saved & !flag:hilda_thanks
 * Bywaj. -> end
+
+-- brann
+Zmartwioną? Ja? ... Chodzi o mojego chłopca, Branna. Odkąd nauczył się chodzić, szaleje za złotem na półce skalnej w starych wyrobiskach, a król tego zabronił. Dwa dni temu tam poszedł i nie wrócił. Na północ stąd, za łóżkami.
+! flag hilda_brann 1
+* Odnajdę go. -> end
+* Wróć. -> start
+
+-- brann_home
+Och, dzięki niech będą górze. Złamana noga i worek złota, mówi, jakby złoto miało jakieś znaczenie. Masz - należały do jego ojca, a jego ojciec chciałby, żeby nosił je ktoś dzielny. Tylko nie mów Brannowi.
+! flag hilda_thanks 1
+! give ChainLeggings
+! exp 60
+* Opiekuj się nim, Hildo. -> start
 
 -- food
 Masz, ser i chleb. Jedz, jedz! Sama skóra i kości.
@@ -251,7 +266,7 @@ Masz, ser i chleb. Jedz, jedz! Sama skóra i kości.
 * Serdecznie dziękuję. -> start
 
 -- mines
-Nasz lud wykopał te sale długo przed kolonią. Wschodnie chodniki były najbogatsze - dopóki nie przyszły pająki. Bodric przy kuźni kupuje samorodki złota, jeśli jakieś znajdziesz.
+Nasz lud wykopał te sale długo przed kolonią. Wschodnie chodniki były najbogatsze - dopóki nie przyszły pająki. Bodric przy kuźni kupuje samorodki złota, jeśli jakieś znajdziesz. A dawni górnicy wycinali swój znak w ścianie wszędzie tam, gdzie coś ukryli - trzy kreski i kilof. Większość tych skrytek dawno opróżniono.
 * Wróć. -> start
 
 -- below
@@ -264,12 +279,44 @@ Brzdęk! Brzdęk! Co? A. Klient. Jestem Bodric, kowal górskiego ludu. Wykuwam n
 * Pokaż mi swoje towary. -> wares
 * Mam samorodki złota na sprzedaż. -> nugget ? item:GoldNugget
 * Naprawisz moją broń i pancerz? -> mend
-* Twoja kowalska robota to najpiękniejsza, jaką widział{em|am}, mistrzu. -> flatter ? skill:Charm>=3 & !flag:bodric_flattered
+* Pracujesz sam, kowalu? -> dain ? !flag:bodric_dain & !item:ApprenticeHammer
+* Znalazł{em|am} ten młotek przy ciele w zalanym chodniku. -> dain_found ? item:ApprenticeHammer & !flag:bodric_dain_done
 * Bywaj. -> end
+
+-- dain
+Sam? Miałem czeladnika. Daina. Dobre ręce, mało rozumu. Posłałem go do zalanego chodnika za wschodnimi galeriami po niebieską glinę - najlepsza stal jej potrzebuje - a potem przyszły pająki i król zamurował drzwi z Dainem po drugiej stronie. Nie wybaczyłem żadnemu z nas.
+! flag bodric_dain 1
+* Poszukam go. -> end
+* Wróć. -> start
+
+-- dain_found
+Jego młotek. Sam mu go wykułem, w dniu, w którym złożył przysięgę kuźni. ... No to tyle. Poszł{eś|aś} tam, gdzie ja nie poszedłem. Pozwól, że wykuję ci coś godnego tego. Wybieraj.
+! take ApprenticeHammer
+! flag bodric_dain_done 1
+! exp 80
+* Miecz. -> forge_sword
+* Topór. -> forge_axe
+* Buzdygan. -> forge_mace
+
+-- forge_sword
+Brzdęk! Brzdęk! ... Proszę. Dainowi by się spodobał.
+! give Broadsword
+* Dziękuję, mistrzu kowalski. -> start
+
+-- forge_axe
+Brzdęk! Brzdęk! ... Proszę. Dainowi by się spodobał.
+! give Axe
+* Dziękuję, mistrzu kowalski. -> start
+
+-- forge_mace
+Brzdęk! Brzdęk! ... Proszę. Dainowi by się spodobał.
+! give Mace
+* Dziękuję, mistrzu kowalski. -> start
 
 -- mend
 Ano, za {buy 15} sztuk złota wyklepię wszystko, co przy sobie nosisz. Tu na dole stal potrzebuje opieki.
 * Zrób to. -> mended ? afford:15
+* Twoja kowalska robota to najpiękniejsza, jaką widział{em|am}, mistrzu. -> flatter ? skill:Charm>=3 & !flag:bodric_flattered
 * Nie teraz. -> start
 
 -- mended
@@ -565,4 +612,30 @@ Mój miecz! Gobliny nawet go nie naostrzyły, świnie. ... Dziękuję. Chodź, s
 
 -- armoury
 Moja zbrojownia. Zamek jest starego typu: trzy dźwignie na północnej ścianie, po drugiej stronie pęknięcia, a otwiera się, gdy warta stoi tak, jak stać powinna. Zapisałem to na ścianie, żeby nie zapomnieć. A potem zapomniałem, jak czytać własne pismo.
+* Wróć. -> start
+
+// ----------------------------------------------------------- level 2
+
+=== brann
+-- start
+Ach! Kto tam? ... Brann, syn Hildy, do usług - na ile mogę. Skoczyłem na półkę, a półka wygrała.
+* Jesteś ranny? -> hurt ? !flag:brann_saved
+* Wypij to. Uleczy cię. -> potion ? item:RedPotion & !flag:brann_saved
+* Jak noga? -> leg ? flag:brann_saved
+* Bywaj. -> end
+
+-- hurt
+Noga złamana. Na jednej nodze nie wejdę po pochylni z szybu, a bez nóg nie przeskoczę z powrotem. Jeśli masz miksturę leczniczą - czerwoną - będę twoim dłużnikiem.
+* Wróć. -> start
+
+-- potion
+Aaach... lepiej. Dużo lepiej. Mogę stać! Zatrzymaj złoto ze skrzynki; nie spojrzałbym z nim matce w oczy. Wracam do domu.
+! take RedPotion
+! flag brann_saved 1
+! exp 40
+! move 14.5 22.5 270
+* Uważaj na siebie. -> end
+
+-- leg
+Zrasta się. Matka mówi, że dobrze mi tak. Ma rację, ale nie mów jej, że tak powiedziałem.
 * Wróć. -> start

@@ -922,7 +922,39 @@ fn level2(db: &DialogueDb) -> Level {
     b.item(ItemKind::Web, 45.5, 58.0);
     b.item(ItemKind::GoldNugget, 55.0, 56.5);
     b.item(ItemKind::BonePile, 52.5, 60.0);
-    b.container(ItemKind::Corpse, 53.5, 59.5, vec![Item::new(ItemKind::GreenPotion), Item::new(ItemKind::Lockpick), Item::new(ItemKind::Candle)]);
+    // Dain, Bodric's apprentice (the smith's side quest).
+    b.container(ItemKind::Corpse, 53.5, 59.5, vec![Item::new(ItemKind::GreenPotion), Item::new(ItemKind::Lockpick), Item::new(ItemKind::Candle), Item::new(ItemKind::ApprenticeHammer)]);
+
+    // Side quests. Brann, Hilda's son, lies on the diggings ledge with a
+    // broken leg; a healing potion sends him home (`move` in his talk).
+    b.named(Race::Dwarf, 5, "Brann", "brann", 22.5, 10.5, 270.0);
+
+    // The treasury under the storeroom: three levers on the west wall,
+    // the north one left alone and the other two pulled.
+    b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
+    b.tile(9, 42, 0, 8);
+    let treasury = b.door(9, 42, DoorAxis::NS, DoorKind::Iron, 0);
+    b.room(6, 43, 6, 3, 0, 8);
+    b.area("Treasury", 9, 44);
+    b.light(6, 43, 6, 3, 4);
+    b.combo(&[(4, 37, false), (4, 39, true), (4, 41, true)], treasury);
+    b.writing(8, 42, "TREASURY OF THE MOUNTAIN. It opens as a miner works the face: first he rests, then he strikes, then he strikes again. Count from the north.");
+    b.container(ItemKind::Chest, 9.5, 44.8, vec![Item::new(ItemKind::Coin).qty(40).data(40), Item::new(ItemKind::GoldNugget), Item::new(ItemKind::GoldNugget), Item::new(ItemKind::BluePotion)]);
+    b.item(ItemKind::Statue, 6.8, 43.6);
+
+    // The old vein, behind a secret door south of the deep mine and a
+    // miner's mark: Maera's camp and the second page of her chronicle.
+    b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
+    b.corridor(17, 55, 17, 58, 0, 8);
+    b.tile(17, 59, 0, 8);
+    b.door(17, 59, DoorAxis::NS, DoorKind::Secret, 0);
+    b.room(15, 60, 5, 3, 0, 8);
+    b.area("Old vein", 17, 61);
+    b.writing(18, 59, "Cut deep into the rock: three strokes and a pick. A miner's mark.");
+    b.item(ItemKind::Bedroll, 15.8, 61.5);
+    b.item(ItemKind::Candle, 16.5, 60.4);
+    b.put(Item::new(ItemKind::ChroniclePage).data(1), 18.5, 61.5);
+    b.item(ItemKind::GoldNugget, 19.4, 60.4);
     b.finish()
 }
 

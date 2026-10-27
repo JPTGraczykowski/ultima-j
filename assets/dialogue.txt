@@ -240,7 +240,22 @@ Oh! A visitor. And a pale one. Mind the beds, I've just made them. I'm Hilda. Hu
 * Yes, I am hungry. -> food ? !flag:hilda_food
 * Tell me about the mines. -> mines
 * What lies below? -> below
+* Thou seemest worried. -> brann ? !flag:hilda_brann & !flag:brann_saved
+* Brann is safe. He is coming home. -> brann_home ? flag:brann_saved & !flag:hilda_thanks
 * Farewell. -> end
+
+-- brann
+Worried? Me? ... It's my boy, Brann. He's been mad for the gold on the ledge in the old diggings since he could walk, and the king forbade it. Two days ago he went up there, and he hasn't come down. North of here, past the beds.
+! flag hilda_brann 1
+* I will find him. -> end
+* Back. -> start
+
+-- brann_home
+Oh, thank the mountain. A broken leg and a bag of gold, he says, as if the gold mattered. Here - these were his father's, and his father would want them on someone brave. Don't tell Brann.
+! flag hilda_thanks 1
+! give ChainLeggings
+! exp 60
+* Look after him, Hilda. -> start
 
 -- food
 Here, cheese and bread. Eat, eat! You're skin and bones.
@@ -250,7 +265,7 @@ Here, cheese and bread. Eat, eat! You're skin and bones.
 * Thank thee kindly. -> start
 
 -- mines
-Our people dug these halls long before the colony. The east galleries were the richest - until the spiders came. Bodric at the forge trades for gold nuggets, if you find any.
+Our people dug these halls long before the colony. The east galleries were the richest - until the spiders came. Bodric at the forge trades for gold nuggets, if you find any. And the old miners cut their mark in the wall wherever they hid something - three strokes and a pick. Most of those holes were emptied long ago.
 * Back. -> start
 
 -- below
@@ -263,12 +278,44 @@ Clang! Clang! What? Oh. A customer. I'm Bodric, smith of the Mountain Folk. I ma
 * Show me thy wares. -> wares
 * I have gold nuggets to sell. -> nugget ? item:GoldNugget
 * Canst thou mend my weapons and armour? -> mend
-* Thy forge-work is the finest I have ever seen, master smith. -> flatter ? skill:Charm>=3 & !flag:bodric_flattered
+* Thou workest alone, smith? -> dain ? !flag:bodric_dain & !item:ApprenticeHammer
+* I found this hammer on a body in the flooded drift. -> dain_found ? item:ApprenticeHammer & !flag:bodric_dain_done
 * Farewell. -> end
+
+-- dain
+Alone? I had an apprentice. Dain. Good hands, bad sense. I sent him to the flooded drift past the eastern galleries for blue clay - the best steel wants it - and then the spiders came, and the king sealed the door with Dain on the other side. I have not forgiven either of us.
+! flag bodric_dain 1
+* I will look for him. -> end
+* Back. -> start
+
+-- dain_found
+His hammer. I made it for him myself, the day he swore his oath to the forge. ... So that's that. Thou didst go where I would not. Let me make thee something worthy of it. Choose.
+! take ApprenticeHammer
+! flag bodric_dain_done 1
+! exp 80
+* A sword. -> forge_sword
+* An axe. -> forge_axe
+* A mace. -> forge_mace
+
+-- forge_sword
+Clang! Clang! ... There. Dain would have liked that one.
+! give Broadsword
+* Thank thee, master smith. -> start
+
+-- forge_axe
+Clang! Clang! ... There. Dain would have liked that one.
+! give Axe
+* Thank thee, master smith. -> start
+
+-- forge_mace
+Clang! Clang! ... There. Dain would have liked that one.
+! give Mace
+* Thank thee, master smith. -> start
 
 -- mend
 Aye, for {buy 15} gold I'll beat the dents out of everything thou'rt carrying. Steel wants care down here.
 * Do it. -> mended ? afford:15
+* Thy forge-work is the finest I have ever seen, master smith. -> flatter ? skill:Charm>=3 & !flag:bodric_flattered
 * Not now. -> start
 
 -- mended
@@ -564,4 +611,30 @@ My sword! The goblins did not even sharpen it, the swine. ... Thank thee. Come, 
 
 -- armoury
 My armoury. The lock is the old kind: three levers on the north wall, across the crack, and it opens to the watch as it ought to stand. I wrote it up on the wall so I'd not forget. Then I forgot how to read my own writing.
+* Back. -> start
+
+// ----------------------------------------------------------- level 2
+
+=== brann
+-- start
+Ach! Who's there? ... Brann, son of Hilda, at thy service - such as it is. I jumped for the ledge, and the ledge won.
+* Art thou hurt? -> hurt ? !flag:brann_saved
+* Drink this. It will mend thee. -> potion ? item:RedPotion & !flag:brann_saved
+* How is the leg? -> leg ? flag:brann_saved
+* Farewell. -> end
+
+-- hurt
+My leg's broken. I can't climb the ramp out of the shaft on one leg, and I can't jump back on none. If thou hast a healing potion - a red one - I'd be in thy debt.
+* Back. -> start
+
+-- potion
+Ahh... that's better. That's much better. I can stand! Keep the gold in the box; I couldn't look Mother in the eye with it. I'm going home.
+! take RedPotion
+! flag brann_saved 1
+! exp 40
+! move 14.5 22.5 270
+* Go carefully. -> end
+
+-- leg
+Mending. Mother says it serves me right. She's right, but don't tell her I said so.
 * Back. -> start

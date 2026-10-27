@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-22T11:17:00Z'
-updated_date: '2026-10-27T11:54:00Z'
+updated_date: '2026-10-27T11:59:00Z'
 labels: []
 milestone: m-0
 dependencies:
@@ -89,4 +89,6 @@ Steps
 Step 1, mechanics, done (2026-10-27): item:Kind>=N condition (Player::count_item), flag+ action, combination locks (B::combo, Switch::want, Game::check_combo; the lever nearest the wall tile used is pulled), pressure plates (B::plate), ChroniclePage item (icon, Polish noun, five page texts in dialogue::CHRONICLE, read like a scroll). Tests: at_most_five_visible_choices (options with exclusive conditions are not counted together; barter adds 3), counted_items_and_added_flags, combination_lock_opens_only_when_every_lever_is_right. 81 tests pass. B::combo and B::plate are unused until the levels need them.
 
 Level 1 done (2026-10-27): Corwin (new, old guard hall, look 2) and his captain's sword in the hoard nook (CaptainsSword; reward +1 Defense, +1 Attack); Tobin's partner Wenna, the corpse in the bat roost (EngravedRing; reward a lantern); the armoury off the north half of the guard hall (three-lever lock on the north wall, west and east pulled, plaque on the east wall); Maera's study behind a second secret door in the secret room, with chronicle page 1. Elsmore is Maera's brother and takes the pages (flag chronicle; 20 gold each, the fifth 80 gold and +2 Lore). Added flag:NAME<N. New conversations are appended at the end of dialogue.txt so saved conversation indices hold. Checked by script: Corwin's sword, Tobin's ring both ways, five pages to Elsmore, the lever lock (wrong order clicks, right opens), Polish conversation.
+
+Level 2 done (2026-10-27): Brann (new, Hilda's son, on the diggings ledge with a broken leg; a red potion heals him and the new 'move X Z [YAW]' action sends him home to the quarters; Hilda then gives his father's chain leggings). Dain, Bodric's apprentice, is the corpse in the flooded drift (ApprenticeHammer; Bodric forges a broadsword, axe or mace). Bodric's flattery option moved into his mend node to keep start at 5 choices. Treasury under the storeroom: three levers on the west wall (north off, middle and south pulled), plaque by the door. Old vein: a secret door south of the deep mine with a miner's mark (Hilda describes the mark), Maera's camp and chronicle page 2. Checked by script: Brann and Hilda, Bodric, the treasury lock, the secret door.
 <!-- SECTION:NOTES:END -->
