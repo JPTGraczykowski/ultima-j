@@ -9,7 +9,8 @@
 //! * option text -> next_node ? condition & condition
 //! ```
 //! Conditions: `flag:NAME>=N`, `flag:NAME=N`, `!flag:NAME`, `item:Kind`,
-//! `!item:Kind`, `gold>=N`, `afford:N`, `skill:NAME>=N`. Actions: `flag NAME N`,
+//! `item:Kind>=N` (carrying at least N), `!item:Kind`, `gold>=N`, `afford:N`,
+//! `skill:NAME>=N`. Actions: `flag NAME N`, `flag+ NAME [N]` (add N, default 1),
 //! `give Kind [data] [qty]`, `take Kind [qty]`, `pay N`, `earn N`, `exp N`,
 //! `hostile`, `heal`, `rune N`, `follow`, `mana`, `skill NAME N`, `mend`,
 //! `barter`, `end`.
@@ -33,6 +34,8 @@ pub enum Cond {
     FlagEq(String, i32),
     NoFlag(String),
     HasItem(ItemKind),
+    /// Carrying at least N of a kind.
+    ItemGe(ItemKind, i32),
     NoItem(ItemKind),
     GoldGe(i32),
     /// Enough gold for a base price after haggling.
@@ -78,7 +81,7 @@ pub const ALL_ITEM_KINDS: &[ItemKind] = {
         Bread, Cheese, Meat, Fish, Mushroom, WaterFlask, Wine, RedPotion, BluePotion, GreenPotion, YellowPotion, Torch, Candle,
         Lantern, Bag, Pack, Box, RuneBag, IronKey, GoldKey, SilverKey, RuneStone, Wand, Coin, RedGem, BlueGem, GreenGem,
         WhiteGem, GoldNugget, Scroll, Book, Map, Bedroll, Rock, Bone, Skull, Lockpick, Rope, Pole, Shovel, ShardOfValor,
-        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
+        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
         Campfire, Bed, Brazier, Statue, Bookshelf, Pillar, Gravestone, Cauldron, MoonOrb, Corpse, Blood, Stalagmite, Web, Ward,
     ]
 };
@@ -101,6 +104,9 @@ fn parse_cond(s: &str) -> Option<Cond> {
         return item_kind_by_name(rest).map(Cond::NoItem);
     }
     if let Some(rest) = s.strip_prefix("item:") {
+        if let Some((k, n)) = rest.split_once(">=") {
+            return Some(Cond::ItemGe(item_kind_by_name(k.trim())?, n.trim().parse().ok()?));
+        }
         return item_kind_by_name(rest).map(Cond::HasItem);
     }
     if let Some(rest) = s.strip_prefix("gold>=") {
@@ -261,6 +267,7 @@ pub fn cond_ok(g: &Game, c: &Cond) -> bool {
         Cond::FlagEq(n, v) => g.flag(n) == *v,
         Cond::NoFlag(n) => g.flag(n) == 0,
         Cond::HasItem(k) => g.player.has_item(*k),
+        Cond::ItemGe(k, n) => g.player.count_item(*k) >= *n,
         Cond::NoItem(k) => !g.player.has_item(*k),
         Cond::GoldGe(n) => gold(g) >= *n,
         Cond::Afford(n) => gold(g) >= buy_price(g, *n),
@@ -403,6 +410,7 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
     let num = |i: usize, d: i32| a.get(i).and_then(|s| s.parse::<i32>().ok()).unwrap_or(d);
     match arg(0) {
         "flag" => g.set_flag(arg(1), num(2, 1)),
+        "flag+" => g.set_flag(arg(1), g.flag(arg(1)) + num(2, 1)),
         "give" => {
             if let Some(k) = item_kind_by_name(arg(1)) {
                 let mut it = Item::new(k).data(num(2, 0) as u16);
@@ -545,6 +553,20 @@ pub const SCROLLS: &[&str] = &[
     "A list in Malchor's hand, every line crossed out but the last: 'Aldric - the bones taken, the ghost bound. Corwin - drunk. Elsmore - too thin to bother. The knight who took the blast - risen, and walking. Save for last.'",
 ];
 
+/// The pages of the Chronicle of the Colony, one on each level, indexed by
+/// the page's data.
+pub fn chronicle_text(page: u16) -> &'static str {
+    crate::lang::tr(CHRONICLE[page as usize % CHRONICLE.len()])
+}
+
+pub const CHRONICLE: &[&str] = &[
+    "The Chronicle of the Colony, page the first. In the fortieth year of his lordship, Lord Varian led three hundred souls through the great doors and down into the Abyss, the Lumen Stone carried before them. Where its light fell the rock grew warm and the mushrooms sweet. Here, he said, no one shall be cold, or hungry, or alone. - Maera, chronicler",
+    "The Chronicle of the Colony, page the second. The mountain folk dug the halls, the lizard-folk brought fish up from the black waters, the goblins herded the cave beasts, and men kept the peace. Four peoples, one light. In the tenth year a goblin and a dwarf were wed in the great hall, and Lord Varian himself gave away the bride. - Maera",
+    "The Chronicle of the Colony, page the third. The court mage Malchor asks again to study the Stone, and again Lord Varian refuses him. Tonight at table Malchor said that a light kept in one hand is a light kept from every other, and the hall fell silent. Sir Aldric and the young knight at our lord's left hand watched him until he was gone. - Maera",
+    "The Chronicle of the Colony, page the fourth. The Stone is broken. Malchor struck at it in the night, and the knight at Lord Varian's left threw themselves into the blast. We buried them by the great doors, and the doors closed behind us all. Each people took a shard and turned on the others. Our lord has gone down below the crypts. He did not say if he would return. - Maera",
+    "The Chronicle of the Colony, the last page. I followed my lord down to write the end of his story, and found Malchor's hollows instead. They do not sleep. Whoever reads this: the dead you see walking were our people. Remember them by their names, if you can. Mine was Maera.",
+];
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -610,6 +632,67 @@ mod tests {
         assert!(cond_ok(&g, &parse_cond("skill:Charm>=5").unwrap()));
         assert!(!cond_ok(&g, &parse_cond("skill:charm>=6").unwrap()));
         assert!(!cond_ok(&g, &parse_cond("afford:1").unwrap()));
+    }
+
+    /// Whether two conditions can never hold together.
+    fn exclusive(a: &Cond, b: &Cond) -> bool {
+        use Cond::*;
+        let one_way = |a: &Cond, b: &Cond| match (a, b) {
+            (NoFlag(n), FlagGe(m, v)) => n == m && *v >= 1,
+            (NoFlag(n), FlagEq(m, v)) => n == m && *v != 0,
+            (FlagEq(n, x), FlagEq(m, y)) => n == m && x != y,
+            (FlagEq(n, x), FlagGe(m, y)) => n == m && x < y,
+            (NoItem(k), HasItem(j)) | (NoItem(k), ItemGe(j, _)) => k == j,
+            _ => false,
+        };
+        one_way(a, b) || one_way(b, a)
+    }
+
+    /// The conversation menu shows 5 choices. No node may offer more at
+    /// once, counting the trading options a barter node adds: options whose
+    /// conditions exclude each other are never shown together.
+    #[test]
+    fn at_most_five_visible_choices() {
+        for l in [crate::lang::Lang::En, crate::lang::Lang::Pl] {
+            let db = DialogueDb::load_lang(l);
+            for c in &db.convs {
+                for (name, n) in &c.nodes {
+                    let opts = &n.options;
+                    let together = |i: usize, j: usize| !opts[i].conds.iter().any(|a| opts[j].conds.iter().any(|b| exclusive(a, b)));
+                    let mut most = 0;
+                    for set in 0u32..1 << opts.len() {
+                        let members: Vec<usize> = (0..opts.len()).filter(|i| set & 1 << i != 0).collect();
+                        if members.len() > most && members.iter().all(|&i| members.iter().all(|&j| i == j || together(i, j))) {
+                            most = members.len();
+                        }
+                    }
+                    // Let us trade, what is it worth, and other goods.
+                    let trading = if n.actions.iter().any(|a| a[0] == "barter") { 3 } else { 0 };
+                    assert!(most + trading <= 5, "{} / {} can show {} choices", c.name, name, most + trading);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn counted_items_and_added_flags() {
+        use super::super::state::{PClass, Player};
+        let mut g = Game::new(Player::new("T", PClass::Fighter, false), 1);
+        let two = parse_cond("item:Mushroom>=2").unwrap();
+        g.player.give(Item::new(ItemKind::Mushroom));
+        assert!(cond_ok(&g, &parse_cond("item:Mushroom").unwrap()));
+        assert!(!cond_ok(&g, &two));
+        g.player.give(Item::new(ItemKind::Mushroom));
+        assert!(cond_ok(&g, &two));
+        assert!(cond_ok(&g, &parse_cond("item:Coin>=0").unwrap()));
+        let mut ended = false;
+        let act = |s: &str| s.split_whitespace().map(String::from).collect::<Vec<_>>();
+        run_action(&mut g, 0, &act("take Mushroom 2"), &mut ended);
+        assert_eq!(g.player.count_item(ItemKind::Mushroom), 0);
+        run_action(&mut g, 0, &act("flag+ pages"), &mut ended);
+        run_action(&mut g, 0, &act("flag+ pages 2"), &mut ended);
+        assert_eq!(g.flag("pages"), 3);
+        assert!(parse_cond("item:Nothing>=2").is_none());
     }
 
     #[test]

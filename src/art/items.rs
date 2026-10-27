@@ -681,6 +681,25 @@ pub fn icon(kind: ItemKind, data: u16, lit: bool) -> Bitmap {
             cv.ellipse(8.0, 8.0, 2.4, 3.2, 2.0, 1.0, gold);
             cv.render(true, true)
         }
+        ChroniclePage => {
+            // A loose leaf, torn along one edge, with a red seal.
+            let mut cv = canvas();
+            let p = cv.add_mat(Mat::new(Ramp::Parch, 7, 15).noise(0.12));
+            cv.poly(&[(3.0, 2.0), (12.0, 3.0), (13.0, 14.0), (11.0, 13.0), (9.0, 14.5), (7.0, 13.5), (4.0, 14.0)], 0.0, 0.4, p);
+            let mut b = cv.render(true, true);
+            for y in [5, 7, 9, 11] {
+                for x in 5..11 {
+                    if hashf(x, y, 2, 9) > 0.3 {
+                        b.set(x, y, c(Ramp::Parch, 2));
+                    }
+                }
+            }
+            b.set(10, 11, c(Ramp::Red, 9));
+            b.set(11, 11, c(Ramp::Red, 11));
+            b.set(10, 12, c(Ramp::Red, 7));
+            b.set(11, 12, c(Ramp::Red, 9));
+            b
+        }
         _ => Bitmap::new(ICON, ICON),
     }
 }

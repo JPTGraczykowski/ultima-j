@@ -102,6 +102,7 @@
 @medallion = medalion | medalionu | medalion | medaliony | medalionów | m
 @clutch of lizard eggs = lęg jaszczurzych jaj | lęgu jaszczurzych jaj | lęg jaszczurzych jaj | lęgi jaszczurzych jaj | lęgów jaszczurzych jaj | m
 @bundle of ancient bones = wiązka prastarych kości | wiązki prastarych kości | wiązkę prastarych kości | wiązki prastarych kości | wiązek prastarych kości | f
+@chronicle page = karta kroniki | karty kroniki | kartę kroniki | karty kroniki | kart kroniki | f
 
 # ------------------------------------------------- furniture and fixtures
 
@@ -666,6 +667,15 @@ You pull the lever, but nothing seems to happen.
 = Pociągasz dźwignię, ale nic się nie dzieje.
 You pull the lever. You hear a grinding noise.
 = Pociągasz dźwignię. Słychać zgrzyt.
+
+You pull the lever. With a deep grinding, something gives way.
+= Pociągasz dźwignię. Z głębokim zgrzytem coś ustępuje.
+
+You pull the lever. Something heavy grinds shut.
+= Pociągasz dźwignię. Coś ciężkiego zamyka się ze zgrzytem.
+
+You pull the lever. Somewhere in the wall, a mechanism clicks.
+= Pociągasz dźwignię. Gdzieś w murze szczęka mechanizm.
 You are too full to eat that now.
 = Jesteś zbyt {najedzony|najedzona}, by teraz to zjeść.
 That mushroom tasted rather odd.
@@ -1174,6 +1184,21 @@ Recipe: mushrooms from the lower caves, boiled thrice, are safe to eat. Boiled o
 = Przepis: grzyby z dolnych jaskiń, gotowane trzy razy, można bezpiecznie jeść. Gotowane raz - zobaczysz kolory, których nie ma.
 A list in Malchor's hand, every line crossed out but the last: 'Aldric - the bones taken, the ghost bound. Corwin - drunk. Elsmore - too thin to bother. The knight who took the blast - risen, and walking. Save for last.'
 = Lista spisana ręką Malchora, każda linijka skreślona poza ostatnią: 'Aldric - kości zabrane, duch związany. Corwin - pijany. Elsmore - zbyt chudy, szkoda zachodu. Rycerz, który przyjął cios - powstał i chodzi. Zostawić na koniec.'
+
+The Chronicle of the Colony, page the first. In the fortieth year of his lordship, Lord Varian led three hundred souls through the great doors and down into the Abyss, the Lumen Stone carried before them. Where its light fell the rock grew warm and the mushrooms sweet. Here, he said, no one shall be cold, or hungry, or alone. - Maera, chronicler
+= Kronika Kolonii, karta pierwsza. W czterdziestym roku swego panowania lord Varian poprowadził trzysta dusz przez wielkie wrota w dół, do Otchłani, a przed nimi niesiono Kamień Lumen. Gdzie padło jego światło, skała stawała się ciepła, a grzyby słodkie. Tu, rzekł, nikt nie będzie marzł ani głodował, ani nie zostanie sam. - Maera, kronikarka
+
+The Chronicle of the Colony, page the second. The mountain folk dug the halls, the lizard-folk brought fish up from the black waters, the goblins herded the cave beasts, and men kept the peace. Four peoples, one light. In the tenth year a goblin and a dwarf were wed in the great hall, and Lord Varian himself gave away the bride. - Maera
+= Kronika Kolonii, karta druga. Lud gór kuł sale, jaszczuroludzie przynosili ryby z czarnych wód, gobliny pasły jaskiniowe zwierzęta, a ludzie strzegli pokoju. Cztery ludy, jedno światło. W dziesiątym roku w wielkiej sali goblin poślubił krasnoludkę, a do ołtarza poprowadził ją sam lord Varian. - Maera
+
+The Chronicle of the Colony, page the third. The court mage Malchor asks again to study the Stone, and again Lord Varian refuses him. Tonight at table Malchor said that a light kept in one hand is a light kept from every other, and the hall fell silent. Sir Aldric and the young knight at our lord's left hand watched him until he was gone. - Maera
+= Kronika Kolonii, karta trzecia. Nadworny mag Malchor znów prosi, by pozwolono mu badać Kamień, i znów lord Varian mu odmawia. Dziś przy stole Malchor rzekł, że światło trzymane w jednej ręce to światło odebrane wszystkim innym, i w sali zapadła cisza. Sir Aldric i młody rycerz po lewej ręce naszego pana nie spuszczali z niego oczu, dopóki nie wyszedł. - Maera
+
+The Chronicle of the Colony, page the fourth. The Stone is broken. Malchor struck at it in the night, and the knight at Lord Varian's left threw themselves into the blast. We buried them by the great doors, and the doors closed behind us all. Each people took a shard and turned on the others. Our lord has gone down below the crypts. He did not say if he would return. - Maera
+= Kronika Kolonii, karta czwarta. Kamień jest rozbity. Malchor uderzył w niego nocą, a rycerz po lewej ręce lorda Varian rzucił się prosto w wybuch. Pochowaliśmy go przy wielkich wrotach, a wrota zamknęły się za nami wszystkimi. Każdy lud wziął jeden odłamek i zwrócił się przeciw pozostałym. Nasz pan zszedł w dół, pod krypty. Nie powiedział, czy wróci. - Maera
+
+The Chronicle of the Colony, the last page. I followed my lord down to write the end of his story, and found Malchor's hollows instead. They do not sleep. Whoever reads this: the dead you see walking were our people. Remember them by their names, if you can. Mine was Maera.
+= Kronika Kolonii, ostatnia karta. Zeszłam za moim panem, by spisać koniec jego historii, a znalazłam wydrążone dusze Malchora. One nie śpią. Ktokolwiek to czyta: umarli, których widzisz, byli naszym ludem. Pamiętaj ich imiona, jeśli zdołasz. Ja miałam na imię Maera.
 
 # --------------------------------------------------- intro and ending
 

@@ -591,6 +591,7 @@ mod tests {
         v.extend([crate::ui::overlay::HELP_TEXT, crate::ui::overlay::MODERN_HELP_TEXT].map(String::from));
         v.extend(crate::ui::overlay::OPTIONS.map(String::from));
         v.extend(crate::game::dialogue::SCROLLS.iter().map(|s| s.to_string()));
+        v.extend(crate::game::dialogue::CHRONICLE.iter().map(|s| s.to_string()));
         v.extend(RUNE_MEANINGS.map(String::from));
         v.extend(ALL_SPELLS.iter().map(|s| s.def().name.to_string()));
         v.extend(crate::ui::menus::story_texts().into_iter().map(String::from));

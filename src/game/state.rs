@@ -121,6 +121,10 @@ pub struct Switch {
     pub tz: i32,
     pub door: u32,
     pub on: bool,
+    /// A lever of a combination lock: the door opens only while every lever
+    /// of the lock is in the position it wants (see `B::combo`).
+    #[serde(default)]
+    pub want: Option<bool>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -580,6 +584,16 @@ impl Player {
         let pack: Vec<Item> = self.pack.iter().flatten().cloned().collect();
         let eq: Vec<Item> = ALL_EQ.iter().filter_map(|s| self.equip.get(*s).clone()).collect();
         find(&pack, kind) || find(&eq, kind)
+    }
+
+    /// How many items of a kind the player carries (stacks count their size).
+    pub fn count_item(&self, kind: ItemKind) -> i32 {
+        fn count(items: &[Item], kind: ItemKind) -> i32 {
+            items.iter().map(|i| if i.kind == kind { i.qty.max(1) as i32 } else { 0 } + count(&i.contents, kind)).sum()
+        }
+        let pack: Vec<Item> = self.pack.iter().flatten().cloned().collect();
+        let eq: Vec<Item> = ALL_EQ.iter().filter_map(|s| self.equip.get(*s).clone()).collect();
+        count(&pack, kind) + count(&eq, kind)
     }
 
     /// Put an item into the first free pack slot (or a container). Returns it back if full.

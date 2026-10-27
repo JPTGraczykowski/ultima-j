@@ -1,9 +1,11 @@
 ---
 id: TASK-3
 title: NPC backstories, side quests and puzzles
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-10-22T11:17:00Z'
+updated_date: '2026-10-27T11:42:00Z'
 labels: []
 milestone: m-0
 dependencies:
@@ -13,7 +15,7 @@ references:
   - STORY.md
   - STORY.pl.md
 type: feature
-ordinal: 3
+ordinal: 1000
 ---
 
 ## Description
@@ -29,3 +31,60 @@ The levels need more to do between the main quests. Quests come from the NPCs, s
 - [ ] #3 No conversation node shows more than 5 visible choices
 - [ ] #4 STORY.md, STORY.pl.md and the Polish translation are in step with assets/dialogue.txt
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Design (draft for review), built on the side areas TASK-2 left for this.
+
+Mechanics to add:
+- Condition item:Kind>=N (count quest items) and action 'flag+ NAME' (count deliveries).
+- Lever-combination locks: B::combo(levers, pattern, door); the door opens only when every lever matches. Clues on plaques.
+- Pressure plates: B::plate(x, z, door) on the existing TriggerKind::OpenDoor.
+- New quest items with icons and Polish nouns: ChroniclePage (readable, data 0-4), plus one token per side quest where no existing item fits.
+
+Collection across all five levels: the Chronicle of the Colony. Five pages, one per level, each a chapter of the colony's history (founding, the four peoples, the breaking, Varian's descent, Malchor's rise). Elsmore pays per page and gives a ring for the full set.
+
+L1 Upper Halls
+- SQ Corwin (new NPC, old guard hall): the colony's last guard captain, who wrote the plaque at the doors (Malchor's list: 'Corwin - drunk'). The green goblins took his sword to their hoard nook; bring it back and he teaches a weapon skill and tells of the night the doors shut.
+- SQ Tobin: the dead explorer in the bat roost was Wenna, his partner. Bring back her ring; he gives a lantern and talks about who he was.
+- P Old guard hall armoury: two-lever combination, clue on a plaque.
+- F Chronicle page 1, in the library, behind the secret room.
+
+L2 Mines
+- SQ Hilda: her son Brann jumped for the gold on the diggings ledge and broke his leg. Bring him a healing potion; Hilda rewards you.
+- SQ Bodric: the corpse in the flooded drift is his apprentice Dain. Bring back Dain's token; Bodric forges you a better weapon.
+- P Storeroom treasury: three-lever combination, clue in a dwarven saying.
+- F Chronicle page 2, found by following the miners' marks (plaques) to a secret door in the deep mine.
+
+L3 Warrens
+- SQ Hissk: bring 3 mushrooms from the fungus cavern for the clutch-mother.
+- SQ Ssethra (the lone lizardman by the aqueduct): an exile who spoke for the warm-bloods. Carry his words to Ssrath and bring back the Sage's forgiveness (dialogue and flags).
+- P Southern caves: pressure plates open a sunken vault.
+- F Chronicle page 3, in the ossuary.
+
+L4 Crypts
+- SQ Ysolde (the ghost in the embalmers' rooms, made friendly): bring her book of rites from the catacombs so she can lay the mass graves to rest. Reward: a rune or potions.
+- SQ Aldric: find the tomb of his squire Pell in the catacombs and bring back Pell's shield.
+- P Tomb of the three kings: lever combination.
+- F Chronicle page 4, behind a secret door named in Ysolde's book.
+
+L5 Sanctum
+- SQ Ilsa (new NPC in the cells): Malchor's former apprentice. Bring her notebook from his study; she tells his story and gives you the soul-vault key.
+- SQ Free the souls in the soul vault (break the jars). Varian thanks you at the end.
+- P A hidden bridge over the lava, opened by a lever.
+- F Chronicle page 5, in the cave of fire.
+
+Steps
+1. Mechanics, with tests.
+2. Per level: NPCs, items, areas and dialogue in English, then Polish. Check after each level: levels_are_connected, no_dead_ends, max 5 visible choices per node, plus a scripted run.
+3. A test that no node has more than 5 options visible at once.
+4. Update STORY.md, STORY.pl.md, HANDOFF.md, HANDBOOK.md if needed.
+5. Play by hand.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Step 1, mechanics, done (2026-10-27): item:Kind>=N condition (Player::count_item), flag+ action, combination locks (B::combo, Switch::want, Game::check_combo; the lever nearest the wall tile used is pulled), pressure plates (B::plate), ChroniclePage item (icon, Polish noun, five page texts in dialogue::CHRONICLE, read like a scroll). Tests: at_most_five_visible_choices (options with exclusive conditions are not counted together; barter adds 3), counted_items_and_added_flags, combination_lock_opens_only_when_every_lever_is_right. 81 tests pass. B::combo and B::plate are unused until the levels need them.
+<!-- SECTION:NOTES:END -->

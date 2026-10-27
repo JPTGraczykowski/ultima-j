@@ -526,7 +526,8 @@ impl Game {
 
     fn pull_lever(&mut self, tx: i32, tz: i32) {
         let lvl = self.cur;
-        let sw = self.levels[lvl].switches.iter_mut().find(|s| (s.tx - tx).abs() <= 1 && (s.tz - tz).abs() <= 1);
+        // The lever nearest the wall tile used, so levers of a lock can stand side by side.
+        let sw = self.levels[lvl].switches.iter_mut().filter(|s| (s.tx - tx).abs() <= 1 && (s.tz - tz).abs() <= 1).min_by_key(|s| (s.tx - tx).abs() + (s.tz - tz).abs());
         let Some(sw) = sw else {
             self.sound(Sfx::Lever);
             self.msg(t!("You pull the lever, but nothing seems to happen."));
@@ -535,12 +536,37 @@ impl Game {
         sw.on = !sw.on;
         let door = sw.door;
         let on = sw.on;
+        let combo = sw.want.is_some();
         self.sound(Sfx::Lever);
+        if combo {
+            self.check_combo(door);
+            return;
+        }
         if let Some(d) = self.levels[lvl].doors.iter_mut().find(|d| d.id == door) {
             d.opening = on;
             d.locked = false;
             self.sound(if on { Sfx::DoorOpen } else { Sfx::DoorClose });
             self.msg(t!("You pull the lever. You hear a grinding noise."));
+        }
+    }
+
+    /// Open a combination lock's door while all its levers are set right, and
+    /// close it again when one is moved off.
+    fn check_combo(&mut self, door: u32) {
+        let lvl = self.cur;
+        let solved = self.levels[lvl].switches.iter().filter(|s| s.door == door && s.want.is_some()).all(|s| Some(s.on) == s.want);
+        let Some(d) = self.levels[lvl].doors.iter_mut().find(|d| d.id == door) else { return };
+        let was = d.opening;
+        d.opening = solved;
+        d.locked = !solved;
+        if solved && !was {
+            self.sound(Sfx::DoorOpen);
+            self.msg(t!("You pull the lever. With a deep grinding, something gives way."));
+        } else if !solved && was {
+            self.sound(Sfx::DoorClose);
+            self.msg(t!("You pull the lever. Something heavy grinds shut."));
+        } else {
+            self.msg(t!("You pull the lever. Somewhere in the wall, a mechanism clicks."));
         }
     }
 
@@ -626,7 +652,7 @@ impl Game {
                 Some(item)
             }
             Class::Scroll | Class::Book => {
-                let text = super::dialogue::scroll_text(item.data);
+                let text = if item.kind == ItemKind::ChroniclePage { super::dialogue::chronicle_text(item.data) } else { super::dialogue::scroll_text(item.data) };
                 self.events.push(Event::ReadText(text.to_string()));
                 Some(item)
             }
@@ -1084,6 +1110,26 @@ mod tests {
 
     fn game(class: PClass) -> Game {
         Game::new(Player::new("T", class, false), 1)
+    }
+
+    #[test]
+    fn combination_lock_opens_only_when_every_lever_is_right() {
+        use crate::game::Switch;
+        let mut g = game(PClass::Fighter);
+        let door = g.level_mut().add_door(1, 1, crate::game::DoorAxis::NS, crate::game::DoorKind::Iron, 0);
+        g.level_mut().doors.iter_mut().find(|d| d.id == door).unwrap().remote = true;
+        for (x, want) in [(10, true), (12, false), (14, true)] {
+            g.level_mut().switches.push(Switch { tx: x, tz: 5, door, on: false, want: Some(want) });
+        }
+        let open = |g: &Game| g.level().doors.iter().find(|d| d.id == door).unwrap().opening;
+        g.pull_lever(10, 5);
+        assert!(!open(&g));
+        g.pull_lever(14, 5);
+        assert!(open(&g));
+        g.pull_lever(12, 5);
+        assert!(!open(&g));
+        g.pull_lever(12, 5);
+        assert!(open(&g));
     }
 
     #[test]

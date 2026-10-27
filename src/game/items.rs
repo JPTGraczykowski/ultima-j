@@ -222,6 +222,8 @@ pub enum ItemKind {
     Hammer,
     LizardEgg,
     RelicBones,
+    /// A page of the colony's chronicle; `data` is the page, 0-4 (`dialogue::CHRONICLE`).
+    ChroniclePage,
     // Fixtures
     Barrel,
     Table,
@@ -435,6 +437,7 @@ impl ItemKind {
             }
             LizardEgg => d("clutch of lizard eggs", "clutches of lizard eggs", Class::Quest, 6, 0),
             RelicBones => d("bundle of ancient bones", "bundles of ancient bones", Class::Quest, 8, 0),
+            ChroniclePage => d("chronicle page", "chronicle pages", Class::Scroll, 1, 0),
             Barrel => fixture("barrel", (0.42, 0.55)),
             Table => fixture("table", (0.8, 0.45)),
             Chest => cont(fixture("chest", (0.55, 0.42)), 12),

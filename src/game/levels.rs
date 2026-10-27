@@ -402,7 +402,25 @@ impl<'a> B<'a> {
 
     pub fn lever(&mut self, wall_x: i32, wall_z: i32, door: u32) {
         self.wall(wall_x, wall_z, Tex::WallLever);
-        self.lv.switches.push(Switch { tx: wall_x, tz: wall_z, door, on: false });
+        self.lv.switches.push(Switch { tx: wall_x, tz: wall_z, door, on: false, want: None });
+    }
+
+    /// A combination lock: levers on the walls at (x, z), all starting off,
+    /// and the door opens only while each one is in its wanted position.
+    /// Keep the levers two tiles apart so each is pulled on its own. The door
+    /// cannot be opened by hand.
+    pub fn combo(&mut self, levers: &[(i32, i32, bool)], door: u32) {
+        assert!(levers.iter().any(|l| l.2), "a combination lock that starts open");
+        for &(x, z, want) in levers {
+            self.wall(x, z, Tex::WallLever);
+            self.lv.switches.push(Switch { tx: x, tz: z, door, on: false, want: Some(want) });
+        }
+        self.lv.doors.iter_mut().find(|d| d.id == door).unwrap().remote = true;
+    }
+
+    /// A pressure plate on tile (x, z) that opens a door when stepped on.
+    pub fn plate(&mut self, x: i32, z: i32, door: u32) {
+        self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::OpenDoor { door }, once: true, fired: false, found: false });
     }
 
     pub fn finish(self) -> Level {
