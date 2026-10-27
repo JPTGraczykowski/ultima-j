@@ -4,12 +4,12 @@ title: Combat and magic balance, a bit more difficulty
 status: To Do
 assignee: []
 created_date: '2026-10-22T11:17:00Z'
+updated_date: '2026-10-27T12:55:00Z'
 labels: []
 milestone: m-0
 dependencies:
   - TASK-2
   - TASK-3
-  - TASK-4
   - TASK-5
 references:
   - HANDBOOK.md
