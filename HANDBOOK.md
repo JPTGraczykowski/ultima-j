@@ -62,31 +62,49 @@ attributes, and you can say *No* at the end to start over.
 | **Mana** | Spent to cast spells |
 
 Each attribute starts at 14, plus the profession bonus below, plus a random
-−2 to +3. Vitality starts at 20 + ST/2 + 0–5. Mana starts at INT/3; Mages and
-Druids get 6 more.
+−2 to +3. Vitality starts at 20 + ST/2 + 0–5. Mana starts at INT/3; Mages get
+6 more and Druids 4 more.
 
 ### Professions
 
 Each profession starts with 4 points in each of its skills. Everyone also gets
-+2 Attack and +2 Defense on top of that.
++2 Attack and +2 Defense on top of that, an empty **rune bag** and an apple.
 
 | Profession | ST / DEX / INT bonus | Skills | Starts with |
 | --- | --- | --- | --- |
-| **Fighter** | +6 / +2 / −2 | Attack, Defense, Sword, Axe, Mace, Unarmed | Dagger, leather vest |
-| **Mage** | −3 / +1 / +7 | Mana, Casting, Lore, Appraise | Runes IN, LOR, ORT, JUX; a candle |
-| **Bard** | 0 / +3 / +3 | Lore, Charm, Appraise, Sword, Casting | Dagger, 20 gold |
-| **Tinker** | +2 / +4 / +1 | Repair, Picklock, Traps, Mace, Appraise | Cudgel, lockpick |
-| **Druid** | 0 / +1 / +5 | Mana, Casting, Lore, Track, Swimming | Runes IN, LOR, ORT, JUX; a candle |
-| **Paladin** | +4 / +1 / +1 | Attack, Defense, Sword, Mace, Charm | Dagger, leather vest |
-| **Ranger** | +2 / +5 / 0 | Missile, Track, Sneak, Search, Sword | Sling, 12 sling stones, leather boots |
-| **Shepherd** | +2 / +2 / +2 | Unarmed, Missile, Track, Swimming, Search | Cudgel, a loaf of bread |
+| **Fighter** | +6 / +2 / −2 | Attack, Defense, Sword, Axe, Mace, Unarmed | Shortsword, wooden shield, leather vest, leather cap |
+| **Mage** | −3 / +1 / +7 | Mana, Casting, Lore, Appraise | Runes IN, LOR, ORT, JUX, BET, SANCT; a candle, a blue potion |
+| **Bard** | 0 / +3 / +3 | Lore, Charm, Appraise, Sword, Casting | Dagger, 40 gold, a bottle of wine; runes IN, LOR, SANCT, HUR |
+| **Tinker** | +2 / +4 / +1 | Repair, Picklock, Traps, Mace, Appraise | Cudgel, leather gloves, a lockpick, a torch |
+| **Druid** | 0 / +1 / +5 | Mana, Casting, Mace, Track, Swimming | Cudgel, a candle; runes IN, LOR, MANI, YLEM, BET |
+| **Paladin** | +4 / +1 / +1 | Attack, Defense, Mace, Casting, Charm | Mace, leather vest; runes IN, BET, SANCT, MANI |
+| **Ranger** | +2 / +5 / 0 | Missile, Track, Sneak, Search, Sword | Sling, 20 sling stones, leather boots, a dagger |
+| **Shepherd** | +2 / +2 / +2 | Unarmed, Mace, Acrobat, Swimming, Search | Cudgel, bread, cheese, a flask of water |
 
-Everyone also starts with an empty **rune bag** and an apple.
+Each profession also has a gift of its own, for the whole game:
 
-**Choosing a profession.** Fighters and Paladins have the easiest start. Mages
-and Druids can cast *Light* and *Magic Arrow* from the first minute but are
-fragile. Tinkers get past locked doors and traps. Bards talk their way past
-Rhugg and pay less at the traders. Rangers fight from a distance.
+| Profession | Gift |
+| --- | --- |
+| **Fighter** | A full-power blow is a critical hit half the time (others: a quarter). |
+| **Mage** | Spells cost 2 × circle mana instead of 3 × circle. |
+| **Bard** | 4 skill points at each new level instead of 3. |
+| **Tinker** | Weapons and armour wear half as fast, and a failed repair never damages them. |
+| **Druid** | Vitality comes back every 10 seconds instead of 14 (while fed), and food nourishes half again as much. |
+| **Paladin** | Blows, missiles and spells do half again as much damage to the undead. |
+| **Ranger** | Double damage to a hostile creature that has not yet noticed you. |
+| **Shepherd** | Hunger drops a third slower, and +2 extra vitality at each new level. |
+
+**Choosing a profession.** Fighters have the easiest start: the best gear,
+and they hit hard. Paladins fight with a mace, shield themselves with
+*Resist Blows* (BET IN SANCT) from the first minute, heal with *Lesser Heal*
+from level 2, and the Abyss is full of undead. Mages cast *Light*, *Magic
+Arrow* and *Resist Blows* cheaply but are fragile. Druids have no attack spell
+at first: they fight with a cudgel, conjure food (IN MANI YLEM) and heal
+themselves from level 2. Bards light their way, sneak with *Stealth* (SANCT
+HUR), talk their way past Rhugg, pay less at the traders and grow the widest
+range of skills. Tinkers get past locked doors and traps. Rangers fight from a
+distance or from the shadows: sneak up and strike first. Shepherds outlast
+everyone, jump gaps and swim where others drown.
 
 ## 3. The screen
 
@@ -152,7 +170,7 @@ Traps you have spotted are marked on it.
 
 ### Vitality and healing
 
-- **Natural healing**: 1 vitality every 14 seconds while you are fed, and
+- **Natural healing**: 1 vitality every 14 seconds (a Druid's every 10) while you are fed, and
   every 30 seconds while you are hungry. You don't heal at all while poisoned.
 - **Sleep** (`F10`, a bedroll from your pack, or a bed) restores 90% of your
   missing vitality and mana. Only 40% if you go to sleep hungry. Eight minutes
@@ -165,8 +183,8 @@ Traps you have spotted are marked on it.
 
 ### Hunger
 
-Hunger drops by 1 point every 20 seconds, so a full stomach lasts about half
-an hour. The game tells you when you get *hungry* (below 25) and *starving*
+Hunger drops by 1 point every 20 seconds (a Shepherd's every 30), so a full
+stomach lasts about half an hour. The game tells you when you get *hungry* (below 25) and *starving*
 (below 8). At 0 you lose 1 vitality every 15 seconds. You can't eat above 92.
 
 ### Fatigue
@@ -257,9 +275,9 @@ Halls, level 5 or 6 in the Flooded Warrens, and level 8 in the Crypts.
 
 Each level gives you:
 
-- **+3 + ST/6** maximum vitality
+- **+3 + ST/6** maximum vitality (Shepherds +2 more)
 - **+1 + INT/6 + Mana skill/4** maximum mana
-- **3 skill points**
+- **3 skill points** (Bards 4)
 
 To spend skill points, open the statistics page (pull chain or `F7`) and
 click a skill. The page shows how many points you have left. A skill can go
@@ -286,7 +304,7 @@ circle up to your level. See [Magic](#9-magic).
 | **Search** | Finds secret doors when you *Use* a suspicious wall: 30% + 6% per point + INT |
 | **Track** | `F9` finds the nearest unfriendly creature and tells you its direction and distance. Range is 6 + 1.5 tiles per point; success is 30% + 8% per point. |
 | **Sneak** | Creatures that haven't seen you yet notice you 4% closer per point (down to 45% of the normal range) |
-| **Repair** | Mends worn weapons and armour when you *use* them from the inventory. Success is 30% + 7% per point + DEX/2. The skill limits how good you can make an item: up to 30% + 7% per point. Bad slips can damage the item. |
+| **Repair** | Mends worn weapons and armour when you *use* them from the inventory. Success is 30% + 7% per point + DEX/2. The skill limits how good you can make an item: up to 30% + 7% per point. Bad slips can damage the item (never a Tinker's). |
 | **Charm** | Lowers what you pay (2% per point), raises what you're paid, and opens friendlier lines in conversation |
 | **Picklock** | Opens locked doors with a lockpick: 20% + 6% per point + DEX |
 | **Acrobat** | Higher jumps (up to +15%), longer safe falls, and less damage when you land badly |
@@ -300,8 +318,8 @@ prices by up to 50%.
 
 Choose **Fight** (`F5`), aim the cursor at your foe, and hold the right mouse
 button. The **power gem** fills. The fuller it is when you let go, the harder
-you hit. A swing at full power has a 25% chance to be a **critical hit** that
-does half again as much damage.
+you hit. A swing at full power has a 25% chance (a Fighter's 50%) to be a
+**critical hit** that does half again as much damage.
 
 Where you aim decides how you attack:
 
@@ -318,13 +336,15 @@ defense + up to 10% for power, kept between 10% and 95%.
 
 **Damage** = (weapon damage + (ST − 10)/5) × (0.4 + 0.9 × power) + 0–2, plus
 any damage enchantment. Badly worn weapons (below 30% condition) do a third
-less damage.
+less damage. Paladins do half again as much to the undead, and Rangers double
+damage to a creature that has not noticed them yet.
 
 **Being hit.** A creature hits you with a chance of 45% + 4% × its attack −
 (3% × Defense + 3% × armour + DEX/2), kept between 8% and 92%. Your armour
 also takes armour/3 off every blow.
 
-**Wear.** Weapons and armour wear down slowly as you fight. Armour below 20%
+**Wear.** Weapons and armour wear down slowly as you fight (a Tinker's
+half as fast). Armour below 20%
 condition protects only half as well. Repair it yourself, or pay Bodric the
 smith to do it.
 
@@ -384,7 +404,7 @@ The runes stay on the shelf, so you can cast the same spell again and again.
 
 ### Rules
 
-- **Mana cost** = 3 × the spell's circle.
+- **Mana cost** = 3 × the spell's circle (a Mage's 2 × circle).
 - **Level needed**: you can cast a spell whose circle is no higher than your
   experience level (circle 1 at level 1, circle 2 at level 2, … circle 8 at
   level 8).

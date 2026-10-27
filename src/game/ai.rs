@@ -318,7 +318,7 @@ fn melee(g: &mut Game, i: usize, dt: f32) {
         let fwd = V3::new(g.player.yaw.sin(), 0.0, -g.player.yaw.cos());
         g.spawn_effect(e + fwd * 0.35 - V3::new(0.0, 0.1, 0.0), EffectKind::Blood);
         // Armour wears.
-        if g.rng.chance(0.15) {
+        if g.rng.chance(0.15 * g.player.class.wear()) {
             let worn: Vec<EqSlot> = [EqSlot::Head, EqSlot::Chest, EqSlot::Legs, EqSlot::Feet, EqSlot::Hands, EqSlot::Shield]
                 .into_iter()
                 .filter(|s| g.player.equip.get(*s).as_ref().map(|i| i.def().armor.is_some()).unwrap_or(false))
@@ -393,6 +393,17 @@ pub fn damage_npc(g: &mut Game, id: u32, dmg: i32, by_player: bool) {
         return;
     }
     let mut dmg = dmg;
+    if by_player {
+        let npc = &g.levels[lv].npcs[idx];
+        let unaware = npc.attitude == Attitude::Hostile && matches!(npc.ai, AiState::Idle | AiState::Wander);
+        let bonus = g.player.class.damage_bonus(npc.race.def().undead, unaware);
+        if bonus > 100 {
+            dmg = dmg * bonus / 100;
+            if unaware {
+                g.msg(t!("You strike before it knows you are there!"));
+            }
+        }
+    }
     if g.levels[lv].npcs[idx].race == super::creatures::Race::Demon && !g.has_all_shards() {
         dmg = 0;
         if by_player {
@@ -554,7 +565,7 @@ pub fn player_attack(g: &mut Game, aim: V3, kind: usize, power: f32) {
                 dmg = dmg * 2 / 3;
             }
         }
-        if power >= 0.98 && g.rng.chance(0.25) {
+        if power >= 0.98 && g.rng.chance(g.player.class.crit_chance()) {
             dmg = dmg * 3 / 2;
             g.msg(t!("A critical hit!"));
         }
@@ -565,7 +576,7 @@ pub fn player_attack(g: &mut Game, aim: V3, kind: usize, power: f32) {
         g.sound(Sfx::Hit);
         damage_npc(g, id, dmg, true);
         // Weapons wear slowly.
-        if g.rng.chance(0.06) {
+        if g.rng.chance(0.06 * g.player.class.wear()) {
             if let Some(w) = g.player.equip.weapon.as_mut() {
                 w.quality = w.quality.saturating_sub(2);
             }

@@ -2,7 +2,7 @@
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
 original's style. Status (2026-10-27): the game is complete and playable from
-the title screen to the victory screen, and all 82 tests pass. What remains is
+the title screen to the victory screen, and all 84 tests pass. What remains is
 mostly balance.
 
 ## Done
@@ -100,6 +100,14 @@ mostly balance.
   that snares the next foe, see `Game::update_wards`). Circle *c* needs
   experience level *c* (`Player::max_circle`), and `exp_for_level` is a
   table paced so a thorough player reaches level 8 in the Crypts.
+- Professions (2026-10-27, TASK-5): no two classes share a start (skills,
+  gear and runes; `starting_kit` in `src/ui/menus.rs`), and each has one
+  gift: helpers on `PClass` in `src/game/state.rs` (`crit_chance`,
+  `damage_bonus`, `regen_time`, `hunger_time`, `nutrition`, `wear`,
+  `skill_points_per_level`, `bonus_vit_per_level`, `bonus_mana`) and
+  `Player::spell_cost`. Character creation shows the gift under the
+  class line. HANDBOOK.md section 2 has the tables. Tests:
+  `every_profession_starts_differently`, `profession_traits`.
 - `HANDBOOK.md` is the player's handbook. Keep its numbers in step with the
   code when balancing.
 - `STORY.md` and `STORY.pl.md` tell the whole story in English and Polish.
@@ -113,7 +121,7 @@ mostly balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 82 tests: level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter, five choices per conversation node
+cargo test --release                       # 84 tests: level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter, five choices per conversation node
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --script "play; level 1 21.5 47.5; goto 21.5 47.5 180; key W 23; key W+J 1; key W 20"   # a running jump

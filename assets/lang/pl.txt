@@ -1153,14 +1153,32 @@ Charming, learned, a little of all.
 = Czarujący, uczony, zna się na wszystkim po trochu.
 Clever with locks, traps and tools.
 = Zręczny z zamkami, pułapkami i narzędziami.
-Magic, lore and the wild.
-= Magia, wiedza i dzika natura.
+Magic, healing and the wild.
+= Magia, uzdrawianie i dzika natura.
 A holy warrior.
 = Święty wojownik.
 Tracker, archer, swordsman.
 = Tropiciel, strzelec, szermierz.
 Humble, hardy and resourceful.
 = Skromny, wytrzymały i zaradny.
+Lands critical hits twice as often.
+= Dwa razy częściej zadaje ciosy krytyczne.
+Spells cost a third less mana.
+= Czary kosztują o jedną trzecią mniej many.
+Gains an extra skill point each level.
+= Na każdym poziomie zyskuje dodatkowy punkt umiejętności.
+Gear wears half as fast.
+= Sprzęt zużywa się o połowę wolniej.
+Heals faster; food goes further.
+= Szybciej się leczy; jedzenie bardziej syci.
+Strikes the undead half again as hard.
+= Bije nieumarłych o połowę mocniej.
+Double damage on unwary foes.
+= Podwójne obrażenia nieczujnym wrogom.
+Hungers slower; gains more vitality.
+= Wolniej głodnieje; zyskuje więcej witalności.
+You strike before it knows you are there!
+= Uderzasz, zanim cię zauważy!
 (click to return)
 = (kliknij, by wrócić)
 A loving tribute to Ultima Underworld: The Stygian Abyss

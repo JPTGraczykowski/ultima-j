@@ -272,11 +272,67 @@ impl PClass {
             PClass::Mage => &[Mana, Casting, Lore, Appraise],
             PClass::Bard => &[Lore, Charm, Appraise, Sword, Casting],
             PClass::Tinker => &[Repair, Picklock, Traps, Mace, Appraise],
-            PClass::Druid => &[Mana, Casting, Lore, Track, Swimming],
-            PClass::Paladin => &[Attack, Defense, Sword, Mace, Charm],
+            PClass::Druid => &[Mana, Casting, Mace, Track, Swimming],
+            PClass::Paladin => &[Attack, Defense, Mace, Casting, Charm],
             PClass::Ranger => &[Missile, Track, Sneak, Search, Sword],
-            PClass::Shepherd => &[Unarmed, Missile, Track, Swimming, Search],
+            PClass::Shepherd => &[Unarmed, Mace, Acrobat, Swimming, Search],
         }
+    }
+
+    /// Mana on top of INT/3 at creation.
+    pub fn bonus_mana(self) -> i32 {
+        match self {
+            PClass::Mage => 6,
+            PClass::Druid => 4,
+            _ => 0,
+        }
+    }
+
+    /// Skill points gained on each new experience level (Bards learn a little of all).
+    pub fn skill_points_per_level(self) -> i32 {
+        if self == PClass::Bard { 4 } else { 3 }
+    }
+
+    /// Extra vitality gained on each new experience level (Shepherds are hardy).
+    pub fn bonus_vit_per_level(self) -> i32 {
+        if self == PClass::Shepherd { 2 } else { 0 }
+    }
+
+    /// Chance that a full-power blow is a critical hit (Fighters are trained to land them).
+    pub fn crit_chance(self) -> f32 {
+        if self == PClass::Fighter { 0.5 } else { 0.25 }
+    }
+
+    /// Damage multiplier, in percent, for the player's blows, missiles and
+    /// spells. Paladins smite the undead; Rangers strike foes that have not
+    /// noticed them twice as hard.
+    pub fn damage_bonus(self, undead: bool, unaware: bool) -> i32 {
+        match self {
+            PClass::Paladin if undead => 150,
+            PClass::Ranger if unaware => 200,
+            _ => 100,
+        }
+    }
+
+    /// Seconds per point of vitality regained while fed (Druids heal faster).
+    pub fn regen_time(self) -> f32 {
+        if self == PClass::Druid { 10.0 } else { 14.0 }
+    }
+
+    /// Seconds per point of hunger lost (Shepherds go a third longer without food).
+    pub fn hunger_time(self) -> f32 {
+        if self == PClass::Shepherd { 30.0 } else { 20.0 }
+    }
+
+    /// How much a meal nourishes, in percent (Druids live off the land).
+    pub fn nutrition(self) -> i32 {
+        if self == PClass::Druid { 150 } else { 100 }
+    }
+
+    /// How often weapons and armour wear, as a fraction of the usual (Tinkers
+    /// look after their kit).
+    pub fn wear(self) -> f32 {
+        if self == PClass::Tinker { 0.5 } else { 1.0 }
     }
 }
 
@@ -434,7 +490,7 @@ impl Player {
         let dex = 14 + db;
         let int = 14 + ib;
         let max_vit = 20 + st / 2;
-        let max_mana = (int / 3).max(1) + if matches!(class, PClass::Mage | PClass::Druid) { 6 } else { 0 };
+        let max_mana = (int / 3).max(1) + class.bonus_mana();
         let mut skills = [0; SKILL_COUNT];
         for s in class.skills() {
             skills[*s as usize] = 4;
@@ -522,6 +578,11 @@ impl Player {
     /// Distance at which creatures that have not yet seen you notice you (Sneak).
     pub fn notice_range(&self, base: f32) -> f32 {
         base * (1.0 - self.skill(Skill::Sneak) as f32 * 0.04).max(0.45)
+    }
+
+    /// Mana a spell costs this player (Mages cast for two thirds of the usual).
+    pub fn spell_cost(&self, s: Spell) -> i32 {
+        if self.class == PClass::Mage { s.def().circle * 2 } else { s.mana_cost() }
     }
 
     pub fn has_spell(&self, s: Spell) -> bool {

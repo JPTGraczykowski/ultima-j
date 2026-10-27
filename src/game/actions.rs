@@ -5,7 +5,7 @@ use super::creatures::{AiState, Attitude};
 use super::items::{Class, Enchant, Item, ItemKind, Skill, Slot};
 use super::magic::{Spell, Targeting};
 use super::physics;
-use super::{ActiveSpell, DoorKind, EffectKind, EqSlot, Event, Game, ProjKind, Projectile};
+use super::{ActiveSpell, DoorKind, EffectKind, EqSlot, Event, Game, PClass, ProjKind, Projectile};
 use crate::art::textures::Tex;
 use crate::audio::Sfx;
 use crate::lang::Noun;
@@ -441,7 +441,7 @@ impl Game {
             self.sound(Sfx::Hit);
             let cond = item.condition_word().trim_end();
             self.msg(if cond.is_empty() { t!("You repair the {}. It is as good as new.", &name) } else { t!("You repair the {}. It is now {}.", &name, crate::lang::agree(cond, &name)) });
-        } else if roll >= 90 + skill.min(9) {
+        } else if roll >= 90 + skill.min(9) && self.player.class != PClass::Tinker {
             item.quality = item.quality.saturating_sub(3);
             self.sound(Sfx::Miss);
             self.msg(t!("You slip and damage the {} further.", &name));
@@ -593,7 +593,8 @@ impl Game {
                     self.msg(t!("You are too full to eat that now."));
                     return Some(item);
                 }
-                self.player.hunger = (self.player.hunger + def.nutrition as f32).min(100.0);
+                let food = def.nutrition * self.player.class.nutrition() / 100;
+                self.player.hunger = (self.player.hunger + food as f32).min(100.0);
                 self.sound(Sfx::Eat);
                 let taste = match item.kind {
                     ItemKind::Mushroom => t!("That mushroom tasted rather odd."),
@@ -767,7 +768,7 @@ impl Game {
             return;
         };
         let def = spell.def();
-        let cost = spell.mana_cost();
+        let cost = self.player.spell_cost(spell);
         if self.player.max_circle() < def.circle {
             self.msg(t!("You are not experienced enough to cast that spell."));
             return;
@@ -1302,6 +1303,49 @@ mod tests {
         let n = g.level().npc(id).unwrap();
         assert!(n.paralyzed > 0.0 && n.hp < n.max_hp, "the troll was not snared");
         assert!(g.level().items.iter().all(|i| i.item.kind != ItemKind::Ward), "the ward should be spent");
+    }
+
+    #[test]
+    fn profession_traits() {
+        // Mages cast for less.
+        let mage = Player::new("T", PClass::Mage, false);
+        let fighter = Player::new("T", PClass::Fighter, false);
+        assert!(mage.spell_cost(Spell::Fireball) < fighter.spell_cost(Spell::Fireball));
+        // Bards learn more, Shepherds toughen more, with each level.
+        let level_up = |class: PClass| {
+            let mut g = game(class);
+            let vit = g.player.max_vit;
+            g.gain_exp(Player::exp_for_level(2));
+            (g.player.skill_points, g.player.max_vit - vit)
+        };
+        assert_eq!(level_up(PClass::Bard).0, 4);
+        assert_eq!(level_up(PClass::Fighter).0, 3);
+        assert!(level_up(PClass::Shepherd).1 > level_up(PClass::Bard).1);
+        // Druids get more from a meal.
+        let meal = |class: PClass| {
+            let mut g = game(class);
+            g.player.hunger = 10.0;
+            g.use_item(Item::new(ItemKind::Bread), None);
+            g.player.hunger
+        };
+        assert!(meal(PClass::Druid) > meal(PClass::Fighter));
+        // Rangers strike unwary foes twice as hard; Paladins smite the undead.
+        let blow = |class: PClass, race: Race, aware: bool| {
+            let mut g = game(class);
+            let id = g.level_mut().add_npc(Npc::new(0, race, 9.5, 5.5));
+            let n = g.level_mut().npc_mut(id).unwrap();
+            n.hp = 100;
+            if aware {
+                n.ai = AiState::Attack;
+            }
+            ai::damage_npc(&mut g, id, 4, true);
+            100 - g.level().npc(id).unwrap().hp
+        };
+        assert_eq!(blow(PClass::Ranger, Race::Rat, false), 8);
+        assert_eq!(blow(PClass::Ranger, Race::Rat, true), 4);
+        assert_eq!(blow(PClass::Fighter, Race::Rat, false), 4);
+        assert_eq!(blow(PClass::Paladin, Race::Skeleton, true), 6);
+        assert_eq!(blow(PClass::Paladin, Race::Rat, true), 4);
     }
 
     #[test]

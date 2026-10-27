@@ -822,17 +822,23 @@ impl CharGen {
             }
         }
         if self.step == 1 {
-            let desc = match ALL_CLASSES[self.sel] {
-                PClass::Fighter => t!("Strong and skilled with weapons."),
-                PClass::Mage => t!("A wielder of rune magic."),
-                PClass::Bard => t!("Charming, learned, a little of all."),
-                PClass::Tinker => t!("Clever with locks, traps and tools."),
-                PClass::Druid => t!("Magic, lore and the wild."),
-                PClass::Paladin => t!("A holy warrior."),
-                PClass::Ranger => t!("Tracker, archer, swordsman."),
-                PClass::Shepherd => t!("Humble, hardy and resourceful."),
+            let (desc, gift) = match ALL_CLASSES[self.sel] {
+                PClass::Fighter => (t!("Strong and skilled with weapons."), t!("Lands critical hits twice as often.")),
+                PClass::Mage => (t!("A wielder of rune magic."), t!("Spells cost a third less mana.")),
+                PClass::Bard => (t!("Charming, learned, a little of all."), t!("Gains an extra skill point each level.")),
+                PClass::Tinker => (t!("Clever with locks, traps and tools."), t!("Gear wears half as fast.")),
+                PClass::Druid => (t!("Magic, healing and the wild."), t!("Heals faster; food goes further.")),
+                PClass::Paladin => (t!("A holy warrior."), t!("Strikes the undead half again as hard.")),
+                PClass::Ranger => (t!("Tracker, archer, swordsman."), t!("Double damage on unwary foes.")),
+                PClass::Shepherd => (t!("Humble, hardy and resourceful."), t!("Hungers slower; gains more vitality.")),
             };
-            f.draw_centered(fb, 240, 170, desc, c(Ramp::Silver, 11));
+            let mut y = 162;
+            for text in [desc, gift] {
+                for l in f.wrap(text, 150) {
+                    f.draw_centered(fb, 240, y, &l, c(Ramp::Silver, 11));
+                    y += 8;
+                }
+            }
         }
         let (b, hs) = &ctx.art.ui.cursors[0];
         fb.blit(b, mouse.0 - hs.0, mouse.1 - hs.1);
@@ -846,35 +852,56 @@ pub fn starting_kit(p: &mut Player) {
     bag.contents.clear();
     p.pack[0] = Some(bag);
     p.pack[1] = Some(Item::new(ItemKind::Apple));
-    match p.class {
-        PClass::Fighter | PClass::Paladin => {
-            *p.equip.get_mut(EqSlot::Chest) = Some(Item::new(ItemKind::LeatherVest));
-            *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Dagger));
+    let runes = |p: &mut Player, rs: &[u8]| {
+        for r in rs {
+            p.runes[*r as usize] = true;
         }
-        PClass::Mage | PClass::Druid => {
-            p.runes[rune::IN as usize] = true;
-            p.runes[rune::LOR as usize] = true;
-            p.runes[rune::ORT as usize] = true;
-            p.runes[rune::JUX as usize] = true;
-            p.pack[2] = Some(Item::new(ItemKind::Candle));
+    };
+    let kit: Vec<Item> = match p.class {
+        PClass::Fighter => {
+            *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Shortsword));
+            *p.equip.get_mut(EqSlot::Shield) = Some(Item::new(ItemKind::WoodenShield));
+            *p.equip.get_mut(EqSlot::Chest) = Some(Item::new(ItemKind::LeatherVest));
+            *p.equip.get_mut(EqSlot::Head) = Some(Item::new(ItemKind::LeatherCap));
+            vec![]
+        }
+        PClass::Paladin => {
+            *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Mace));
+            *p.equip.get_mut(EqSlot::Chest) = Some(Item::new(ItemKind::LeatherVest));
+            runes(p, &[rune::IN, rune::BET, rune::SANCT, rune::MANI]);
+            vec![]
+        }
+        PClass::Mage => {
+            runes(p, &[rune::IN, rune::LOR, rune::ORT, rune::JUX, rune::BET, rune::SANCT]);
+            vec![Item::new(ItemKind::Candle), Item::new(ItemKind::BluePotion)]
+        }
+        PClass::Druid => {
+            *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Cudgel));
+            runes(p, &[rune::IN, rune::LOR, rune::MANI, rune::YLEM, rune::BET]);
+            vec![Item::new(ItemKind::Candle)]
+        }
+        PClass::Bard => {
+            *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Dagger));
+            runes(p, &[rune::IN, rune::LOR, rune::SANCT, rune::HUR]);
+            vec![Item::new(ItemKind::Coin).qty(40), Item::new(ItemKind::Wine)]
         }
         PClass::Tinker => {
-            p.pack[2] = Some(Item::new(ItemKind::Lockpick));
             *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Cudgel));
+            *p.equip.get_mut(EqSlot::Hands) = Some(Item::new(ItemKind::LeatherGloves));
+            vec![Item::new(ItemKind::Lockpick), Item::new(ItemKind::Torch)]
         }
         PClass::Ranger => {
             *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Sling));
-            p.pack[2] = Some(Item::new(ItemKind::SlingStone).qty(12));
             *p.equip.get_mut(EqSlot::Feet) = Some(Item::new(ItemKind::LeatherBoots));
-        }
-        PClass::Bard => {
-            p.pack[2] = Some(Item::new(ItemKind::Coin).qty(20));
-            *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Dagger));
+            vec![Item::new(ItemKind::SlingStone).qty(20), Item::new(ItemKind::Dagger)]
         }
         PClass::Shepherd => {
             *p.equip.get_mut(EqSlot::Weapon) = Some(Item::new(ItemKind::Cudgel));
-            p.pack[2] = Some(Item::new(ItemKind::Bread));
+            vec![Item::new(ItemKind::Bread), Item::new(ItemKind::Cheese), Item::new(ItemKind::WaterFlask)]
         }
+    };
+    for (slot, it) in p.pack.iter_mut().skip(2).zip(kit) {
+        *slot = Some(it);
     }
 }
 
@@ -902,4 +929,28 @@ pub fn draw_credits(ctx: &mut Ctx, fb: &mut Bitmap, t: f32) {
         ctx.art.font.draw_centered(fb, 160, y, if l.is_empty() { "" } else { t!(*l) }, c(Ramp::Gold, 12));
     }
     ctx.art.font.draw_centered(fb, 160, 188, t!("(click to return)"), c(Ramp::Purple, 10));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// No two professions start with the same skills, gear and runes.
+    #[test]
+    fn every_profession_starts_differently() {
+        let start = |class: PClass| {
+            let mut p = Player::new("T", class, false);
+            starting_kit(&mut p);
+            let gear: Vec<ItemKind> = crate::game::ALL_EQ.iter().filter_map(|s| p.equip.get(*s).as_ref()).chain(p.pack.iter().flatten()).map(|i| i.kind).collect();
+            (p.skills, p.runes, gear)
+        };
+        for (i, a) in ALL_CLASSES.iter().enumerate() {
+            let sa = start(*a);
+            assert!(sa.2.len() <= crate::game::PACK_SIZE + 4, "{:?}", a);
+            for b in &ALL_CLASSES[i + 1..] {
+                let sb = start(*b);
+                assert!(sa.0 != sb.0 && sa.2 != sb.2, "{:?} and {:?} start alike", a, b);
+            }
+        }
+    }
 }

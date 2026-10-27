@@ -374,13 +374,13 @@ impl Game {
         while self.player.level < 16 && self.player.exp >= Player::exp_for_level(self.player.level + 1) {
             self.player.level += 1;
             let p = &mut self.player;
-            let vit_gain = 3 + p.st / 6;
+            let vit_gain = 3 + p.st / 6 + p.class.bonus_vit_per_level();
             let mana_gain = 1 + p.int / 6 + p.skills[items::Skill::Mana as usize] / 4;
             p.max_vit += vit_gain;
             p.vit += vit_gain;
             p.max_mana += mana_gain;
             p.mana += mana_gain;
-            p.skill_points += 3;
+            p.skill_points += p.class.skill_points_per_level();
             let lvl = p.level;
             self.sound(Sfx::LevelUp);
             self.sys(t!("You have attained experience level {}! You may improve your skills.", lvl));
@@ -402,7 +402,7 @@ impl Game {
         let p = &mut self.player;
         // Hunger and fatigue.
         let before = p.hunger;
-        p.hunger = (p.hunger - dt / 20.0).max(0.0);
+        p.hunger = (p.hunger - dt / p.class.hunger_time()).max(0.0);
         p.fatigue = (p.fatigue + dt / 36.0).min(100.0);
         let hunger_msg = if before >= 25.0 && p.hunger < 25.0 {
             Some(t!("You are getting hungry."))
@@ -414,7 +414,7 @@ impl Game {
         // Regeneration.
         let p = &mut self.player;
         if p.hunger > 0.0 {
-            p.regen += dt / if p.hunger > 25.0 { 14.0 } else { 30.0 };
+            p.regen += dt / if p.hunger > 25.0 { p.class.regen_time() } else { 30.0 };
         } else {
             p.regen -= dt / 15.0;
         }
