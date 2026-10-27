@@ -573,6 +573,15 @@ Malchor. Oczywiście. Brama pamięta, co zrobił Kamieniowi, i go pali. Ale otwo
 -- what
 Kiedyś byłem Varianem, lordem kolonii, w której wszystkie ludy żyły razem. Gdy pękł Kamień, zszedłem tutaj i zasiadłem na Tronie Dusz, by umarli Otchłani mogli spoczywać w pokoju. Od tamtej pory ich trzymam. Ale jestem stary, {name}, a mój płomień przygasa.
 * Dlaczego umarli powstają? -> rise
+* Przyniosł{em|am} dusze, które ukradł ci Malchor. -> souls ? item:SoulJar & !flag:souls_returned
+* Wróć. -> start
+
+-- souls
+Dzbany Malchora... to moi. Mój lud. ... (Łamie pieczęć i coś na kształt ciepłego oddechu przechodzi w niego.) Są w domu. Mój płomień płonie przez to odrobinę pewniej, {name}. Dziękuję ci.
+! take SoulJar
+! flag souls_returned 1
+! heal
+! exp 150
 * Wróć. -> start
 
 -- rise
@@ -741,3 +750,40 @@ Moja księga! Zatrzymaj ją i przeczytaj, jeśli chcesz; jest w niej notatka, kt
 ! give RedPotion
 ! exp 120
 * Spoczywaj w pokoju, Ysolde. -> end
+
+// ----------------------------------------------------------- level 5
+
+=== ilsa
+-- start
+Kto tam? ... Nie jesteś {jednym|jedną} z jego. Masz rozum za tymi oczami. Jestem Ilsa. Byłam uczennicą Malchora, dopóki nie zadałam o jedno pytanie za dużo.
+* Czemu tu jesteś? -> why ? !flag:ilsa_done
+* Opowiedz mi o Malchorze. -> malchor
+* Znalazł{em|am} twój notatnik. -> notebook ? item:IlsaNotebook & !flag:ilsa_done
+* Bywaj. -> end
+
+-- why
+Trzyma mnie dla moich rąk. Ktoś musi mielić kostny pył i mieszać w kotle, a wydrążeni nie mają palców do delikatnej roboty. Kiedy próbowałam odejść, napuścił na mnie chochliki. Mój notatnik wciąż leży w jego pracowni, przy regałach - wszystko, czego się dowiedziałam o jego zabezpieczeniach. Przynieś go, a dam ci drogę do jego skarbca.
+! flag ilsa_quest 1
+* Przyniosę go. -> end
+* Wróć. -> start
+
+-- malchor
+Był nadwornym magiem lorda Variana i najlepszym z nas. Chciał światła Kamienia dla siebie - by żyć wiecznie, mówił, i by kolonia też żyła wiecznie. Wybuch, który rozbił Kamień, zrujnował mu ciało. Teraz trzyma je w całości skradzionymi duszami, a te, których nie może użyć, zamyka w dzbanach w swoim skarbcu, na wschód od przedsionka.
+* Czego chce teraz? -> wants
+* Wróć. -> start
+
+-- wants
+Tronu. Uścisk Variana na umarłych słabnie, a kto zasiądzie na Tronie Dusz, ten trzyma każdą duszę w Otchłani. Ale brama go pali. Czeka na kogoś, kogo brama przepuści. Czeka już bardzo długo.
+* Wróć. -> start
+
+-- notebook
+Moje notatki! ... Masz. Lata temu skopiowałam klucz do jego skarbca i zaszyłam go w rąbku sukni; nigdy nie miałam odwagi go użyć. Dusze są tam w dzbanach, jak przetwory. Zanieś je Panu Dusz, jeśli zdołasz do niego dotrzeć. Należą do niego, nie do Malchora.
+! take IlsaNotebook
+! give SilverKey 501
+! flag ilsa_done 1
+! exp 100
+* A ty? -> stay
+
+-- stay
+Zostanę. Kiedy Malchor upadnie - a wyglądasz na kogoś, przez kogo różne rzeczy upadają - wyjdę stąd o własnych siłach.
+* Żegnaj więc, Ilso. -> end

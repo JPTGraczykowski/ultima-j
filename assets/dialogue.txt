@@ -572,6 +572,15 @@ Malchor. Of course. The gate remembers what he did to the Stone, and it burns hi
 -- what
 Once I was Varian, lord of a colony where all peoples lived as one. When the Stone broke, I came down here and took up the Throne of Souls, so that the dead of the Abyss might rest. I have held them ever since. But I am old, {name}, and my flame gutters.
 * Why do the dead rise? -> rise
+* I have brought souls Malchor stole from thee. -> souls ? item:SoulJar & !flag:souls_returned
+* Back. -> start
+
+-- souls
+Malchor's jars... these are mine. My people. ... (He breaks the seal, and something like a warm breath passes into him.) They are home. My flame burns a little steadier for it, {name}. Thank thee.
+! take SoulJar
+! flag souls_returned 1
+! heal
+! exp 150
 * Back. -> start
 
 -- rise
@@ -740,3 +749,40 @@ My book! Keep it, and read it if thou wilt; there is a note in it that was never
 ! give RedPotion
 ! exp 120
 * Rest well, Ysolde. -> end
+
+// ----------------------------------------------------------- level 5
+
+=== ilsa
+-- start
+Who's there? ... Not one of his. Thou hast a mind behind thine eyes. I am Ilsa. I was Malchor's apprentice, before I asked one question too many.
+* Why art thou here? -> why ? !flag:ilsa_done
+* Tell me of Malchor. -> malchor
+* I have found thy notebook. -> notebook ? item:IlsaNotebook & !flag:ilsa_done
+* Farewell. -> end
+
+-- why
+He keeps me for my hands. Someone must grind the bone-dust and stir the cauldron, and hollows have no fingers for fine work. When I tried to leave, he set the imps on me. My notebook is still in his study, by the shelves - everything I learned of his wards. Bring it, and I can give thee the way into his vault.
+! flag ilsa_quest 1
+* I will bring it. -> end
+* Back. -> start
+
+-- malchor
+He was court mage to Lord Varian, and the best of us. He wanted the Stone's light for himself - to live forever, he said, and to make the colony live forever too. The blast that broke the Stone ruined his body. Now he holds it together with stolen souls, and he jars the ones he cannot use in his vault, east of the antechamber.
+* What does he want now? -> wants
+* Back. -> start
+
+-- wants
+The throne. Varian's grip on the dead is failing, and whoever sits the Throne of Souls holds every soul in the Abyss. But the Shard Gate burns him. He waits for someone the gate will let through. He has been waiting a long time.
+* Back. -> start
+
+-- notebook
+My notes! ... Here. I copied the key to his vault years ago and sewed it into my hem; I never had the courage to use it. The souls in there are in jars, like preserves. Take them to the Lord of Souls, if thou canst reach him. They belong with him, not with Malchor.
+! take IlsaNotebook
+! give SilverKey 501
+! flag ilsa_done 1
+! exp 100
+* And thou? -> stay
+
+-- stay
+I will stay. When Malchor falls - and thou hast the look of someone who makes things fall - I will walk out of here on my own feet.
+* Then farewell, Ilsa. -> end

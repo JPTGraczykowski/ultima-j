@@ -84,7 +84,7 @@ pub const ALL_ITEM_KINDS: &[ItemKind] = {
         Bread, Cheese, Meat, Fish, Mushroom, WaterFlask, Wine, RedPotion, BluePotion, GreenPotion, YellowPotion, Torch, Candle,
         Lantern, Bag, Pack, Box, RuneBag, IronKey, GoldKey, SilverKey, RuneStone, Wand, Coin, RedGem, BlueGem, GreenGem,
         WhiteGem, GoldNugget, Scroll, Book, Map, Bedroll, Rock, Bone, Skull, Lockpick, Rope, Pole, Shovel, ShardOfValor,
-        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, CaptainsSword, EngravedRing, ApprenticeHammer, SquiresShield, BookOfRites, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
+        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, CaptainsSword, EngravedRing, ApprenticeHammer, SquiresShield, BookOfRites, IlsaNotebook, SoulJar, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
         Campfire, Bed, Brazier, Statue, Bookshelf, Pillar, Gravestone, Cauldron, MoonOrb, Corpse, Blood, Stalagmite, Web, Ward,
     ]
 };
@@ -595,6 +595,8 @@ pub const SCROLLS: &[&str] = &[
     "A list in Malchor's hand, every line crossed out but the last: 'Aldric - the bones taken, the ghost bound. Corwin - drunk. Elsmore - too thin to bother. The knight who took the blast - risen, and walking. Save for last.'",
     // 13 - Ysolde's book of rites
     "The Rites of the Embalmers. To lay the restless dead: speak each name aloud, anoint the bones, and close the earth over them. A name forgotten is a soul that wanders. In the margin, in a small neat hand: The colony's chronicler came to write of our rites. We gave her a cell behind the north wall of the west hall; its door is a stone like any other. - Ysolde",
+    // 14 - Ilsa's notebook
+    "An apprentice's notes on her master's wards. The vault east of the antechamber answers to his silver key; I have made a copy. The jars in it hold the souls he could not use - never open one near him. The iron hand by the cauldron raises his private way over the fire, south of the cells. I am not to know that. - I.",
 ];
 
 /// The pages of the Chronicle of the Colony, one on each level, indexed by

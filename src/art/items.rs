@@ -714,6 +714,26 @@ pub fn icon(kind: ItemKind, data: u16, lit: bool) -> Bitmap {
             b.hline(6, 11, 9, c(Ramp::Silver, 12));
             b
         }
+        IlsaNotebook => {
+            let mut b = book();
+            for (x, y) in [(6, 9), (8, 9), (10, 9)] {
+                b.set(x, y, c(Ramp::Purple, 12));
+            }
+            b
+        }
+        SoulJar => {
+            // A sealed jar with a pale light inside.
+            let mut cv = canvas();
+            let glass = cv.add_mat(Mat::new(Ramp::Silver, 5, 15).spec(0.9));
+            let lid = cv.add_mat(Mat::new(Ramp::Earth, 2, 8));
+            cv.ellipse(8.0, 10.0, 4.5, 4.8, 0.0, 1.0, glass);
+            cv.capsule((5.0, 4.5), (11.0, 4.5), 1.2, 1.2, 1.0, 1.0, lid);
+            let mut b = cv.render(true, true);
+            for (x, y) in [(7, 9), (8, 10), (9, 9), (8, 11)] {
+                b.set(x, y, c(Ramp::Gold, 15));
+            }
+            b
+        }
         ChroniclePage => {
             // A loose leaf, torn along one edge, with a red seal.
             let mut cv = canvas();

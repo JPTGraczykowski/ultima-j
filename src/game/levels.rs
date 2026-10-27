@@ -402,7 +402,7 @@ impl<'a> B<'a> {
 
     pub fn lever(&mut self, wall_x: i32, wall_z: i32, door: u32) {
         self.wall(wall_x, wall_z, Tex::WallLever);
-        self.lv.switches.push(Switch { tx: wall_x, tz: wall_z, door, on: false, want: None });
+        self.lv.switches.push(Switch { tx: wall_x, tz: wall_z, door, on: false, want: None, bridge: Vec::new() });
     }
 
     /// A combination lock: levers on the walls at (x, z), all starting off,
@@ -413,9 +413,19 @@ impl<'a> B<'a> {
         assert!(levers.iter().any(|l| l.2), "a combination lock that starts open");
         for &(x, z, want) in levers {
             self.wall(x, z, Tex::WallLever);
-            self.lv.switches.push(Switch { tx: x, tz: z, door, on: false, want: Some(want) });
+            self.lv.switches.push(Switch { tx: x, tz: z, door, on: false, want: Some(want), bridge: Vec::new() });
         }
         self.lv.doors.iter_mut().find(|d| d.id == door).unwrap().remote = true;
+    }
+
+    /// A lever on the wall at (wall_x, wall_z) that raises a bridge at
+    /// `floor` over the liquid tiles of the rectangle (x, z, w, h). The tests
+    /// check the level with every bridge raised.
+    #[allow(clippy::too_many_arguments)]
+    pub fn bridge_lever(&mut self, wall_x: i32, wall_z: i32, x: i32, z: i32, w: i32, h: i32, floor: i16) {
+        self.wall(wall_x, wall_z, Tex::WallLever);
+        let tiles = (z..z + h).flat_map(|zz| (x..x + w).map(move |xx| (xx, zz, floor))).collect();
+        self.lv.switches.push(Switch { tx: wall_x, tz: wall_z, door: 0, on: false, want: None, bridge: tiles });
     }
 
     /// A pressure plate on tile (x, z) that opens a door when stepped on.
@@ -1537,6 +1547,32 @@ fn level5(db: &DialogueDb) -> Level {
     b.item(ItemKind::GoldNugget, 56.0, 28.0);
     b.item(ItemKind::BlueGem, 50.5, 26.5);
     b.item(ItemKind::RedPotion, 47.5, 31.5);
+
+    // Side quests. Ilsa, Malchor's apprentice, is kept in the cells; her
+    // notebook lies in his study, and for it she gives a copy of his vault
+    // key. The jar of souls in the vault goes to Varian.
+    b.named(Race::Human, 4, "Ilsa", "ilsa", 12.0, 29.5, 0.0);
+    b.put(Item::new(ItemKind::IlsaNotebook).data(14), 9.6, 11.4);
+    b.item(ItemKind::SoulJar, 50.5, 14.5);
+
+    // Maera's body in the cave of fire, with the last page of her chronicle.
+    b.container(ItemKind::Corpse, 49.5, 29.5, vec![Item::new(ItemKind::ChroniclePage).data(4), Item::new(ItemKind::Candle)]);
+
+    // Malchor's private way, south of the cells: a hoard across a river of
+    // lava, and the bridge over it raised by a lever by his cauldron.
+    b.style(Tex::Flagstones, Tex::RedBricks, Tex::CeilingRock);
+    b.corridor(12, 32, 12, 34, 0, 9);
+    b.room(5, 35, 13, 9, 0, 11);
+    b.area("Ember hall", 11, 36);
+    b.lava(5, 38, 13, 2, -3);
+    b.bridge_lever(16, 20, 11, 38, 2, 2, 0);
+    b.writing(11, 34, "MY OWN WAY. Let whoever would cross it find my hand. - M.");
+    b.area("Malchor's hoard", 11, 42);
+    b.item(ItemKind::Brazier, 5.6, 35.6);
+    b.item(ItemKind::Brazier, 17.4, 35.6);
+    b.container(ItemKind::Chest, 11.5, 42.4, vec![Item::new(ItemKind::JeweledSword), Item::new(ItemKind::Coin).qty(60).data(60), Item::new(ItemKind::BluePotion)]);
+    b.item(ItemKind::Statue, 6.5, 42.5);
+    b.item(ItemKind::Statue, 16.5, 42.5);
     b.finish()
 }
 
@@ -1637,11 +1673,21 @@ mod tests {
         seen
     }
 
+    /// The levels as the player can leave them: every bridge lever pulled.
+    fn built() -> Vec<Level> {
+        let mut levels = build_all();
+        for lv in levels.iter_mut() {
+            let tiles: Vec<(i32, i32, i16)> = lv.switches.iter().flat_map(|s| s.bridge.clone()).collect();
+            lv.raise_bridge(&tiles);
+        }
+        levels
+    }
+
     /// Every level's NPCs, items and stairs must be reachable from its start
     /// (treating doors as passable), walking, swimming and jumping.
     #[test]
     fn levels_are_connected() {
-        let levels = build_all();
+        let levels = built();
         for (li, lv) in levels.iter().enumerate() {
             let m = &lv.map;
             let idx = |x: i32, z: i32| (z * MAP_SIZE + x) as usize;
@@ -1680,7 +1726,7 @@ mod tests {
     /// bottom Varian) lies across a gap.
     #[test]
     fn gaps_must_be_jumped() {
-        for (li, lv) in build_all().iter().enumerate() {
+        for (li, lv) in built().iter().enumerate() {
             let m = &lv.map;
             let idx = |x: i32, z: i32| (z * MAP_SIZE + x) as usize;
             let start = (lv.start.0.floor() as i32, lv.start.1.floor() as i32);
@@ -1708,7 +1754,7 @@ mod tests {
     /// they can get back to the start (except from lava, which kills).
     #[test]
     fn no_dead_ends() {
-        for (li, lv) in build_all().iter().enumerate() {
+        for (li, lv) in built().iter().enumerate() {
             let m = &lv.map;
             let start = (lv.start.0.floor() as i32, lv.start.1.floor() as i32);
             let there = reachable(m, start, true);
@@ -1736,7 +1782,7 @@ mod tests {
             }
         }
         let mut found = [false; 24];
-        for lv in build_all() {
+        for lv in built() {
             let items: Vec<Item> = lv.items.iter().map(|w| w.item.clone()).collect();
             collect(&items, &mut found);
         }

@@ -533,6 +533,20 @@ impl Game {
             self.msg(t!("You pull the lever, but nothing seems to happen."));
             return;
         };
+        if !sw.bridge.is_empty() {
+            if sw.on {
+                self.sound(Sfx::Locked);
+                self.msg(t!("The lever is stuck fast."));
+                return;
+            }
+            sw.on = true;
+            let tiles = sw.bridge.clone();
+            self.levels[lvl].raise_bridge(&tiles);
+            self.sound(Sfx::Lever);
+            self.sound(Sfx::DoorOpen);
+            self.msg(t!("You pull the lever. Far off, chains rattle and something heavy swings into place."));
+            return;
+        }
         sw.on = !sw.on;
         let door = sw.door;
         let on = sw.on;
@@ -1119,7 +1133,7 @@ mod tests {
         let door = g.level_mut().add_door(1, 1, crate::game::DoorAxis::NS, crate::game::DoorKind::Iron, 0);
         g.level_mut().doors.iter_mut().find(|d| d.id == door).unwrap().remote = true;
         for (x, want) in [(10, true), (12, false), (14, true)] {
-            g.level_mut().switches.push(Switch { tx: x, tz: 5, door, on: false, want: Some(want) });
+            g.level_mut().switches.push(Switch { tx: x, tz: 5, door, on: false, want: Some(want), bridge: Vec::new() });
         }
         let open = |g: &Game| g.level().doors.iter().find(|d| d.id == door).unwrap().opening;
         g.pull_lever(10, 5);

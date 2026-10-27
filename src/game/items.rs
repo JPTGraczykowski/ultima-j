@@ -232,6 +232,10 @@ pub enum ItemKind {
     SquiresShield,
     /// Ysolde's book of rites, in the catacombs (level 4); `data` is its text.
     BookOfRites,
+    /// Ilsa's notebook, in Malchor's study (level 5); `data` is its text.
+    IlsaNotebook,
+    /// The souls Malchor jarred, in his soul vault (level 5), for Varian.
+    SoulJar,
     /// A page of the colony's chronicle; `data` is the page, 0-4 (`dialogue::CHRONICLE`).
     ChroniclePage,
     // Fixtures
@@ -452,6 +456,8 @@ impl ItemKind {
             ApprenticeHammer => d("apprentice's hammer", "apprentice's hammers", Class::Quest, 6, 0),
             SquiresShield => arm("squire's shield", "squire's shields", 14, 35, Slot::Shield, 3),
             BookOfRites => d("book of rites", "books of rites", Class::Book, 5, 0),
+            IlsaNotebook => d("apprentice's notebook", "apprentice's notebooks", Class::Book, 3, 0),
+            SoulJar => d("jar of souls", "jars of souls", Class::Quest, 6, 0),
             ChroniclePage => d("chronicle page", "chronicle pages", Class::Scroll, 1, 0),
             Barrel => fixture("barrel", (0.42, 0.55)),
             Table => fixture("table", (0.8, 0.45)),

@@ -107,6 +107,8 @@
 @apprentice's hammer = młotek czeladnika | młotka czeladnika | młotek czeladnika | młotki czeladnika | młotków czeladnika | m
 @squire's shield = tarcza giermka | tarczy giermka | tarczę giermka | tarcze giermka | tarcz giermka | f
 @book of rites = księga obrzędów | księgi obrzędów | księgę obrzędów | księgi obrzędów | ksiąg obrzędów | f
+@apprentice's notebook = notatnik uczennicy | notatnika uczennicy | notatnik uczennicy | notatniki uczennicy | notatników uczennicy | m
+@jar of souls = dzban dusz | dzbana dusz | dzban dusz | dzbany dusz | dzbanów dusz | m
 @chronicle page = karta kroniki | karty kroniki | kartę kroniki | karty kroniki | kart kroniki | f
 
 # ------------------------------------------------- furniture and fixtures
@@ -171,6 +173,7 @@
 @Ssethra = Ssethra | Ssethry | Ssethrę | Ssethrowie | Ssethrów | mp
 @Ysolde = Ysolde | Ysolde | Ysolde | Ysolde | Ysolde | f
 @Pell = Pell | Pella | Pella | Pellowie | Pellów | mp
+@Ilsa = Ilsa | Ilsy | Ilsę | Ilsy | Ils | f
 @Thorgrim = Thorgrim | Thorgrima | Thorgrima | Thorgrimowie | Thorgrimów | mp
 @Hilda = Hilda | Hildy | Hildę | Hildy | Hild | f
 @Bodric = Bodric | Bodrica | Bodrica | Bodricowie | Bodriców | mp
@@ -690,6 +693,15 @@ You pull the lever. Somewhere in the wall, a mechanism clicks.
 
 Something gives beneath your feet. Somewhere, stone grinds on stone.
 = Coś ustępuje ci pod stopami. Gdzieś kamień zgrzyta o kamień.
+
+The lever is stuck fast.
+= Dźwignia ani drgnie.
+
+You pull the lever. Far off, chains rattle and something heavy swings into place.
+= Pociągasz dźwignię. W oddali grzechoczą łańcuchy i coś ciężkiego opada na swoje miejsce.
+
+An apprentice's notes on her master's wards. The vault east of the antechamber answers to his silver key; I have made a copy. The jars in it hold the souls he could not use - never open one near him. The iron hand by the cauldron raises his private way over the fire, south of the cells. I am not to know that. - I.
+= Notatki uczennicy o zabezpieczeniach jej mistrza. Skarbiec na wschód od przedsionka otwiera jego srebrny klucz; zrobiłam kopię. Dzbany w środku kryją dusze, których nie mógł użyć - nigdy nie otwieraj żadnego przy nim. Żelazna dłoń przy kotle wznosi jego prywatną drogę nad ogniem, na południe od cel. Nie powinnam o tym wiedzieć. - I.
 
 The Rites of the Embalmers. To lay the restless dead: speak each name aloud, anoint the bones, and close the earth over them. A name forgotten is a soul that wanders. In the margin, in a small neat hand: The colony's chronicler came to write of our rites. We gave her a cell behind the north wall of the west hall; its door is a stone like any other. - Ysolde
 = Obrzędy Balsamistów. By ukoić niespokojnych zmarłych: wypowiedz na głos każde imię, namaść kości i zamknij nad nimi ziemię. Zapomniane imię to dusza, która się błąka. Na marginesie, drobnym, starannym pismem: Kronikarka kolonii przyszła spisać nasze obrzędy. Daliśmy jej celę za północną ścianą zachodniej sali; jej drzwi to kamień jak każdy inny. - Ysolde
@@ -1320,6 +1332,9 @@ King Haldor, who burned the nests of the lizard-folk to drive them from the deep
 
 King Bren, who opened his granaries to the starving.
 = Król Bren, który otworzył spichlerze dla głodujących.
+
+MY OWN WAY. Let whoever would cross it find my hand. - M.
+= MOJA WŁASNA DROGA. Kto chce nią przejść, niech znajdzie moją dłoń. - M.
 DIGGING CLOSED. The east face fell into the old shaft. Gold glints on the ledge beyond, but no fool is to jump for it. - Thorgrim
 = WYROBISKO ZAMKNIĘTE. Wschodnia ściana runęła do starego szybu. Na półce za nim błyszczy złoto, ale żaden głupiec nie ma po nie skakać. - Thorgrim
 The tunnel floor has fallen into an old shaft. A good run and a leap would carry you over.

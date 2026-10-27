@@ -125,6 +125,10 @@ pub struct Switch {
     /// of the lock is in the position it wants (see `B::combo`).
     #[serde(default)]
     pub want: Option<bool>,
+    /// Tiles a bridge lever raises out of the lava or water, at this floor
+    /// height, when first pulled (see `B::bridge_lever`). It stays up.
+    #[serde(default)]
+    pub bridge: Vec<(i32, i32, i16)>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -152,6 +156,17 @@ pub struct Level {
 }
 
 impl Level {
+    /// Build a bridge lever's tiles into the map.
+    pub fn raise_bridge(&mut self, tiles: &[(i32, i32, i16)]) {
+        for &(x, z, floor) in tiles {
+            if let Some(t) = self.map.get_mut(x, z) {
+                t.floor = floor;
+                t.floor_tex = crate::art::textures::Tex::Bridge;
+                t.liquid = crate::world::map::Liquid::None;
+            }
+        }
+    }
+
     pub fn new(name: &str, map: Map) -> Level {
         Level {
             name: name.to_string(),
