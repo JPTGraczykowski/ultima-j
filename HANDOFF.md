@@ -2,7 +2,7 @@
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
 original's style. Status (2026-10-27): the game is complete and playable from
-the title screen to the victory screen, and all 81 tests pass. What remains is
+the title screen to the victory screen, and all 82 tests pass. What remains is
 mostly balance.
 
 ## Done
@@ -113,7 +113,7 @@ mostly balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 81 tests: level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter, five choices per conversation node
+cargo test --release                       # 82 tests: level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter, five choices per conversation node
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --script "play; level 1 21.5 47.5; goto 21.5 47.5 180; key W 23; key W+J 1; key W 20"   # a running jump

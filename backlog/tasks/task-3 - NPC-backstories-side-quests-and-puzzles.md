@@ -1,11 +1,11 @@
 ---
 id: TASK-3
 title: NPC backstories, side quests and puzzles
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-10-22T11:17:00Z'
-updated_date: '2026-10-27T12:34:00Z'
+updated_date: '2026-10-27T12:44:00Z'
 labels: []
 milestone: m-0
 dependencies:
@@ -26,10 +26,10 @@ The levels need more to do between the main quests. Quests come from the NPCs, s
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Each level has 2 side quests and 2 puzzles or finding tasks
-- [ ] #2 One collection quest spans all five levels
-- [ ] #3 No conversation node shows more than 5 visible choices
-- [ ] #4 STORY.md, STORY.pl.md and the Polish translation are in step with assets/dialogue.txt
+- [x] #1 Each level has 2 side quests and 2 puzzles or finding tasks
+- [x] #2 One collection quest spans all five levels
+- [x] #3 No conversation node shows more than 5 visible choices
+- [x] #4 STORY.md, STORY.pl.md and the Polish translation are in step with assets/dialogue.txt
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -99,4 +99,18 @@ Level 4 done (2026-10-27): Ysolde is the ghost of the embalmers' rooms, made a n
 Level 5 done (2026-10-27): Ilsa (new, Human look 4, Malchor's apprentice in the cells): her notebook (IlsaNotebook, readable, SCROLLS 14) lies in Malchor's study; for it she gives a copy of the soul-vault key (SilverKey 501) and tells Malchor's story without spoiling the reveal. The jar of souls (SoulJar) in the vault goes to Varian (new 'souls' option under his 'Who art thou?' node; heal and exp). New bridge levers: Switch::bridge, B::bridge_lever, Level::raise_bridge; the level tests check the levels with every bridge raised. Malchor's private way: the ember hall south of the cells, a river of lava with his hoard beyond (jewelled sword), the bridge raised by a lever by his cauldron (the notebook says so). Maera's body lies in the cave of fire with the last chronicle page. Found a bug that predates this task: lava never burns, because Player::drown is reset every frame when not swimming, before the lava check adds to it; lava 3 steps deep cannot be climbed out of, so it is a pit that cannot kill. Raised with the user.
 
 Docs (2026-10-27): STORY.md and STORY.pl.md have a 'Side quests' section (the chronicle and each level's quests and puzzles); HANDOFF.md describes the new quest mechanics, the dialogue rules (new conversations at the end, five choices per node) and the test count (81). The lava bug is TASK-11. Still to do: play the side quests by hand.
+
+Closed (2026-10-27) after TASK-11 made lava burn. Checked the level 5 side areas against the fix: Maera's body in the cave of fire lies beside the lava, not in it; the ember hall hoard needs the bridge lever (or Levitate/Fly), as designed. Hand play signed off by the user.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Each of the five levels now has two side quests and two puzzles or finding tasks, all built from the NPCs' backstories (Corwin, Tobin, Hilda and Brann, Bodric, Hissk, Ssethra, Ysolde, Aldric, Ilsa, Varian). The Chronicle of the Colony runs across all five levels: Maera's five pages go to her brother Elsmore.
+
+New mechanics: item:Kind>=N and flag:NAME<N conditions, the flag+ action, 'move' and 'rest' dialogue actions, lever combination locks, pressure plates and bridge levers. Each has a test, and the level tests check the levels with every bridge raised.
+
+Dialogue: new conversations are appended at the end of dialogue.txt so saved games still work. at_most_five_visible_choices keeps every node to five choices. STORY.md, STORY.pl.md and the Polish translation match the dialogue, and HANDOFF.md describes the mechanics.
+
+Verified: all 82 tests pass, each level was checked with scripted runs, and the user signed off on playing it by hand. Found and filed the lava bug (TASK-11, now fixed). Follow-up: TASK-6 should weigh the harder lava together with the new rewards.
+<!-- SECTION:FINAL_SUMMARY:END -->
