@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-22T11:17:00Z'
-updated_date: '2026-10-27T12:14:00Z'
+updated_date: '2026-10-27T12:23:00Z'
 labels: []
 milestone: m-0
 dependencies:
@@ -93,4 +93,6 @@ Level 1 done (2026-10-27): Corwin (new, old guard hall, look 2) and his captain'
 Level 2 done (2026-10-27): Brann (new, Hilda's son, on the diggings ledge with a broken leg; a red potion heals him and the new 'move X Z [YAW]' action sends him home to the quarters; Hilda then gives his father's chain leggings). Dain, Bodric's apprentice, is the corpse in the flooded drift (ApprenticeHammer; Bodric forges a broadsword, axe or mace). Bodric's flattery option moved into his mend node to keep start at 5 choices. Treasury under the storeroom: three levers on the west wall (north off, middle and south pulled), plaque by the door. Old vein: a secret door south of the deep mine with a miner's mark (Hilda describes the mark), Maera's camp and chronicle page 2. Checked by script: Brann and Hilda, Bodric, the treasury lock, the secret door.
 
 Level 3 done (2026-10-27): Hissk asks for three mushrooms for the sick clutch-mother Ssiva (item:Mushroom>=3; a third mushroom added to the fungus cavern; reward +2 Swimming). Ssethra is the lizardman by the stairs down, made a named exile (kept as an npc call so the rng holds): he asks the player to speak to Ssrath, who forgives him; he then gives two green potions and +1 Sneak and moves home to the village. Ssrath's 'Who was I?' moved under his Lord of Souls node to make room. Sunken vault north of the southern caves: a portcullis opened by plates at the bottom of a flooded sinkhole east of the caves (ramp out to the aqueduct passage), riddle plaque by the door. Plates now print a message when they open a door. Ossuary: three grave plaques on the north wall; Maera's empty grave has a box with chronicle page 3. Checked by script: Hissk, Ssethra and Ssrath, the vault shut and opened.
+
+Level 4 done (2026-10-27): Ysolde is the ghost of the embalmers' rooms, made a named friendly embalmer (kept as an npc call). Her book of rites (BookOfRites, readable, SCROLLS 13) lies in the catacombs; with it she performs the rites: the new 'rest X Z R' action crumbles the unnamed undead of the mass graves (the headless there are not undead and stay), and she gives two red potions. The book's margin names the chronicler's cell, a secret door in the north wall of the west wing, with chronicle page 4. Aldric's squire Pell lies in the mass graves corpse with his shield (SquiresShield, wearable); Aldric gives +2 Attack. Aldric's advice option hides while the shield is carried, to keep 5 choices. Tomb of the three kings south of the embalmers' rooms: a lever beside each king's plaque, raise the merciful (Orrin, Bren), leave Haldor. Checked by script: Ysolde and the mass graves, Aldric and the shield, the kings' lock.
 <!-- SECTION:NOTES:END -->

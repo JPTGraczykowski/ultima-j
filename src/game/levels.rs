@@ -1332,7 +1332,8 @@ fn level4(db: &DialogueDb) -> Level {
         b.item(ItemKind::BonePile, x, z);
     }
     b.item(ItemKind::Skull, 9.5, 43.5);
-    b.container(ItemKind::Corpse, 10.5, 39.5, vec![Item::new(ItemKind::PlateBoots), Item::new(ItemKind::Coin).qty(20).data(20)]);
+    // Pell, Sir Aldric's squire (Aldric's side quest).
+    b.container(ItemKind::Corpse, 10.5, 39.5, vec![Item::new(ItemKind::PlateBoots), Item::new(ItemKind::Coin).qty(20).data(20), Item::new(ItemKind::SquiresShield)]);
 
     // The embalmers' rooms east of the guardian's hall.
     b.style(Tex::MarbleTiles, Tex::CarvedFrieze, Tex::CeilingRock);
@@ -1340,7 +1341,7 @@ fn level4(db: &DialogueDb) -> Level {
     b.room(47, 42, 9, 7, 0, 10);
     b.area("Embalmers' rooms", 51, 45);
     b.light(47, 42, 9, 7, 4);
-    b.npc(Race::Ghost, 52.5, 45.5);
+    let ysolde = b.npc(Race::Ghost, 52.5, 45.5);
     b.item(ItemKind::Table, 49.0, 43.0);
     b.item(ItemKind::Table, 53.0, 43.0);
     b.item(ItemKind::Cauldron, 54.8, 47.6);
@@ -1349,6 +1350,57 @@ fn level4(db: &DialogueDb) -> Level {
     b.item(ItemKind::Candle, 53.0, 43.0);
     b.item(ItemKind::Wine, 48.0, 45.5);
     b.item(ItemKind::BluePotion, 55.0, 42.6);
+
+    // Side quests. The ghost of the embalmers' rooms is Ysolde, the last
+    // embalmer (she stays an `npc` call above so the rng holds). Her book
+    // of rites lies in the catacombs; with it she lays the mass graves to
+    // rest, and its margin names the chronicler's cell.
+    {
+        let n = b.npc_mut(ysolde);
+        n.name = Some("Ysolde".into());
+        n.talk = db.find("ysolde");
+        n.attitude = Attitude::Friendly;
+        n.ai = AiState::Idle;
+    }
+    b.put(Item::new(ItemKind::BookOfRites).data(13), 12.0, 6.5);
+
+    // The chronicler's cell, behind a secret door in the north wall of the
+    // west wing: the fourth page of Maera's chronicle.
+    b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
+    b.tile(8, 19, 0, 9);
+    b.door(8, 19, DoorAxis::NS, DoorKind::Secret, 0);
+    b.room(6, 15, 5, 4, 0, 9);
+    b.area("Chronicler's cell", 8, 16);
+    b.light(6, 15, 5, 4, 2);
+    b.item(ItemKind::Table, 8.5, 15.8);
+    b.put(Item::new(ItemKind::ChroniclePage).data(3), 8.5, 15.8);
+    b.item(ItemKind::Candle, 7.0, 15.6);
+    b.item(ItemKind::Bedroll, 10.0, 17.8);
+
+    // The tomb of the three kings, south of the embalmers' rooms. A lever
+    // beside each king's plaque in the antechamber: raise the merciful
+    // (Orrin on the west wall, Bren on the south), leave Haldor be.
+    b.style(Tex::MarbleTiles, Tex::CarvedFrieze, Tex::CeilingRock);
+    b.corridor(51, 49, 51, 51, 0, 9);
+    b.room(47, 52, 9, 3, 0, 10);
+    b.area("Kings' antechamber", 51, 53);
+    b.light(47, 52, 9, 3, 4);
+    b.tile(51, 55, 0, 9);
+    let tomb = b.door(51, 55, DoorAxis::NS, DoorKind::Iron, 0);
+    b.combo(&[(46, 53, true), (56, 53, false), (53, 55, true)], tomb);
+    b.writing(50, 55, "THE TOMB OF THE THREE KINGS. Only the merciful may enter. Raise the hands of the merciful; leave the cruel at rest.");
+    b.writing(46, 52, "King Orrin, who spared the city that rose against him.");
+    b.writing(56, 52, "King Haldor, who burned the nests of the lizard-folk to drive them from the deep water.");
+    b.writing(54, 55, "King Bren, who opened his granaries to the starving.");
+    b.item(ItemKind::Brazier, 47.6, 52.5);
+    b.item(ItemKind::Brazier, 55.4, 52.5);
+    b.room(47, 56, 9, 4, 0, 10);
+    b.area("Tomb of the three kings", 51, 57);
+    b.light(47, 56, 9, 4, 3);
+    for x in [48.5, 51.5, 54.5] {
+        b.item(ItemKind::Gravestone, x, 59.4);
+    }
+    b.container(ItemKind::Chest, 51.5, 57.5, vec![Item::new(ItemKind::Coin).qty(50).data(50), Item::new(ItemKind::Gauntlets), Item::new(ItemKind::RedPotion)]);
     b.finish()
 }
 

@@ -228,6 +228,10 @@ pub enum ItemKind {
     EngravedRing,
     /// Dain's hammer, on his body in the flooded drift (level 2).
     ApprenticeHammer,
+    /// Pell's shield, on his body in the mass graves (level 4).
+    SquiresShield,
+    /// Ysolde's book of rites, in the catacombs (level 4); `data` is its text.
+    BookOfRites,
     /// A page of the colony's chronicle; `data` is the page, 0-4 (`dialogue::CHRONICLE`).
     ChroniclePage,
     // Fixtures
@@ -446,6 +450,8 @@ impl ItemKind {
             CaptainsSword => wpn("captain's sword", 12, 60, K::Sword, [4, 7, 6], 1.0),
             EngravedRing => d("engraved ring", "engraved rings", Class::Quest, 1, 0),
             ApprenticeHammer => d("apprentice's hammer", "apprentice's hammers", Class::Quest, 6, 0),
+            SquiresShield => arm("squire's shield", "squire's shields", 14, 35, Slot::Shield, 3),
+            BookOfRites => d("book of rites", "books of rites", Class::Book, 5, 0),
             ChroniclePage => d("chronicle page", "chronicle pages", Class::Scroll, 1, 0),
             Barrel => fixture("barrel", (0.42, 0.55)),
             Table => fixture("table", (0.8, 0.45)),

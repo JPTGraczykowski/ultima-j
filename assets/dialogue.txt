@@ -442,13 +442,29 @@ Who disturbs the rest of the dead? ... Ah. A living soul, and no tomb-robber by 
 * I seek the Shard of Mercy. -> shard ? !flag:aldric_done & !item:RelicBones
 * I have brought thy bones. -> bones ? item:RelicBones & !flag:aldric_done
 * Dost thou know me? -> know
-* Is there aught else I should know? -> advice
+* I have found Pell's shield. -> pell_found ? item:SquiresShield & !flag:pell_done
+* Is there aught else I should know? -> advice ? !item:SquiresShield
 * Farewell, Sir Knight. -> end
 
 -- why
-The trolls of the eastern caves dragged my bones from this tomb. Without them, my spirit is bound to this place, guarding the Shard of Mercy forever.
+The trolls of the eastern caves dragged my bones from this tomb. My squire, Pell, died trying to stop them. Without my bones, my spirit is bound to this place, guarding the Shard of Mercy forever.
 * I will recover thy bones. -> end
+* What became of Pell? -> pell ? !flag:pell_done
 * Back. -> start
+
+-- pell
+The trolls threw him into the mass graves, south of the west hall, with the outcasts and the goblins. He carried my shield for twelve years and his own for one. I would have it laid here at my feet, so that someone remembers he was a knight's squire and not a nameless corpse.
+! flag pell_quest 1
+* I will find his shield. -> end
+* Back. -> start
+
+-- pell_found
+Pell's shield. Lay it there, at my feet. ... Thank thee. He was a good lad, and braver than his master. Take what a knight can still give: the way he fought. Strike first, and mean it.
+! take SquiresShield
+! flag pell_done 1
+! skill Attack 2
+! exp 120
+* He will be remembered. -> start
 
 -- shard
 I swore to keep the Shard of Mercy until my bones lie at peace. Return my bones from the trolls' den, and I shall give it to thee gladly.
@@ -695,3 +711,32 @@ Forgives... Then I go home. Take these - a warm-blood fell from the aqueduct wit
 -- village
 The clutch-mothers sssay nothing to me. But they sssay it to my face, which is new.
 * Back. -> start
+
+// ----------------------------------------------------------- level 4
+
+=== ysolde
+-- start
+Thou art not one of mine. ... Forgive me. I am Ysolde, last of the embalmers. I washed and wrapped the dead of the colony for forty years, and I am still here, though there is no one left to wash me.
+* Why dost thou linger? -> linger ? !flag:ysolde_done
+* I have found thy book of rites. -> book ? item:BookOfRites & !flag:ysolde_done
+* Who lies in the mass graves? -> graves
+* Farewell. -> end
+
+-- linger
+The mass graves, south of the west hall. The trolls and the hollows threw the dead in there without a word said over them, and they will not lie still. I could lay them to rest if I had my book of rites - but the hollows carried it off into the catacombs, west of the gallery.
+! flag ysolde_quest 1
+* I will bring thee the book. -> end
+* Back. -> start
+
+-- graves
+Outcasts. Goblins. Mountain folk who came down to trade and never went back. Pell, Sir Aldric's squire, lies there too, I think; the trolls threw him in when they took his master's bones.
+* Back. -> start
+
+-- book
+My book! Keep it, and read it if thou wilt; there is a note in it that was never mine to keep. Now, the rites. Be still, and listen... (She speaks the names, one after another, for a long time.) ... There. They will lie still now. Take these; the embalmers have no more use for them.
+! flag ysolde_done 1
+! rest 10 42 8
+! give RedPotion
+! give RedPotion
+! exp 120
+* Rest well, Ysolde. -> end

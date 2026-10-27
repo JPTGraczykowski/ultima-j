@@ -14,6 +14,7 @@
 //! `give Kind [data] [qty]`, `take Kind [qty]`, `pay N`, `earn N`, `exp N`,
 //! `hostile`, `heal`, `rune N`, `follow`, `mana`, `skill NAME N`, `mend`,
 //! `move X Z [YAW]` (the speaker goes elsewhere on the level, e.g. home),
+//! `rest X Z R` (the unnamed undead within R tiles of X, Z crumble),
 //! `barter`, `end`.
 //!
 //! Prices: `{buy N}` and `{sell N}` in text show a base price of N gold as
@@ -83,7 +84,7 @@ pub const ALL_ITEM_KINDS: &[ItemKind] = {
         Bread, Cheese, Meat, Fish, Mushroom, WaterFlask, Wine, RedPotion, BluePotion, GreenPotion, YellowPotion, Torch, Candle,
         Lantern, Bag, Pack, Box, RuneBag, IronKey, GoldKey, SilverKey, RuneStone, Wand, Coin, RedGem, BlueGem, GreenGem,
         WhiteGem, GoldNugget, Scroll, Book, Map, Bedroll, Rock, Bone, Skull, Lockpick, Rope, Pole, Shovel, ShardOfValor,
-        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, CaptainsSword, EngravedRing, ApprenticeHammer, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
+        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, CaptainsSword, EngravedRing, ApprenticeHammer, SquiresShield, BookOfRites, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
         Campfire, Bed, Brazier, Statue, Bookshelf, Pillar, Gravestone, Cauldron, MoonOrb, Corpse, Blood, Stalagmite, Web, Ward,
     ]
 };
@@ -533,6 +534,27 @@ fn run_action(g: &mut Game, npc: u32, a: &[String], ended: &mut bool) {
                 }
             }
         }
+        "rest" => {
+            let num = |i: usize| a.get(i).and_then(|s| s.parse::<f32>().ok()).unwrap_or(0.0);
+            let (x, z, r) = (num(1), num(2), num(3));
+            let lv = g.cur;
+            let mut fallen = Vec::new();
+            for n in g.levels[lv].npcs.iter_mut() {
+                let near = (n.pos.x - x).hypot(n.pos.z - z) <= r;
+                if n.alive() && near && n.name.is_none() && n.race.def().undead {
+                    n.hp = 0;
+                    n.anim = super::creatures::Anim::Die;
+                    n.anim_t = 0.0;
+                    fallen.push((n.id, n.pos));
+                }
+            }
+            for (id, p) in fallen {
+                g.levels[lv].add_item(Item::new(ItemKind::Bone), p.x, p.z);
+                if g.foe == Some(id) {
+                    g.foe = None;
+                }
+            }
+        }
         "victory" => g.events.push(super::Event::Victory),
         "end" => *ended = true,
         _ => {}
@@ -571,6 +593,8 @@ pub const SCROLLS: &[&str] = &[
     "Recipe: mushrooms from the lower caves, boiled thrice, are safe to eat. Boiled once, you will see colours that do not exist.",
     // 12
     "A list in Malchor's hand, every line crossed out but the last: 'Aldric - the bones taken, the ghost bound. Corwin - drunk. Elsmore - too thin to bother. The knight who took the blast - risen, and walking. Save for last.'",
+    // 13 - Ysolde's book of rites
+    "The Rites of the Embalmers. To lay the restless dead: speak each name aloud, anoint the bones, and close the earth over them. A name forgotten is a soul that wanders. In the margin, in a small neat hand: The colony's chronicler came to write of our rites. We gave her a cell behind the north wall of the west hall; its door is a stone like any other. - Ysolde",
 ];
 
 /// The pages of the Chronicle of the Colony, one on each level, indexed by

@@ -443,13 +443,29 @@ Kto zakłóca spokój umarłych? ... Ach. Dusza żywa, a na rabusia grobów nie 
 * Szukam odłamka Miłosierdzia. -> shard ? !flag:aldric_done & !item:RelicBones
 * Przyniosł{em|am} twoje kości. -> bones ? item:RelicBones & !flag:aldric_done
 * Czy mnie znasz? -> know
-* Czy jest coś jeszcze, co powinien{em|nam} wiedzieć? -> advice
+* Znalazł{em|am} tarczę Pella. -> pell_found ? item:SquiresShield & !flag:pell_done
+* Czy jest coś jeszcze, co powinien{em|nam} wiedzieć? -> advice ? !item:SquiresShield
 * Bywaj, panie rycerzu. -> end
 
 -- why
-Trolle ze wschodnich jaskiń wywlekły moje kości z tego grobowca. Bez nich mój duch jest przykuty do tego miejsca i na zawsze strzeże odłamka Miłosierdzia.
+Trolle ze wschodnich jaskiń wywlekły moje kości z tego grobowca. Mój giermek, Pell, zginął, próbując je powstrzymać. Bez moich kości mój duch jest przykuty do tego miejsca i na zawsze strzeże odłamka Miłosierdzia.
 * Odzyskam twoje kości. -> end
+* Co się stało z Pellem? -> pell ? !flag:pell_done
 * Wróć. -> start
+
+-- pell
+Trolle wrzuciły go do zbiorowych mogił, na południe od zachodniej sali, razem z wyrzutkami i goblinami. Przez dwanaście lat nosił moją tarczę, a własną przez rok. Chciałbym, żeby położono ją tutaj, u moich stóp, by ktoś pamiętał, że był giermkiem rycerza, a nie bezimiennym trupem.
+! flag pell_quest 1
+* Znajdę jego tarczę. -> end
+* Wróć. -> start
+
+-- pell_found
+Tarcza Pella. Połóż ją tam, u moich stóp. ... Dziękuję. Był dobrym chłopakiem, odważniejszym niż jego pan. Weź to, co rycerz wciąż może dać: to, jak walczył. Uderzaj pierwszy i uderzaj na serio.
+! take SquiresShield
+! flag pell_done 1
+! skill Attack 2
+! exp 120
+* Będzie pamiętany. -> start
 
 -- shard
 Przysiągłem strzec odłamka Miłosierdzia, dopóki moje kości nie spoczną w pokoju. Odbierz moje kości z nory trolli, a chętnie ci go oddam.
@@ -696,3 +712,32 @@ Przebacza... W takim razie wracam do domu. Weź to - pewien ciepłokrwissty spad
 -- village
 Matki lęgów nic do mnie nie mówią. Ale mówią to prosssto w oczy, a to coś nowego.
 * Wróć. -> start
+
+// ----------------------------------------------------------- level 4
+
+=== ysolde
+-- start
+Nie jesteś {jednym|jedną} z moich. ... Wybacz. Jestem Ysolde, ostatnia z balsamistów. Przez czterdzieści lat myłam i owijałam zmarłych kolonii, a wciąż tu jestem, choć nie został nikt, kto obmyłby mnie.
+* Czemu tu trwasz? -> linger ? !flag:ysolde_done
+* Znalazł{em|am} twoją księgę obrzędów. -> book ? item:BookOfRites & !flag:ysolde_done
+* Kto leży w zbiorowych mogiłach? -> graves
+* Bywaj. -> end
+
+-- linger
+Zbiorowe mogiły, na południe od zachodniej sali. Trolle i wydrążeni wrzucali tam zmarłych bez jednego słowa, a ci nie chcą leżeć spokojnie. Mogłabym ich ukoić, gdybym miała swoją księgę obrzędów - ale wydrążeni zanieśli ją do katakumb, na zachód od galerii.
+! flag ysolde_quest 1
+* Przyniosę ci księgę. -> end
+* Wróć. -> start
+
+-- graves
+Wyrzutkowie. Gobliny. Górski lud, który zszedł handlować i nigdy nie wrócił. Leży tam chyba i Pell, giermek sir Aldrica; trolle wrzuciły go tam, kiedy zabrały kości jego pana.
+* Wróć. -> start
+
+-- book
+Moja księga! Zatrzymaj ją i przeczytaj, jeśli chcesz; jest w niej notatka, której nie powinnam była zachować dla siebie. A teraz obrzędy. Bądź {cichy|cicha} i słuchaj... (Wypowiada imiona, jedno po drugim, przez długi czas.) ... No. Teraz będą leżeć spokojnie. Weź to; balsamistom już się nie przyda.
+! flag ysolde_done 1
+! rest 10 42 8
+! give RedPotion
+! give RedPotion
+! exp 120
+* Spoczywaj w pokoju, Ysolde. -> end

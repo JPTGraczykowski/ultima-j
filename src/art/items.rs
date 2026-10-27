@@ -701,6 +701,19 @@ pub fn icon(kind: ItemKind, data: u16, lit: bool) -> Bitmap {
             cv.poly(&[(7.5, 3.5), (11.5, 2.0), (14.0, 6.0), (10.0, 7.5)], 1.5, 1.4, m);
             cv.render(true, true)
         }
+        SquiresShield => {
+            // The wooden shield with a blue boss: Pell's colours.
+            let mut b = shield(1);
+            for (x, y) in [(7, 5), (8, 5), (7, 6), (8, 6)] {
+                b.set(x, y, c(Ramp::Blue, 11));
+            }
+            b
+        }
+        BookOfRites => {
+            let mut b = book();
+            b.hline(6, 11, 9, c(Ramp::Silver, 12));
+            b
+        }
         ChroniclePage => {
             // A loose leaf, torn along one edge, with a red seal.
             let mut cv = canvas();
