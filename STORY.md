@@ -84,6 +84,64 @@ his thralls crumble with him.
 knows you at once. He never called you, and he is sorry that Malchor used you.
 Then he lays out the choice.
 
+## Side quests
+
+The people of the Abyss have their own troubles. None of these is needed to
+finish the game.
+
+**The Chronicle of the Colony.** Maera, the colony's chronicler, came down
+with Varian's first three hundred and wrote everything down. Her pages lie
+scattered across all five levels, one on each: in her hidden study off the
+library, in an old miners' vein behind a secret door, in an empty grave in the
+lizardmen's ossuary, in a cell in the crypts, and with her body in the cave of
+fire, where she died after following Varian down. Her brother Elsmore came
+into the Abyss to find her; he says he came to study the ruins. He pays for
+each page, and for the last one he gives up his savings and what he knows of
+lore. Read in order, the pages tell the founding, the four peoples living as
+one, Malchor's hunger for the Stone, the night it broke (the knight at
+Varian's left hand who threw themselves into the blast), and Maera's last
+words: remember the dead by their names.
+
+**The Upper Halls.** Corwin, captain of the colony guard, wrote the words by
+the great doors and has been drunk ever since. On the night the Stone broke he
+should have stood at Varian's left hand, but he was drinking in the guard
+hall, and a young knight stood in his place and died. He doesn't recognise
+you. The green goblins stole his sword; bring it back from their hoard and he
+teaches you how a guard fights. Tobin and his partner Wenna kept the colony's
+stores before the fall and went on trading afterwards. Wenna went looking for
+an old cache in the bat roost and never came back; her ring is on her body,
+and Tobin gives you her lantern for it. The guard hall's armoury opens to a
+lock of three levers, set as Corwin's plaque says the watch should stand.
+
+**The Mines of the Mountain Folk.** Hilda's son Brann jumped for the gold on
+the ledge in the old diggings and broke his leg; a healing potion gets him
+home, and Hilda gives you his father's armour. The body in the flooded drift
+is Dain, Bodric's apprentice, who was sent for clay before the king sealed the
+spider galleries with him inside. Bring Bodric his hammer and he forges you a
+weapon. The treasury under the storeroom opens to three levers, set as a
+miner works the face.
+
+**The Flooded Warrens.** The clutch-mother Ssiva is sick with grief for her
+stolen eggs, and Hissk asks for three mushrooms to rouse her. Ssethra, the
+lone lizardman by the stairs down, was exiled for saying the People should
+trade with the warm-bloods; carry his plea to Ssrath, who forgives him, and he
+goes home. The sunken vault opens to plates at the bottom of a flooded
+sinkhole: who would rise with the treasure must first go down.
+
+**The Crypts.** Ysolde, the last embalmer, still haunts her rooms. The hollows
+carried her book of rites into the catacombs; with it she lays the dead of the
+mass graves to rest, and a note in its margin shows where Maera's cell is.
+Aldric's squire Pell died trying to stop the trolls, and they threw him into
+the mass graves; Aldric asks for his shield, so that someone remembers him.
+The tomb of the three kings opens to the levers of the merciful kings.
+
+**The Deep Sanctum.** Ilsa, Malchor's apprentice, is kept in the cells to
+grind bone-dust and stir his cauldron. She tells you who Malchor was, and for
+her notebook she gives you the copy she made of his vault key. In the vault
+are the souls Malchor jarred; Varian takes them back into his keeping. The
+notebook also gives away Malchor's private way: a lever by his cauldron
+raises a bridge over the lava to his hoard.
+
 ## The endings
 
 **Live again.** You give Varian the shards. The Stone is life, and he kindles

@@ -82,6 +82,64 @@ rozsypują się razem z nim.
 poznaje. Nigdy cię nie wołał i żałuje, że Malchor cię wykorzystał. Potem stawia
 przed tobą wybór.
 
+## Zadania poboczne
+
+Mieszkańcy Otchłani mają też własne kłopoty. Żadne z tych zadań nie jest
+potrzebne, żeby ukończyć grę.
+
+**Kronika Kolonii.** Maera, kronikarka kolonii, zeszła z pierwszymi trzystoma
+lorda Variana i spisywała wszystko. Jej karty leżą rozrzucone po wszystkich
+pięciu poziomach, po jednej na każdym: w ukrytej pracowni przy bibliotece,
+w starej żyle górników za tajnymi drzwiami, w pustym grobie w ossuarium
+jaszczuroludzi, w celi w kryptach i przy jej ciele w jaskini ognia, gdzie
+zginęła, idąc za Varianem w dół. Jej brat Elsmore zszedł do Otchłani, żeby ją
+odnaleźć, choć mówi, że przyszedł badać ruiny. Płaci za każdą kartę, a za
+ostatnią oddaje swoje oszczędności i to, czego nauczył się o dawnej wiedzy.
+Czytane po kolei karty opowiadają o założeniu kolonii, czterech ludach żyjących
+razem, głodzie Malchora na Kamień, nocy, w której Kamień pękł (o rycerzu po
+lewej ręce Variana, który rzucił się w wybuch), i o ostatnich słowach Maery:
+pamiętaj umarłych po imieniu.
+
+**Górne Sale.** Corwin, kapitan straży kolonii, napisał słowa przy Wielkich
+Wrotach i od tamtej pory pije. Tej nocy, gdy pękł Kamień, powinien był stać po
+lewej ręce Variana, ale pił w sali straży, a na jego miejscu stanął młody
+rycerz i zginął. Corwin cię nie poznaje. Zielone gobliny ukradły mu miecz;
+odzyskaj go z ich skrytki, a nauczy cię, jak walczy strażnik. Tobin i jego
+wspólniczka Wenna pilnowali magazynów kolonii przed upadkiem, a potem dalej
+handlowali. Wenna poszła szukać starej skrytki w jaskini nietoperzy i nie
+wróciła; jej pierścień jest przy jej ciele, a Tobin da ci za niego jej
+latarnię. Zbrojownię w sali straży otwierają trzy dźwignie ustawione tak, jak
+według tabliczki Corwina powinna stać warta.
+
+**Kopalnie Górskiego Ludu.** Syn Hildy, Brann, skoczył po złoto na półkę
+skalną w starych wyrobiskach i złamał nogę; mikstura lecznicza pozwoli mu
+wrócić do domu, a Hilda da ci zbroję jego ojca. Ciało w zalanym chodniku to
+Dain, czeladnik Bodrica, wysłany po glinę, zanim król zamknął pajęcze galerie
+razem z nim. Przynieś Bodricowi jego młotek, a wykuje ci broń. Skarbiec pod
+spiżarnią otwierają trzy dźwignie ustawione tak, jak górnik pracuje przy
+przodku.
+
+**Zalane Nory.** Matka lęgu, Ssiva, choruje z żalu po skradzionych jajach,
+a Hissk prosi o trzy grzyby, które ją podniosą. Ssethra, samotny jaszczuroczłek
+przy schodach w dół, został wygnany za to, że chciał, by Lud handlował
+z ciepłokrwistymi; zanieś jego prośbę Ssrathowi, który mu przebaczy, a Ssethra
+wróci do domu. Zatopiony skarbiec otwierają płyty na dnie zalanego leja: kto
+chce wznieść się ze skarbem, musi najpierw zejść w dół.
+
+**Krypty.** Ysolde, ostatnia z balsamistów, wciąż nawiedza swoje komnaty.
+Wydrążeni zanieśli jej księgę obrzędów do katakumb; z księgą w ręku Ysolde
+koi zmarłych ze zbiorowych mogił, a notatka na marginesie zdradza, gdzie jest
+cela Maery. Giermek Aldrica, Pell, zginął, próbując powstrzymać trolle,
+a te wrzuciły go do zbiorowych mogił; Aldric prosi o jego tarczę, żeby ktoś
+o nim pamiętał. Grobowiec trzech królów otwierają dźwignie królów miłosiernych.
+
+**Głębokie Sanktuarium.** Ilsa, uczennica Malchora, jest trzymana w celach,
+żeby mieliła kostny pył i mieszała w jego kotle. Opowiada, kim był Malchor,
+a za swój notatnik daje ci kopię klucza do jego skarbca. W skarbcu są dusze,
+które Malchor zamknął w dzbanach; Varian bierze je z powrotem pod swoją opiekę.
+Notatnik zdradza też prywatną drogę Malchora: dźwignia przy jego kotle wznosi
+most nad lawą do jego skarbu.
+
 ## Zakończenia
 
 **Żyć na nowo.** Oddajesz Varianowi odłamki. Kamień to życie, a Varian na nowo

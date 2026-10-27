@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-22T11:17:00Z'
-updated_date: '2026-10-27T12:30:00Z'
+updated_date: '2026-10-27T12:34:00Z'
 labels: []
 milestone: m-0
 dependencies:
@@ -97,4 +97,6 @@ Level 3 done (2026-10-27): Hissk asks for three mushrooms for the sick clutch-mo
 Level 4 done (2026-10-27): Ysolde is the ghost of the embalmers' rooms, made a named friendly embalmer (kept as an npc call). Her book of rites (BookOfRites, readable, SCROLLS 13) lies in the catacombs; with it she performs the rites: the new 'rest X Z R' action crumbles the unnamed undead of the mass graves (the headless there are not undead and stay), and she gives two red potions. The book's margin names the chronicler's cell, a secret door in the north wall of the west wing, with chronicle page 4. Aldric's squire Pell lies in the mass graves corpse with his shield (SquiresShield, wearable); Aldric gives +2 Attack. Aldric's advice option hides while the shield is carried, to keep 5 choices. Tomb of the three kings south of the embalmers' rooms: a lever beside each king's plaque, raise the merciful (Orrin, Bren), leave Haldor. Checked by script: Ysolde and the mass graves, Aldric and the shield, the kings' lock.
 
 Level 5 done (2026-10-27): Ilsa (new, Human look 4, Malchor's apprentice in the cells): her notebook (IlsaNotebook, readable, SCROLLS 14) lies in Malchor's study; for it she gives a copy of the soul-vault key (SilverKey 501) and tells Malchor's story without spoiling the reveal. The jar of souls (SoulJar) in the vault goes to Varian (new 'souls' option under his 'Who art thou?' node; heal and exp). New bridge levers: Switch::bridge, B::bridge_lever, Level::raise_bridge; the level tests check the levels with every bridge raised. Malchor's private way: the ember hall south of the cells, a river of lava with his hoard beyond (jewelled sword), the bridge raised by a lever by his cauldron (the notebook says so). Maera's body lies in the cave of fire with the last chronicle page. Found a bug that predates this task: lava never burns, because Player::drown is reset every frame when not swimming, before the lava check adds to it; lava 3 steps deep cannot be climbed out of, so it is a pit that cannot kill. Raised with the user.
+
+Docs (2026-10-27): STORY.md and STORY.pl.md have a 'Side quests' section (the chronicle and each level's quests and puzzles); HANDOFF.md describes the new quest mechanics, the dialogue rules (new conversations at the end, five choices per node) and the test count (81). The lava bug is TASK-11. Still to do: play the side quests by hand.
 <!-- SECTION:NOTES:END -->

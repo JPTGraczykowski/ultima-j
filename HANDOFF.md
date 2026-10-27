@@ -1,8 +1,8 @@
 # Handoff — where the work stands
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
-original's style. Status (2026-10-15): the game is complete and playable from
-the title screen to the victory screen, and all 65 tests pass. What remains is
+original's style. Status (2026-10-27): the game is complete and playable from
+the title screen to the victory screen, and all 81 tests pass. What remains is
 mostly balance.
 
 ## Done
@@ -35,6 +35,29 @@ mostly balance.
   from the level's rng and anything added earlier reshapes the older caves.
   Swimmers now climb out onto banks up to `SWIM_CLIMB` high (before, the deep
   water on level 3 was a trap). `MAP_SIZE` stays 64 (decision-1).
+- Side quests and puzzles (2026-10-27, TASK-3; the story is in
+  `STORY.md`, "Side quests"). Each level has two side quests from its
+  people, a puzzle and a page of Maera's Chronicle of the Colony
+  (`ItemKind::ChroniclePage`, texts in `dialogue::CHRONICLE`); Elsmore,
+  her brother, pays for the pages (flag `chronicle`). New characters:
+  Corwin (L1), Brann (L2), Ssethra (L3), Ysolde (L4) and Ilsa (L5);
+  Ssethra and Ysolde were unnamed creatures already on the map and are
+  renamed after the fact, so the level's rng and caves keep their shape.
+  New quest items each have an icon (`art::items::icon`) and a Polish noun.
+  New conversations go at the **end** of `assets/dialogue.txt` (and the
+  Polish file): saved NPCs keep their conversation's index. Dialogue gained
+  `item:Kind>=N`, `flag:NAME<N`, and the actions `flag+ NAME [N]`,
+  `move X Z [YAW]` (the speaker goes elsewhere, e.g. home) and `rest X Z R`
+  (the unnamed undead nearby crumble). The test
+  `at_most_five_visible_choices` counts the options a node can show at
+  once (options with exclusive conditions are not counted together, and a
+  barter node adds 3); when a node is full, hide an option behind an
+  exclusive condition or move it to a sub-node. Puzzle tools in
+  `levels.rs`: `B::combo` (a lock of levers, each wanted on or off; the
+  door can't be opened by hand), `B::plate` (a pressure plate, which
+  prints a message when it opens its door) and `B::bridge_lever` (a lever
+  that raises a bridge over lava or water for good; the level tests check
+  the levels with every bridge raised). Lava never burns: see TASK-11.
 - Story (2026-10-16), inspired by Dark Souls: the player rises from a grave as
   one of the undead, learns who they were (Sir Aldric and the Lord of Souls
   tell them), and brings the three shards to Varian, the Lord of Souls
@@ -90,7 +113,7 @@ mostly balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 78 tests: level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter
+cargo test --release                       # 81 tests: level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter, five choices per conversation node
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --script "play; level 1 21.5 47.5; goto 21.5 47.5 180; key W 23; key W+J 1; key W 20"   # a running jump
