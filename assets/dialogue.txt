@@ -352,7 +352,23 @@ Sssstop, warm-blood. Thisss is the village of the People. Why do you come?
 * I come in peace. -> peace
 * I seek the Shard of Wisdom. -> shard
 * What are the lurkers? -> lurkers
+* The village seems sad. -> clutch ? !flag:hissk_asked
+* I have brought three mushrooms. -> mushrooms ? flag:hissk_asked & item:Mushroom>=3 & !flag:hissk_done
 * Farewell. -> end
+
+-- clutch
+Sssad... The clutch-mother Ssiva grieves for her eggsss, and the grief has made her sick. She will not eat. The healer says the pale mushrooms of the cavern below the village would rouse her - three of them. The cavern is south of the huts. Lurkers swim in its pool.
+! flag hissk_asked 1
+* I will bring three mushrooms. -> end
+* Back. -> start
+
+-- mushrooms
+Three! Ssiva will eat. ... Thank you, warm-blood. Let me ssshow you how the People move in the water: not againssst it, but with it.
+! take Mushroom 3
+! flag hissk_done 1
+! skill Swimming 2
+! exp 60
+* Thank you, Hissk. -> start
 
 -- peace
 Peace is good. Peace is rare. The Sage Ssrath will sspeak with you, in the pool of thinking, north of the village.
@@ -372,9 +388,15 @@ Ahhh. A warm-blood comes to the pool of thinking. I am Ssrath, Sage of the Peopl
 * I seek the Shard of Wisdom. -> shard ? !flag:ssrath_done & !item:LizardEgg
 * I have found the stolen eggs. -> eggs ? item:LizardEgg & !flag:ssrath_done
 * What do you know of the Lord of Souls? -> lord
-* Who was I, before I died? -> self
 * Teach me something of magic. -> teach ? !flag:ssrath_teach
+* Ssethra asks thy forgiveness. -> ssethra ? flag:ssethra_asked & !flag:ssrath_forgave
 * Farewell. -> end
+
+-- ssethra
+Ssethra. He said the People should trade with the warm-bloods, and the clutch-mothers drove him out for it. And now a warm-blood sits at my pool and speaks for him. Perhapsss he was right. Tell him he may come home.
+! flag ssrath_forgave 1
+! exp 30
+* I will tell him. -> start
 
 -- shard
 Wisdom is not given; it is earned. The lurkers of the eastern grotto have ssstolen the eggs of our clutch. Return them to the People, and you will have shown wisdom - and mercy. Then the ssshard is yours.
@@ -394,6 +416,7 @@ The eggs! The young of the People will hatch after all. You have the gratitude o
 He who sitsss upon the throne of the dead, below the crypts. Once he was Varian, lord of the colony. His flame isss guttering, and the dead no longer rest. That isss why you woke, cold-blood. Another sorcerer passed thisss way, hungry for that throne. Malchor. He would sssit in the Lord's place.
 ! flag know_lord 1
 * How do I reach the Lord? -> reach
+* Who was I, before I died? -> self
 * Back to other matters. -> start
 
 -- reach
@@ -637,4 +660,38 @@ Ahh... that's better. That's much better. I can stand! Keep the gold in the box;
 
 -- leg
 Mending. Mother says it serves me right. She's right, but don't tell her I said so.
+* Back. -> start
+
+// ----------------------------------------------------------- level 3
+
+=== ssethra
+-- start
+Ssstay back, warm-blood! ... You do not attack. Good. I am Ssethra. Once of the People. Now of thisss hole.
+* Why art thou not with the People? -> why ? !flag:ssethra_home
+* The Sage forgives thee. Thou mayst go home. -> home ? flag:ssrath_forgave & !flag:ssethra_home
+* How fares the village? -> village ? flag:ssethra_home
+* Farewell. -> end
+
+-- why
+I sssaid the People should trade with the warm-bloods - the mountain folk above, the outcasts. Fish for iron. The clutch-mothers sssaid the warm-bloods broke the Ssstone and would break us too. The Sage said nothing, and I was sent away.
+* I will speak to the Sage for thee. -> ask
+* Back. -> start
+
+-- ask
+You would? ... The Sage listens to those who do good for the clutch. Perhapsss he will listen to you.
+! flag ssethra_asked 1
+* Back. -> start
+
+-- home
+Forgives... Then I go home. Take these - a warm-blood fell from the aqueduct with them, and they are no use to me. And the People's hunting craft, which a warm-blood should know: be ssstill, and the water forgets you.
+! flag ssethra_home 1
+! give GreenPotion
+! give GreenPotion
+! skill Sneak 1
+! exp 80
+! move 38.5 12.5 180
+* Go home, Ssethra. -> end
+
+-- village
+The clutch-mothers sssay nothing to me. But they sssay it to my face, which is new.
 * Back. -> start

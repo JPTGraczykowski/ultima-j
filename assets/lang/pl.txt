@@ -166,6 +166,7 @@
 @Corwin = Corwin | Corwina | Corwina | Corwinowie | Corwinów | mp
 @Brann = Brann | Branna | Branna | Brannowie | Brannów | mp
 @Dain = Dain | Daina | Daina | Dainowie | Dainów | mp
+@Ssethra = Ssethra | Ssethry | Ssethrę | Ssethrowie | Ssethrów | mp
 @Thorgrim = Thorgrim | Thorgrima | Thorgrima | Thorgrimowie | Thorgrimów | mp
 @Hilda = Hilda | Hildy | Hildę | Hildy | Hild | f
 @Bodric = Bodric | Bodrica | Bodrica | Bodricowie | Bodriców | mp
@@ -682,6 +683,9 @@ You pull the lever. Something heavy grinds shut.
 
 You pull the lever. Somewhere in the wall, a mechanism clicks.
 = Pociągasz dźwignię. Gdzieś w murze szczęka mechanizm.
+
+Something gives beneath your feet. Somewhere, stone grinds on stone.
+= Coś ustępuje ci pod stopami. Gdzieś kamień zgrzyta o kamień.
 You are too full to eat that now.
 = Jesteś zbyt {najedzony|najedzona}, by teraz to zjeść.
 That mushroom tasted rather odd.
@@ -1285,6 +1289,18 @@ TREASURY OF THE MOUNTAIN. It opens as a miner works the face: first he rests, th
 
 Cut deep into the rock: three strokes and a pick. A miner's mark.
 = Wycięte głęboko w skale: trzy kreski i kilof. Znak górnika.
+
+THE SUNKEN VAULT. Who would rise with the treasure must first go down with the faithful.
+= ZATOPIONY SKARBIEC. Kto chce wznieść się ze skarbem, musi najpierw zejść w dół z wiernymi.
+
+Here lies Hssirak, who fed the People in the year of no fish.
+= Tu spoczywa Hssirak, który karmił Lud w roku bez ryb.
+
+Here lies no one. Maera of the colony wrote of the People, and left her words in our keeping. They lie beneath.
+= Tu nie spoczywa nikt. Maera z kolonii pisała o Ludzie i zostawiła nam swoje słowa na przechowanie. Leżą pod spodem.
+
+Here lies Ssova, first of the People to speak with the warm-bloods.
+= Tu spoczywa Ssova, pierwsza z Ludu, która przemówiła do ciepłokrwistych.
 DIGGING CLOSED. The east face fell into the old shaft. Gold glints on the ledge beyond, but no fool is to jump for it. - Thorgrim
 = WYROBISKO ZAMKNIĘTE. Wschodnia ściana runęła do starego szybu. Na półce za nim błyszczy złoto, ale żaden głupiec nie ma po nie skakać. - Thorgrim
 The tunnel floor has fallen into an old shaft. A good run and a leap would carry you over.

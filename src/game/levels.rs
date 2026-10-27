@@ -1079,7 +1079,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.cave(53, 57, 4, 3, 0, 10);
     b.corridor(50, 57, 53, 57, 0, 8);
     b.rune_stone(rune::TYM, 55.0, 56.0);
-    b.npc(Race::Lizardman, 52.5, 58.5);
+    let ssethra = b.npc(Race::Lizardman, 52.5, 58.5);
     b.item(ItemKind::RedPotion, 51.0, 59.0);
     // Stairs down at the far south.
     b.corridor(54, 60, 54, 60, 0, 8);
@@ -1121,6 +1121,52 @@ fn level3(db: &DialogueDb) -> Level {
     b.item(ItemKind::Skull, 12.0, 55.0);
     b.item(ItemKind::Candle, 6.6, 52.4);
     b.container(ItemKind::Chest, 16.5, 54.5, vec![Item::new(ItemKind::BluePotion), Item::new(ItemKind::Coin).qty(25).data(25)]);
+
+    // Side quests. The lizardman by the stairs down is Ssethra, an exile
+    // the player can talk home (he stays an `npc` call above so the
+    // rng, and the caves after it, keep their shape).
+    {
+        let n = b.npc_mut(ssethra);
+        n.name = Some("Ssethra".into());
+        n.talk = db.find("ssethra");
+        n.attitude = Attitude::Mellow;
+        n.ai = AiState::Idle;
+        n.look = 1;
+    }
+    // Hissk wants three mushrooms for the clutch-mother; the cavern had two.
+    b.item(ItemKind::Mushroom, 48.5, 29.0);
+
+    // The sunken vault north of the southern caves. Its portcullis opens
+    // from plates at the bottom of a flooded sinkhole east of the caves;
+    // a ramp climbs out of the sinkhole to the aqueduct passage.
+    b.style(Tex::Flagstones, Tex::Sandstone, Tex::CeilingRock);
+    b.corridor(35, 34, 35, 40, 0, 9);
+    let vault = b.door(35, 35, DoorAxis::NS, DoorKind::Portcullis, 0);
+    b.lv.doors.iter_mut().find(|d| d.id == vault).unwrap().remote = true;
+    b.room(33, 31, 5, 3, 0, 9);
+    b.area("Sunken vault", 35, 32);
+    b.light(33, 31, 5, 3, 4);
+    b.writing(34, 35, "THE SUNKEN VAULT. Who would rise with the treasure must first go down with the faithful.");
+    b.container(ItemKind::Chest, 35.5, 31.6, vec![Item::new(ItemKind::Coin).qty(35).data(35), Item::new(ItemKind::RedPotion), Item::new(ItemKind::GreenGem)]);
+    b.item(ItemKind::Statue, 33.6, 31.6);
+    b.item(ItemKind::Statue, 37.4, 31.6);
+    b.style(Tex::Gravel, Tex::MossyStone, Tex::CeilingRock);
+    b.room(38, 41, 2, 2, 0, 10);
+    b.gap(38, 41, 2, 2, 10);
+    b.area("Sinkhole", 39, 42);
+    b.water(38, 41, 2, 2, -10);
+    for (x, z) in [(38, 41), (39, 41), (38, 42), (39, 42)] {
+        b.plate(x, z, vault);
+    }
+    b.ramp(40, 42, (1, 0), 3, -10, 0, 9);
+    b.corridor(43, 42, 43, 45, 0, 8);
+
+    // The People's graves in the ossuary: one is empty, and holds the third
+    // page of Maera's chronicle.
+    b.writing(7, 50, "Here lies Hssirak, who fed the People in the year of no fish.");
+    b.writing(10, 50, "Here lies no one. Maera of the colony wrote of the People, and left her words in our keeping. They lie beneath.");
+    b.writing(16, 50, "Here lies Ssova, first of the People to speak with the warm-bloods.");
+    b.container(ItemKind::Box, 10.0, 52.0, vec![Item::new(ItemKind::ChroniclePage).data(2)]);
     b.finish()
 }
 

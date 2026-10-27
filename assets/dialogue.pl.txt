@@ -353,7 +353,23 @@ Ssstój, {ciepłokrwisssty|ciepłokrwissssta}. To jessst wiosssska Ludu. Czemu p
 * Przychodzę w pokoju. -> peace
 * Szukam odłamka Mądrości. -> shard
 * Czym są czyhacze? -> lurkers
+* Wiossska wydaje się smutna. -> clutch ? !flag:hissk_asked
+* Przyniosł{em|am} trzy grzyby. -> mushrooms ? flag:hissk_asked & item:Mushroom>=3 & !flag:hissk_done
 * Bywaj. -> end
+
+-- clutch
+Sssmutna... Matka lęgu, Ssiva, opłakuje swoje jaja, a żałoba zmogła ją chorobą. Nie chce jeść. Uzdrowiciel mówi, że blade grzyby z groty pod wiossską by ją podniosły - trzy. Grota jessst na południe od chat. W jej sssadzawce pływają czyhacze.
+! flag hissk_asked 1
+* Przyniosę trzy grzyby. -> end
+* Wróć. -> start
+
+-- mushrooms
+Trzy! Ssiva będzie jeść. ... Dziękuję, {ciepłokrwisssty|ciepłokrwissssta}. Pokażę ci, jak Lud porusza się w wodzie: nie wbrew niej, ale razem z nią.
+! take Mushroom 3
+! flag hissk_done 1
+! skill Swimming 2
+! exp 60
+* Dziękuję, Hissku. -> start
 
 -- peace
 Pokój jessst dobry. Pokój jessst rzadki. Mędrzec Ssssrath z tobą porozmawia, w sssadzawce myślenia, na północ od wiosssski.
@@ -373,9 +389,15 @@ Ahhh. {Ciepłokrwisssty|Ciepłokrwissssta} przychodzi do sssadzawki myślenia. J
 * Szukam odłamka Mądrości. -> shard ? !flag:ssrath_done & !item:LizardEgg
 * Znalazł{em|am} skradzione jaja. -> eggs ? item:LizardEgg & !flag:ssrath_done
 * Co wiesz o Panu Dusz? -> lord
-* Kim był{em|am}, zanim umarł{em|am}? -> self
 * Naucz mnie czegoś o magii. -> teach ? !flag:ssrath_teach
+* Ssethra prosi cię o przebaczenie. -> ssethra ? flag:ssethra_asked & !flag:ssrath_forgave
 * Bywaj. -> end
+
+-- ssethra
+Ssethra. Mówił, że Lud powinien handlować z ciepłokrwissstymi, i matki lęgów go za to wygnały. A teraz {ciepłokrwisssty|ciepłokrwissssta} sssiedzi przy mojej sssadzawce i wstawia się za nim. Może miał rację. Powiedz mu, że może wrócić do domu.
+! flag ssrath_forgave 1
+! exp 30
+* Powiem mu. -> start
 
 -- shard
 Mądrości ssię nie dostaje; trzeba na nią zasssłużyć. Czyhacze ze wschodniej groty ukradły jaja z naszego lęgu. Zwróć je Ludowi, a okażesz mądrość - i miłosssierdzie. Wtedy odłamek będzie twój.
@@ -395,6 +417,7 @@ Jaja! Młode Ludu jednak się wyklują. Masz wdzięczność lęgu, {ciepłokrwis
 Ten, który sssiedzi na tronie umarłych, pod kryptami. Kiedyś był Varianem, lordem kolonii. Jego płomień przygasssa, a umarli nie zaznają już ssspokoju. Dlatego się obudził{eś|aś}, {zimnokrwisssty|zimnokrwissssta}. Tędy przechodził inny czarownik, głodny tego tronu. Malchor. Chciałby zasssiąść na miejscu Pana.
 ! flag know_lord 1
 * Jak dotrzeć do Pana Dusz? -> reach
+* Kim był{em|am}, zanim umarł{em|am}? -> self
 * Wróćmy do innych spraw. -> start
 
 -- reach
@@ -638,4 +661,38 @@ Aaach... lepiej. Dużo lepiej. Mogę stać! Zatrzymaj złoto ze skrzynki; nie sp
 
 -- leg
 Zrasta się. Matka mówi, że dobrze mi tak. Ma rację, ale nie mów jej, że tak powiedziałem.
+* Wróć. -> start
+
+// ----------------------------------------------------------- level 3
+
+=== ssethra
+-- start
+Ssstój, {ciepłokrwisssty|ciepłokrwissssta}! ... Nie atakujesz. Dobrze. Jessstem Ssethra. Kiedyś z Ludu. Teraz z tej dziury.
+* Czemu nie jesteś z Ludem? -> why ? !flag:ssethra_home
+* Mędrzec ci przebacza. Możesz wrócić do domu. -> home ? flag:ssrath_forgave & !flag:ssethra_home
+* Co słychać w wiosce? -> village ? flag:ssethra_home
+* Bywaj. -> end
+
+-- why
+Mówiłem, że Lud powinien handlować z ciepłokrwissstymi - z górskim ludem na górze, z wyrzutkami. Ryby za żelazo. Matki lęgów mówiły, że ciepłokrwissści rozbili Kamień i nasss też rozbiją. Mędrzec nic nie powiedział, a mnie odesssłano.
+* Porozmawiam za tobą z Mędrcem. -> ask
+* Wróć. -> start
+
+-- ask
+Zrobił{byś|abyś} to? ... Mędrzec słucha tych, którzy czynią dobro dla lęgu. Może wysssłucha i ciebie.
+! flag ssethra_asked 1
+* Wróć. -> start
+
+-- home
+Przebacza... W takim razie wracam do domu. Weź to - pewien ciepłokrwissty spadł z nimi z akweduktu, a mnie na nic się nie zdadzą. I łowiecką sztukę Ludu, którą ciepłokrwissty powinien znać: bądź nieruchomy, a woda o tobie zapomni.
+! flag ssethra_home 1
+! give GreenPotion
+! give GreenPotion
+! skill Sneak 1
+! exp 80
+! move 38.5 12.5 180
+* Wracaj do domu, Ssethro. -> end
+
+-- village
+Matki lęgów nic do mnie nie mówią. Ale mówią to prosssto w oczy, a to coś nowego.
 * Wróć. -> start

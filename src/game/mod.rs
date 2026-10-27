@@ -301,11 +301,14 @@ impl Game {
                 }
                 TriggerKind::Message { text } => self.msg(crate::lang::tr_dyn(&text)),
                 TriggerKind::OpenDoor { door } => {
-                    if let Some(d) = self.level_mut().doors.iter_mut().find(|d| d.id == door) {
-                        d.opening = true;
-                        d.locked = false;
+                    let Some(d) = self.level_mut().doors.iter_mut().find(|d| d.id == door) else { continue };
+                    if d.opening {
+                        continue;
                     }
+                    d.opening = true;
+                    d.locked = false;
                     self.sound(Sfx::DoorOpen);
+                    self.msg(t!("Something gives beneath your feet. Somewhere, stone grinds on stone."));
                 }
                 TriggerKind::Damage { amount } => {
                     self.spring_trap(tx, tz, amount);
