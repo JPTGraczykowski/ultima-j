@@ -154,11 +154,13 @@ were written from scratch.
 cargo test --release                          # unit tests, level connectivity, fuzzers
 ultima-j --script "goto 18.5 41.5 270; tap F2; rclick 112 70; shot out.png"
                                               # drive the game headless (see src/headless.rs)
-ultima-j --maps DIR                           # top-down renders of all levels
+ultima-j --maps DIR                           # labelled top-down maps of all levels
 ultima-j --dump-art DIR                       # textures, frame, items, fixtures
 ultima-j --creatures FILE                     # creature sprite sheet
 ULTIMA_J_SELFTEST=out.png ultima-j --play     # capture the real window after 3 s
 ```
+
+All the commands, script cheats and recipes are in [DEVELOPING.md](DEVELOPING.md).
 
 ## Layout of the code
 

@@ -104,15 +104,29 @@ fn dump_creatures(out: &str) -> Result<(), String> {
     gfx::save_bitmap_png(out, &sheet, &pal, 1)
 }
 
-/// Top-down renders of every level for design review.
+/// Top-down renders of every level for design review: area names, tile
+/// coordinates every 8 tiles (for `goto` and `level` in scripts) and a legend.
 fn dump_maps(dir: &str) -> Result<(), String> {
     use world::map::{Liquid, MAP_SIZE};
     std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     let pal = Palette::new();
+    let small = gfx::Font::small();
+    let big = small.scale2x();
     let levels = game::levels::build_all();
+    let s = 8;
+    let (left, top, bottom) = (16, 34, 40);
+    let (w, h) = (left + MAP_SIZE * s + 6, top + MAP_SIZE * s + bottom);
+    let water = gfx::c(Ramp::Blue, 7);
+    let lava = gfx::c(Ramp::Fire, 8);
+    let door = gfx::c(Ramp::Earth, 9);
+    let stairs = gfx::c(Ramp::Gold, 13);
+    let item = gfx::c(Ramp::Green, 12);
+    let named = gfx::c(Ramp::Purple, 13);
+    let creature = gfx::c(Ramp::Red, 11);
+    let grey = gfx::c(Ramp::Grey, 8);
     for (li, lv) in levels.iter().enumerate() {
-        let s = 8;
-        let mut b = Bitmap::filled(MAP_SIZE * s, MAP_SIZE * s, palette::BLACK);
+        let mut b = Bitmap::filled(w, h, palette::BLACK);
+        let (ox, oy) = (left, top);
         for z in 0..MAP_SIZE {
             for x in 0..MAP_SIZE {
                 let t = lv.map.get(x, z);
@@ -120,44 +134,83 @@ fn dump_maps(dir: &str) -> Result<(), String> {
                     continue;
                 }
                 let col = match t.liquid {
-                    Liquid::Water => gfx::c(Ramp::Blue, 7),
-                    Liquid::Lava => gfx::c(Ramp::Fire, 8),
+                    Liquid::Water => water,
+                    Liquid::Lava => lava,
                     Liquid::None => gfx::c(Ramp::Stone, (6 + t.floor as i32).clamp(2, 14)),
                 };
                 for yy in 0..s {
                     for xx in 0..s {
                         if t.point_open((xx as f32 + 0.5) / s as f32, (yy as f32 + 0.5) / s as f32) {
-                            b.set(x * s + xx, z * s + yy, col);
+                            b.set(ox + x * s + xx, oy + z * s + yy, col);
                         }
                     }
                 }
                 if t.shape != world::map::Shape::Open && !t.is_diag() {
-                    b.set(x * s + 4, z * s + 4, palette::BLACK);
+                    b.set(ox + x * s + 4, oy + z * s + 4, palette::BLACK);
                 }
             }
         }
-        for x in 0..MAP_SIZE {
-            b.vline(x * s, 0, MAP_SIZE * s - 1, gfx::c(Ramp::Grey, 2));
-        }
-        for z in 0..MAP_SIZE {
-            b.hline(0, MAP_SIZE * s - 1, z * s, gfx::c(Ramp::Grey, 2));
+        // Grid, a brighter line and a coordinate every 8 tiles.
+        for k in 0..=MAP_SIZE {
+            let col = if k % 8 == 0 { gfx::c(Ramp::Grey, 5) } else { gfx::c(Ramp::Grey, 2) };
+            b.vline(ox + k * s, oy, oy + MAP_SIZE * s, col);
+            b.hline(ox, ox + MAP_SIZE * s, oy + k * s, col);
+            if k % 8 == 0 && k < MAP_SIZE {
+                small.draw(&mut b, ox + k * s + 1, oy - 7, &k.to_string(), grey);
+                let n = k.to_string();
+                small.draw(&mut b, ox - 2 - small.text_width(&n), oy + k * s + 1, &n, grey);
+            }
         }
         for d in &lv.doors {
-            b.fill_rect(d.tx * s + 2, d.tz * s + 2, s - 4, s - 4, gfx::c(Ramp::Earth, 9));
+            b.fill_rect(ox + d.tx * s + 2, oy + d.tz * s + 2, s - 4, s - 4, door);
         }
         for t in &lv.triggers {
             if let game::TriggerKind::Stairs { .. } = t.kind {
-                b.fill_rect(t.tx * s + 1, t.tz * s + 1, s - 2, s - 2, gfx::c(Ramp::Gold, 13));
+                b.fill_rect(ox + t.tx * s + 1, oy + t.tz * s + 1, s - 2, s - 2, stairs);
             }
         }
+        let at = |x: f32| x * s as f32;
         for it in &lv.items {
-            b.fill_rect((it.pos.x * s as f32) as i32 - 1, (it.pos.z * s as f32) as i32 - 1, 3, 3, gfx::c(Ramp::Green, 12));
+            b.fill_rect(ox + at(it.pos.x) as i32 - 1, oy + at(it.pos.z) as i32 - 1, 3, 3, item);
         }
         for n in &lv.npcs {
-            let col = if n.name.is_some() { gfx::c(Ramp::Purple, 13) } else { gfx::c(Ramp::Red, 11) };
-            b.fill_circle_f(n.pos.x * s as f32, n.pos.z * s as f32, 2.5, col);
+            b.fill_circle_f(ox as f32 + at(n.pos.x), oy as f32 + at(n.pos.z), 2.5, if n.name.is_some() { named } else { creature });
         }
-        b.fill_circle_f(lv.start.0 * s as f32, lv.start.1 * s as f32, 3.0, palette::WHITE);
+        b.fill_circle_f(ox as f32 + at(lv.start.0), oy as f32 + at(lv.start.1), 3.0, palette::WHITE);
+        // Names: areas in white, characters in lilac under their dot.
+        for n in &lv.npcs {
+            if let Some(name) = &n.name {
+                let x = ox + at(n.pos.x) as i32 - small.text_width(name) / 2;
+                small.draw_fancy(&mut b, x, oy + at(n.pos.z) as i32 + 4, name, &[named], palette::BLACK, None);
+            }
+        }
+        for (x, z, name) in game::levels::map_labels(lv, li) {
+            let cx = ox + x * s + s / 2 - small.text_width(&name) / 2;
+            small.draw_fancy(&mut b, cx, oy + z * s + 1, &name, &[palette::WHITE], palette::BLACK, None);
+        }
+        let title = format!("Level {}: {}", li + 1, lv.name);
+        big.draw(&mut b, left, 4, &title, palette::WHITE);
+        // Legend.
+        let ly = top + MAP_SIZE * s + 8;
+        let mut x = left;
+        let key = |b: &mut Bitmap, x: &mut i32, y: i32, col: u8, round: bool, text: &str| {
+            if round {
+                b.fill_circle_f(*x as f32 + 2.5, y as f32 + 2.5, 2.5, col);
+            } else {
+                b.fill_rect(*x, y, 6, 6, col);
+            }
+            *x = small.draw(b, *x + 9, y, text, grey) + 12;
+        };
+        key(&mut b, &mut x, ly, palette::WHITE, true, "start");
+        key(&mut b, &mut x, ly, stairs, false, "stairs");
+        key(&mut b, &mut x, ly, door, false, "door");
+        key(&mut b, &mut x, ly, item, false, "item");
+        key(&mut b, &mut x, ly, named, true, "named NPC");
+        key(&mut b, &mut x, ly, creature, true, "creature");
+        key(&mut b, &mut x, ly, water, false, "water");
+        key(&mut b, &mut x, ly, lava, false, "lava");
+        small.draw(&mut b, left, ly + 12, "Brighter floor is higher. A dot in a tile marks a slope.", grey);
+        small.draw(&mut b, left, ly + 20, "Numbers are tile coordinates: goto X Z puts you on tile X, Z (add .5 for its middle).", grey);
         gfx::save_bitmap_png(&format!("{}/level{}.png", dir, li + 1), &b, &pal, 2)?;
     }
     Ok(())
@@ -175,7 +228,9 @@ fn main() {
             println!("ultima-j            start the game");
             println!("ultima-j --play     skip the title and start playing");
             println!("ultima-j --script \"cmd; cmd; ...\"   run headless (see src/headless.rs)");
+            println!("ultima-j --maps DIR   write a labelled top-down map of every level");
             println!("ultima-j --dump-art DIR | --creatures FILE   write generated art for review");
+            println!("More in DEVELOPING.md.");
             Ok(())
         }
         "--play" => {

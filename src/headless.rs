@@ -2,7 +2,7 @@
 //! automated tests and screenshots.
 //!
 //! Script commands (separated by `;`):
-//! `title` | `chargen` | `play` - choose the starting screen
+//! `title` | `chargen` | `intro` | `ending` | `play` - choose the starting screen
 //! `wait N` - run N frames (1/30 s each)
 //! `key K N` - hold key K for N frames (K: W, A, F5, Up, ...; W+J holds both)
 //! `tap K` - press key K for one frame
@@ -11,13 +11,14 @@
 //! `rhold X Y N` - hold the right button for N frames
 //! `type TEXT` - type characters
 //! `goto X Z [YAW]` - teleport the player
-//! `level N X Z` - change level
+//! `level N X Z` - change level (N counts from 0: `level 1` is level 2)
 //! `give Kind` - put an item in the pack
 //! `spawn Race DIST [LOOK]` - place a peaceful creature DIST ahead, facing the player
 //! `equip Kind Slot` - equip an item
 //! `set NAME VALUE` - player attribute (vit, mana, level, exp) or skill (traps, lore...)
+//! `skill NAME VALUE` - a skill only
 //! `runes all` - learn all runes
-//! `reveal` - mark the whole level explored (for the automap)
+//! `reveal` - mark the whole level explored and write its area names on the automap
 //! `shelf A B C` - put runes on the shelf
 //! `shot PATH` - save a screenshot (3x, 4:3 aspect)
 //! `shot1 PATH` - save a 1x screenshot
@@ -212,7 +213,15 @@ pub fn run(script: &str) -> Result<(), String> {
                             }
                         }
                         "runes" => g.player.runes = [true; 24],
-                        "reveal" => g.level_mut().map.tiles.iter_mut().for_each(|t| t.explored = true),
+                        "reveal" => {
+                            g.level_mut().map.tiles.iter_mut().for_each(|t| t.explored = true);
+                            // Area names as notes centred on their tile, so the automap shows them.
+                            let (cell, _, _) = crate::ui::automap::geometry(g, g.cur);
+                            for (x, z, name) in crate::game::levels::map_labels(g.level(), g.cur) {
+                                let w = app.ctx.art.font.text_width(&name);
+                                g.level_mut().notes.push((x - w / (2 * cell), z, name));
+                            }
+                        }
                         "spawn" => {
                             let race = *crate::game::creatures::ALL_RACES
                                 .iter()

@@ -12,7 +12,7 @@ pub const CLOSE: Rect = Rect::new(252, 166, 52, 18);
 pub const MAP_AREA: Rect = Rect::new(10, 7, 196, 188);
 
 /// Map geometry for a level: (cell size, x offset, y offset).
-fn geometry(g: &Game, lvl: usize) -> (i32, i32, i32) {
+pub fn geometry(g: &Game, lvl: usize) -> (i32, i32, i32) {
     let map = &g.levels[lvl].map;
     let (mut x0, mut z0, mut x1, mut z1) = (MAP_SIZE, MAP_SIZE, 0, 0);
     for tz in 0..MAP_SIZE {

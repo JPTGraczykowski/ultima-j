@@ -382,6 +382,11 @@ impl<'a> B<'a> {
         self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Stairs { level, x: dx, z: dz, yaw: yaw_deg.to_radians() }, once: false, fired: false, found: false });
     }
 
+    /// Name the area around tile (x, z) on the developer maps.
+    pub fn area(&mut self, name: &str, x: i32, z: i32) {
+        self.lv.areas.push((x, z, name.to_string()));
+    }
+
     pub fn message(&mut self, x: i32, z: i32, text: &str) {
         self.lv.triggers.push(Trigger { tx: x, tz: z, kind: TriggerKind::Message { text: text.to_string() }, once: true, fired: false, found: false });
     }
@@ -416,6 +421,19 @@ pub const LEAP_DOWN: i16 = 8;
 #[cfg(test)]
 pub const JUMP_HEADROOM: i16 = 14;
 
+/// The labels for the developer maps of level `li`: its area names, and
+/// where its stairs lead.
+pub fn map_labels(lv: &Level, li: usize) -> Vec<(i32, i32, String)> {
+    let mut labels = lv.areas.clone();
+    for t in &lv.triggers {
+        if let TriggerKind::Stairs { level, .. } = t.kind {
+            let dir = if level > li { "down" } else { "up" };
+            labels.push((t.tx, t.tz + 1, format!("{} to L{}", dir, level + 1)));
+        }
+    }
+    labels
+}
+
 /// Build every level of the abyss.
 pub fn build_all() -> Vec<Level> {
     let db = DialogueDb::load();
@@ -430,6 +448,7 @@ fn level1(db: &DialogueDb) -> Level {
     // Entrance hall, sealed doors to the north.
     b.style(Tex::Flagstones, Tex::RoughStone, Tex::CeilingRock);
     b.room(28, 52, 5, 6, 0, 10);
+    b.area("Entrance hall", 30, 54);
     b.carve(30, 51, 0, 10);
     let gate = b.door(30, 51, DoorAxis::NS, DoorKind::Iron, 999);
     b.lv.doors.iter_mut().find(|d| d.id == gate).unwrap().remote = true;
@@ -448,6 +467,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.style(Tex::Dirt, Tex::StoneBlocks, Tex::CeilingRock);
     b.corridor(27, 55, 20, 46, 0, 8);
     b.room(14, 40, 9, 6, 0, 12);
+    b.area("Outcasts' camp", 18, 44);
     b.light(14, 40, 9, 6, 10);
     b.item(ItemKind::Campfire, 18.5, 43.0);
     b.named(Race::Human, 1, "Elsmore", "elsmore", 16.5, 42.0, 90.0);
@@ -463,6 +483,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.corridor(24, 56, 24, 58, 0, 8);
     b.style(Tex::MarbleTiles, Tex::Marble, Tex::CeilingRock);
     b.room(22, 59, 5, 4, 0, 10);
+    b.area("Shrine", 24, 60);
     b.light(22, 59, 5, 4, 9);
     b.item(ItemKind::Shrine, 24.5, 61.4);
     b.writing(24, 63, "Rest here, weary soul. The Virtues watch over thee. Kneel, and thy skills may grow.");
@@ -473,6 +494,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.corridor(13, 42, 8, 42, 0, 8);
     b.door(11, 42, DoorAxis::EW, DoorKind::Wood, 0);
     b.room(2, 38, 6, 8, 0, 9);
+    b.area("Goblin den", 4, 41);
     b.npc(Race::GreenGoblin, 4.5, 40.5);
     b.npc(Race::GreenGoblin, 5.5, 44.0);
     let gnarl = b.named(Race::GreenGoblin, 0, "Gnarl", "", 3.5, 42.5, 90.0);
@@ -498,6 +520,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.trap(18, 36, 3);
     b.style(Tex::WoodFloor, Tex::DarkPanels, Tex::CeilingBeams);
     b.room(15, 28, 7, 6, 2, 9);
+    b.area("Library", 18, 29);
     b.tile(18, 34, 0, 10);
     b.slope(18, 34, Shape::SlopeN, 0, 2);
     b.light(15, 28, 7, 6, 4);
@@ -516,6 +539,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.tile(22, 31, 2, 9);
     b.door(22, 31, DoorAxis::EW, DoorKind::Secret, 0);
     b.room(23, 29, 4, 4, 2, 9);
+    b.area("Secret room", 25, 32);
     b.put(Item::new(ItemKind::GoldRing).enchanted(Enchant::Protection(2), 0), 24.5, 30.0);
     b.item(ItemKind::BluePotion, 25.6, 31.8);
     b.rune_stone(rune::BET, 23.6, 32.0);
@@ -525,6 +549,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.corridor(33, 55, 40, 55, 0, 8);
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.cave(44, 54, 4, 4, 0, 9);
+    b.area("Rat cave", 44, 53);
     b.corridor(40, 55, 44, 55, 0, 9);
     b.npc(Race::Rat, 44.5, 53.5);
     b.npc(Race::Rat, 45.5, 55.5);
@@ -533,6 +558,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.item(ItemKind::Apple, 43.0, 52.0);
     // Slug tunnel to the south-east.
     b.cave(57, 58, 3, 3, 0, 8);
+    b.area("Slug cave", 57, 58);
     b.corridor(44, 57, 57, 57, 0, 8);
     b.trap(52, 57, 3);
     b.npc(Race::Slug, 57.5, 58.5);
@@ -542,6 +568,7 @@ fn level1(db: &DialogueDb) -> Level {
 
     // Water cave to the north.
     b.cave(45, 35, 6, 5, 0, 12);
+    b.area("Water cave", 46, 37);
     b.corridor(44, 54, 44, 38, 0, 8);
     b.water(43, 33, 5, 4, -2);
     b.npc(Race::Bat, 46.5, 34.5);
@@ -554,6 +581,7 @@ fn level1(db: &DialogueDb) -> Level {
     // Gray goblin hall to the north.
     b.style(Tex::Dirt, Tex::IrregularStone, Tex::CeilingRock);
     b.room(38, 14, 15, 9, 0, 12);
+    b.area("Gray goblin hall", 45, 18);
     b.corridor(49, 35, 49, 22, 0, 9);
     b.light(38, 14, 15, 9, 9);
     b.named(Race::GrayGoblin, 0, "Rhugg", "rhugg", 45.5, 15.5, 180.0);
@@ -586,9 +614,11 @@ fn level1(db: &DialogueDb) -> Level {
     b.style(Tex::Flagstones, Tex::StoneBlocks, Tex::CeilingRock);
     b.corridor(18, 27, 18, 20, 2, 9);
     b.room(11, 10, 16, 10, 2, 12);
+    b.area("Old guard hall", 18, 11);
     b.light(11, 10, 16, 10, 5);
     b.style(Tex::Dirt, Tex::RoughStone, Tex::CeilingRock);
     b.gap(11, 14, 16, 1, 12);
+    b.area("crack", 18, 15);
     b.ramp(10, 14, (-1, 0), 3, -10, 2, 9);
     b.corridor(7, 14, 7, 17, 2, 9);
     b.corridor(7, 17, 10, 17, 2, 9);
@@ -608,6 +638,7 @@ fn level1(db: &DialogueDb) -> Level {
     // The goblins' midden below the den, and past a crevice their hoard.
     b.style(Tex::Mud, Tex::IrregularStone, Tex::CeilingRock);
     b.cave(8, 54, 4, 3, 0, 9);
+    b.area("Midden", 8, 54);
     b.corridor(4, 46, 4, 52, 0, 8);
     b.corridor(4, 52, 8, 52, 0, 8);
     b.npc(Race::Rat, 6.5, 53.5);
@@ -622,6 +653,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.corridor(12, 59, 12, 56, 0, 9);
     b.corridor(12, 56, 10, 56, 0, 9);
     b.room(5, 61, 7, 2, 0, 9);
+    b.area("Hoard nook", 8, 61);
     b.container(ItemKind::Box, 10.5, 61.6, vec![Item::new(ItemKind::Coin).qty(15).data(15), Item::new(ItemKind::GreenPotion)]);
     b.item(ItemKind::Sling, 6.0, 61.5);
     b.item(ItemKind::SlingStone, 6.6, 62.2);
@@ -630,6 +662,7 @@ fn level1(db: &DialogueDb) -> Level {
     // A bat roost east of the water cave, where an explorer met their end.
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.cave(58, 43, 4, 5, 0, 13);
+    b.area("Bat roost", 58, 43);
     b.corridor(49, 37, 56, 42, 0, 8);
     b.npc(Race::Bat, 57.5, 41.5);
     b.npc(Race::Bat, 59.5, 45.5);
@@ -648,6 +681,7 @@ fn level2(db: &DialogueDb) -> Level {
     // Arrival tunnel (stairs up at the west end).
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.corridor(5, 30, 19, 30, 0, 8);
+    b.area("Arrival tunnel", 11, 31);
     b.tile(2, 30, 4, 8);
     b.tile(3, 30, 2, 10);
     b.slope(3, 30, Shape::SlopeW, 2, 2);
@@ -660,6 +694,7 @@ fn level2(db: &DialogueDb) -> Level {
     // King Thorgrim's hall.
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.room(20, 24, 15, 13, 0, 14);
+    b.area("Thorgrim's hall", 27, 31);
     b.light(20, 24, 15, 13, 11);
     b.room(28, 25, 5, 3, 2, 12);
     b.slope(30, 28, Shape::SlopeN, 0, 2);
@@ -684,6 +719,7 @@ fn level2(db: &DialogueDb) -> Level {
     b.style(Tex::WoodFloor, Tex::WoodPlanks, Tex::CeilingBeams);
     b.corridor(19, 26, 17, 26, 0, 8);
     b.room(8, 20, 9, 8, 0, 9);
+    b.area("Quarters", 12, 24);
     b.light(8, 20, 9, 8, 7);
     b.named(Race::Dwarf, 1, "Hilda", "hilda", 11.5, 23.5, 90.0);
     b.item(ItemKind::Bed, 9.6, 20.7);
@@ -698,6 +734,7 @@ fn level2(db: &DialogueDb) -> Level {
     b.style(Tex::Flagstones, Tex::Bricks, Tex::CeilingRock);
     b.corridor(27, 37, 27, 41, 0, 9);
     b.room(22, 42, 11, 7, 0, 11);
+    b.area("Forge", 27, 46);
     b.lava(24, 47, 7, 1, -1);
     b.light(22, 42, 11, 7, 10);
     let bodric = b.named(Race::Dwarf, 3, "Bodric", "bodric", 26.5, 44.5, 0.0);
@@ -713,6 +750,7 @@ fn level2(db: &DialogueDb) -> Level {
     b.tile(35, 30, 0, 9);
     b.door(35, 30, DoorAxis::EW, DoorKind::Iron, 21);
     b.cave(46, 28, 5, 5, 0, 10);
+    b.area("Spider galleries", 50, 37);
     b.cave(50, 44, 6, 5, 0, 11);
     b.cave(57, 32, 5, 4, 0, 10);
     b.corridor(36, 30, 46, 30, 0, 9);
@@ -745,6 +783,7 @@ fn level2(db: &DialogueDb) -> Level {
 
     // The deep mine and the way down, south-west of the hall.
     b.cave(16, 54, 6, 4, 0, 9);
+    b.area("Deep mine", 16, 55);
     b.corridor(21, 36, 21, 54, 0, 8);
     b.trap(21, 45, 5);
     // The tunnel floor fell into an old shaft: jump it, or climb out of the
@@ -753,6 +792,7 @@ fn level2(db: &DialogueDb) -> Level {
         b.tile(21, z, 0, 12);
     }
     b.gap(21, 50, 1, 1, 12);
+    b.area("shaft", 21, 50);
     b.ramp(22, 50, (1, 0), 3, -12, 0, 9);
     b.corridor(25, 50, 25, 49, 0, 9);
     b.message(21, 49, "The tunnel floor has fallen into an old shaft. A good run and a leap would carry you over.");
@@ -779,12 +819,14 @@ fn level2(db: &DialogueDb) -> Level {
     // bottom of the shaft a ramp climbs back to the diggings.
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.cave(10, 10, 5, 4, 0, 10);
+    b.area("Old diggings", 11, 10);
     b.corridor(12, 19, 12, 12, 0, 8);
     b.room(15, 8, 4, 5, 0, 12);
     b.corridor(10, 10, 15, 10, 0, 9);
     b.room(19, 8, 2, 5, 0, 12);
     b.gap(19, 8, 2, 5, 16);
     b.room(21, 8, 3, 5, -8, 20);
+    b.area("ledge", 22, 13);
     b.ramp(19, 13, (0, 1), 4, -16, 0, 9);
     b.corridor(19, 17, 12, 17, 0, 8);
     b.writing(17, 7, "DIGGING CLOSED. The east face fell into the old shaft. Gold glints on the ledge beyond, but no fool is to jump for it. - Thorgrim");
@@ -801,6 +843,7 @@ fn level2(db: &DialogueDb) -> Level {
     b.corridor(10, 31, 10, 35, 0, 8);
     b.door(10, 33, DoorAxis::NS, DoorKind::Wood, 0);
     b.room(5, 36, 9, 6, 0, 9);
+    b.area("Storeroom", 9, 38);
     b.light(5, 36, 9, 6, 3);
     for (x, z) in [(5.6, 36.6), (6.6, 36.5), (12.4, 41.4)] {
         b.item(ItemKind::Barrel, x, z);
@@ -817,6 +860,7 @@ fn level2(db: &DialogueDb) -> Level {
     // A flooded drift south of the spider galleries.
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.cave(50, 57, 6, 4, 0, 10);
+    b.area("Flooded drift", 50, 57);
     b.corridor(50, 47, 50, 54, 0, 9);
     b.water(47, 58, 4, 3, -2);
     b.npc(Race::Spider, 46.5, 56.0);
@@ -848,6 +892,7 @@ fn level3(db: &DialogueDb) -> Level {
 
     // The great flooded hall with channels and bridges.
     b.room(4, 13, 26, 14, 0, 12);
+    b.area("Great flooded hall", 17, 19);
     b.water(4, 18, 26, 3, -3);
     b.bridge(11, 18, 2, 3, 0);
     b.bridge(24, 18, 2, 3, 0);
@@ -860,6 +905,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.style(Tex::Grass, Tex::Cobbles, Tex::CeilingRock);
     b.corridor(30, 15, 33, 15, 0, 9);
     b.room(34, 10, 14, 12, 0, 11);
+    b.area("Lizardman village", 41, 19);
     b.light(34, 10, 14, 12, 8);
     b.water(39, 14, 4, 4, -2);
     b.named(Race::Lizardman, 0, "Hissk", "hissk", 35.5, 15.5, 270.0);
@@ -875,6 +921,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.style(Tex::MarbleTiles, Tex::Sandstone, Tex::CeilingRock);
     b.corridor(41, 9, 41, 6, 0, 9);
     b.room(37, 1, 9, 5, 0, 12);
+    b.area("Sage's pool", 41, 2);
     b.water(39, 2, 5, 2, -1);
     b.light(37, 1, 9, 5, 10);
     b.named(Race::Lizardman, 2, "Ssrath", "ssrath", 41.5, 4.5, 180.0);
@@ -884,6 +931,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.style(Tex::Mud, Tex::CaveRock, Tex::CeilingRock);
     b.corridor(48, 16, 52, 16, 0, 9);
     b.cave(57, 18, 5, 6, 0, 12);
+    b.area("Lurkers' grotto", 57, 18);
     b.water(53, 13, 6, 11, -3);
     b.npc(Race::Lurker, 56.5, 16.5);
     b.npc(Race::Lurker, 58.5, 21.5);
@@ -896,6 +944,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.corridor(10, 27, 10, 33, 0, 8);
     b.trap(10, 30, 5);
     b.room(4, 34, 14, 12, 0, 12);
+    b.area("Drowned temple", 11, 39);
     b.water(4, 40, 14, 2, -1);
     b.bridge(10, 40, 2, 2, 0);
     for (x, z) in [(6.0, 36.5), (15.5, 36.5), (6.0, 44.0), (15.5, 44.0)] {
@@ -914,6 +963,7 @@ fn level3(db: &DialogueDb) -> Level {
     let grate = b.door(18, 37, DoorAxis::EW, DoorKind::Portcullis, 0);
     b.lv.doors.iter_mut().find(|d| d.id == grate).unwrap().remote = true;
     b.room(19, 36, 2, 3, 0, 10);
+    b.area("Reliquary", 21, 35);
     b.lever(3, 38, grate);
     b.put(Item::new(ItemKind::SilverRing).enchanted(Enchant::Protection(3), 0), 20.0, 37.5);
     b.item(ItemKind::BluePotion, 19.6, 36.4);
@@ -923,6 +973,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.style(Tex::Gravel, Tex::MossyStone, Tex::CeilingRock);
     b.corridor(18, 40, 30, 40, 0, 8);
     b.cave(34, 42, 5, 5, 0, 10);
+    b.area("Southern caves", 34, 42);
     b.npc(Race::Bat, 34.5, 41.5);
     b.npc(Race::Ghoul, 36.5, 45.5);
     b.rune_stone(rune::GRAV, 37.0, 39.0);
@@ -935,6 +986,7 @@ fn level3(db: &DialogueDb) -> Level {
         b.tile(50, z, 0, 12);
     }
     b.gap(50, 50, 1, 1, 12);
+    b.area("Broken aqueduct", 51, 48);
     b.water(50, 50, 1, 1, -12);
     b.ramp(51, 50, (1, 0), 3, -12, 0, 9);
     b.corridor(51, 45, 54, 50, 0, 8);
@@ -957,6 +1009,7 @@ fn level3(db: &DialogueDb) -> Level {
     // A fungus cavern below the village, with a pool and a lurker in it.
     b.style(Tex::Mud, Tex::CaveRock, Tex::CeilingRock);
     b.cave(47, 31, 6, 5, 0, 11);
+    b.area("Fungus cavern", 47, 31);
     b.corridor(44, 22, 44, 29, 0, 9);
     b.water(45, 32, 4, 3, -2);
     b.npc(Race::Lurker, 46.5, 33.5);
@@ -971,6 +1024,7 @@ fn level3(db: &DialogueDb) -> Level {
     b.style(Tex::Flagstones, Tex::Sandstone, Tex::CeilingRock);
     b.corridor(13, 46, 13, 50, 0, 8);
     b.room(6, 51, 12, 6, 0, 10);
+    b.area("Ossuary", 12, 53);
     b.light(6, 51, 12, 6, 2);
     b.npc(Race::Ghoul, 9.5, 54.5);
     b.npc(Race::Bat, 15.5, 53.0);
@@ -1004,6 +1058,7 @@ fn level4(db: &DialogueDb) -> Level {
 
     // The long gallery of tombs.
     b.room(24, 10, 17, 5, 0, 12);
+    b.area("Gallery of tombs", 32, 12);
     for k in 0..6 {
         let x = 25 + k * 3;
         b.tile(x, 9, 0, 6);
@@ -1022,6 +1077,7 @@ fn level4(db: &DialogueDb) -> Level {
     b.corridor(32, 15, 32, 21, 0, 9);
     b.trap(32, 18, 7);
     b.room(26, 22, 13, 9, 0, 13);
+    b.area("Aldric's tomb", 32, 24);
     b.light(26, 22, 13, 9, 5);
     b.item(ItemKind::Statue, 27.0, 23.0);
     b.item(ItemKind::Statue, 38.0, 23.0);
@@ -1035,6 +1091,7 @@ fn level4(db: &DialogueDb) -> Level {
     b.corridor(25, 26, 14, 26, 0, 9);
     b.trap(19, 26, 6);
     b.room(4, 20, 10, 12, 0, 11);
+    b.area("West wing", 9, 25);
     b.npc(Race::Ghost, 8.5, 24.5);
     b.npc(Race::Headless, 6.5, 29.5);
     b.npc(Race::Headless, 11.0, 30.0);
@@ -1050,6 +1107,7 @@ fn level4(db: &DialogueDb) -> Level {
     b.corridor(39, 26, 46, 26, 0, 9);
     b.trap(43, 26, 6);
     b.cave(52, 26, 6, 6, 0, 12);
+    b.area("Troll den", 52, 26);
     b.npc(Race::Troll, 52.5, 25.5);
     b.npc(Race::Troll, 55.5, 29.5);
     b.item(ItemKind::RelicBones, 57.0, 24.0);
@@ -1068,10 +1126,12 @@ fn level4(db: &DialogueDb) -> Level {
         b.tile(32, z, 0, 12);
     }
     b.gap(32, 38, 1, 1, 12);
+    b.area("Fallen passage", 32, 36);
     b.ramp(33, 38, (1, 0), 3, -12, 0, 9);
     b.corridor(36, 38, 36, 31, 0, 9);
     b.message(32, 37, "The floor of the passage has fallen into the crypts below. You will have to leap.");
     b.room(24, 41, 17, 10, 0, 14);
+    b.area("Guardian's hall", 32, 45);
     b.light(24, 41, 17, 10, 4);
     let golem = b.npc(Race::Golem, 32.5, 46.5);
     b.npc_mut(golem).ai = AiState::Idle;
@@ -1095,6 +1155,7 @@ fn level4(db: &DialogueDb) -> Level {
     b.style(Tex::Flagstones, Tex::GreyBlocks, Tex::CeilingRock);
     b.corridor(23, 12, 15, 12, 0, 9);
     b.room(5, 5, 10, 8, 0, 10);
+    b.area("Catacombs", 10, 8);
     b.light(5, 5, 10, 8, 2);
     for z in [5.4, 8.0, 10.6] {
         b.item(ItemKind::Gravestone, 5.4, z);
@@ -1110,9 +1171,11 @@ fn level4(db: &DialogueDb) -> Level {
     // ledge, and from the bottom a ramp back up.
     b.corridor(41, 12, 48, 12, 0, 9);
     b.room(49, 6, 4, 8, 0, 12);
+    b.area("Charnel pit", 52, 5);
     b.room(53, 6, 2, 8, 0, 12);
     b.gap(53, 6, 2, 8, 16);
     b.room(55, 8, 4, 4, -8, 20);
+    b.area("ledge", 57, 10);
     b.ramp(53, 14, (0, 1), 4, -16, 0, 9);
     b.corridor(49, 18, 53, 18, 0, 9);
     b.corridor(49, 14, 49, 18, 0, 9);
@@ -1129,6 +1192,7 @@ fn level4(db: &DialogueDb) -> Level {
     // The mass graves south of the west wing.
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.cave(10, 42, 6, 5, 0, 10);
+    b.area("Mass graves", 10, 42);
     b.corridor(8, 32, 8, 40, 0, 9);
     b.npc(Race::Skeleton, 12.5, 41.5);
     b.npc(Race::Skeleton, 7.5, 45.0);
@@ -1143,6 +1207,7 @@ fn level4(db: &DialogueDb) -> Level {
     b.style(Tex::MarbleTiles, Tex::CarvedFrieze, Tex::CeilingRock);
     b.corridor(41, 45, 46, 45, 0, 9);
     b.room(47, 42, 9, 7, 0, 10);
+    b.area("Embalmers' rooms", 51, 45);
     b.light(47, 42, 9, 7, 4);
     b.npc(Race::Ghost, 52.5, 45.5);
     b.item(ItemKind::Table, 49.0, 43.0);
@@ -1191,6 +1256,7 @@ fn level5(db: &DialogueDb) -> Level {
 
     // Antechamber with fire and Malchor's thralls.
     b.room(24, 11, 17, 9, 0, 13);
+    b.area("Antechamber", 32, 13);
     b.lava(24, 15, 4, 2, -2);
     b.lava(37, 15, 4, 2, -2);
     b.thrall(Race::Skeleton, 28.5, 13.5);
@@ -1207,6 +1273,7 @@ fn level5(db: &DialogueDb) -> Level {
     b.trap(20, 15, 8);
     b.thrall(Race::Headless, 22.5, 15.5);
     b.room(8, 10, 10, 10, 0, 11);
+    b.area("Malchor's study", 12, 14);
     b.light(8, 10, 10, 10, 8);
     // Malchor himself is not here: he waits unseen by the Shard Gate (see `malchor`).
     b.item(ItemKind::Bookshelf, 8.8, 10.6);
@@ -1224,6 +1291,7 @@ fn level5(db: &DialogueDb) -> Level {
     b.thrall(Race::Ghoul, 44.5, 15.5);
     b.door(46, 15, DoorAxis::EW, DoorKind::Iron, 501);
     b.room(48, 12, 6, 6, 0, 10);
+    b.area("Soul vault", 50, 14);
     b.light(48, 12, 6, 6, 6);
     b.item(ItemKind::BonePile, 52.5, 16.8);
     b.item(ItemKind::Skull, 49.0, 13.0);
@@ -1234,9 +1302,11 @@ fn level5(db: &DialogueDb) -> Level {
     b.style(Tex::Flagstones, Tex::RedBricks, Tex::CeilingRock);
     b.corridor(32, 20, 32, 27, 0, 10);
     b.door(32, 25, DoorAxis::NS, DoorKind::Iron, SHARD_GATE);
+    b.area("Shard Gate", 32, 24);
     b.writing(31, 24, "None shall pass but the bearer of Valor, Wisdom and Mercy.");
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.cave(32, 40, 13, 11, 0, 16);
+    b.area("Throne of Souls", 32, 44);
     b.corridor(32, 27, 32, 36, 0, 10);
     b.lava(20, 44, 9, 5, -3);
     b.lava(36, 34, 8, 4, -3);
@@ -1253,6 +1323,7 @@ fn level5(db: &DialogueDb) -> Level {
     // A crack across the throne cave, lava glowing at the bottom. The way
     // out of it climbs east and comes back to the gate.
     b.gap(30, 31, 7, 1, 12);
+    b.area("lava crack", 33, 32);
     b.lava(30, 31, 7, 1, -12);
     b.ramp(37, 31, (1, 0), 4, -12, 0, 9);
     b.corridor(33, 27, 41, 31, 0, 9);
@@ -1262,6 +1333,7 @@ fn level5(db: &DialogueDb) -> Level {
     b.style(Tex::Flagstones, Tex::RedBricks, Tex::CeilingRock);
     b.corridor(12, 20, 12, 24, 0, 9);
     b.room(6, 25, 12, 7, 0, 10);
+    b.area("Cells", 11, 28);
     b.light(6, 25, 12, 7, 3);
     b.npc(Race::Imp, 9.5, 28.5);
     b.npc(Race::Imp, 15.5, 27.0);
@@ -1273,6 +1345,7 @@ fn level5(db: &DialogueDb) -> Level {
     // A cave of fire south-east of the antechamber, where a reaper waits.
     b.style(Tex::Gravel, Tex::CaveRock, Tex::CeilingRock);
     b.cave(52, 30, 6, 5, 0, 12);
+    b.area("Cave of fire", 52, 30);
     b.corridor(40, 20, 48, 26, 0, 9);
     b.lava(54, 31, 3, 3, -2);
     b.npc(Race::Reaper, 51.5, 31.5);

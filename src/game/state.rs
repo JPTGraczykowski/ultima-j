@@ -140,6 +140,10 @@ pub struct Level {
     pub start: (f32, f32, f32),
     #[serde(default)]
     pub notes: Vec<(i32, i32, String)>,
+    /// Names of the level's areas, for the developer maps (`--maps`, `reveal`).
+    /// Not saved: they come from `levels.rs`.
+    #[serde(skip)]
+    pub areas: Vec<(i32, i32, String)>,
     pub next_id: u32,
 }
 
@@ -157,6 +161,7 @@ impl Level {
             ambient: 2.0,
             start: (1.5, 1.5, 0.0),
             notes: Vec::new(),
+            areas: Vec::new(),
             next_id: 1,
         }
     }

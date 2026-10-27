@@ -94,9 +94,13 @@ cargo test --release                       # 78 tests: level connectivity and ju
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --script "play; level 1 21.5 47.5; goto 21.5 47.5 180; key W 23; key W+J 1; key W 20"   # a running jump
-target/release/ultima-j --maps DIR         # level layouts
+target/release/ultima-j --maps DIR         # level layouts, with area names and tile coordinates
 ULTIMA_J_SELFTEST=out.png target/release/ultima-j --play   # real-window capture
 ```
+
+`DEVELOPING.md` lists every developer command, the headless script
+commands and recipes. Name new level areas with `B::area` so they show on
+the `--maps` renders and on the automap after `reveal`.
 
 Compare screenshots against originals side by side (native 320×200 DOS
 captures are on oldgames.sk; the reference card is on mocagh.org).
