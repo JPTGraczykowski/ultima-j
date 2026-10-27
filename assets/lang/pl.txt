@@ -102,6 +102,8 @@
 @medallion = medalion | medalionu | medalion | medaliony | medalionów | m
 @clutch of lizard eggs = lęg jaszczurzych jaj | lęgu jaszczurzych jaj | lęg jaszczurzych jaj | lęgi jaszczurzych jaj | lęgów jaszczurzych jaj | m
 @bundle of ancient bones = wiązka prastarych kości | wiązki prastarych kości | wiązkę prastarych kości | wiązki prastarych kości | wiązek prastarych kości | f
+@captain's sword = miecz kapitana | miecza kapitana | miecz kapitana | miecze kapitana | mieczy kapitana | m
+@engraved ring = grawerowany pierścień | grawerowanego pierścienia | grawerowany pierścień | grawerowane pierścienie | grawerowanych pierścieni | m
 @chronicle page = karta kroniki | karty kroniki | kartę kroniki | karty kroniki | kart kroniki | f
 
 # ------------------------------------------------- furniture and fixtures
@@ -160,6 +162,7 @@
 @Rhugg = Rhugg | Rhugga | Rhugga | Rhuggowie | Rhuggów | mp
 @Elsmore = Elsmore | Elsmore'a | Elsmore'a | Elsmore'owie | Elsmore'ów | mp
 @Tobin = Tobin | Tobina | Tobina | Tobinowie | Tobinów | mp
+@Corwin = Corwin | Corwina | Corwina | Corwinowie | Corwinów | mp
 @Thorgrim = Thorgrim | Thorgrima | Thorgrima | Thorgrimowie | Thorgrimów | mp
 @Hilda = Hilda | Hildy | Hildę | Hildy | Hild | f
 @Bodric = Bodric | Bodrica | Bodrica | Bodricowie | Bodriców | mp
@@ -1267,6 +1270,12 @@ A crack splits the hall from wall to wall. With a running start you could leap i
 = Szczelina przecina salę od ściany do ściany. Z rozbiegu dałoby się ją przeskoczyć.
 The floor gave way when the mountain shook. Who will not leap may climb out by the west.
 = Podłoga zapadła się, gdy góra zadrżała. Kto nie skoczy, wydostanie się z rozpadliny od zachodu.
+
+ARMOURY. The lock opens to the watch as it ought to stand: the west post and the east post at their levers, the centre post asleep. - Capt. Corwin
+= ZBROJOWNIA. Zamek otwiera się, gdy warta stoi tak, jak stać powinna: zachodni posterunek i wschodni przy swoich dźwigniach, środkowy śpi. - kpt. Corwin
+
+Here I write, where no one comes to ask what I am writing. - M.
+= Tu piszę, gdzie nikt nie przychodzi pytać, co piszę. - M.
 DIGGING CLOSED. The east face fell into the old shaft. Gold glints on the ledge beyond, but no fool is to jump for it. - Thorgrim
 = WYROBISKO ZAMKNIĘTE. Wschodnia ściana runęła do starego szybu. Na półce za nim błyszczy złoto, ale żaden głupiec nie ma po nie skakać. - Thorgrim
 The tunnel floor has fallen into an old shaft. A good run and a leap would carry you over.

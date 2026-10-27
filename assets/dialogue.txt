@@ -10,14 +10,41 @@ Gods preserve us - another corpse crawled out of the old graves! Stay back! ... 
 * Who am I? -> self
 * How do I get out of here? -> out ? !flag:elsmore_out
 * Tell me again of the way down. -> out2 ? flag:elsmore_out
-* Have you any food to spare? -> food ? !flag:elsmore_food
+* Have you any food to spare? -> food ? !flag:elsmore_food & !item:ChroniclePage
+* I have found a page of a chronicle. -> page ? item:ChroniclePage & flag:chronicle<4
+* I have found another page of the chronicle. -> page_last ? item:ChroniclePage & flag:chronicle=4
 * Farewell. -> end
 
 -- who
 I came down here years ago to study the ruins of Lord Varian's colony. Then the great doors sealed themselves behind me, as they have sealed behind every soul since. The living do not leave the Abyss, {name}. Nor, these days, do the dead stay dead.
 * What happened to the colony? -> place
 * How does magic work down here? -> magic
+* What dost thou study now? -> study
 * Back to other matters. -> start
+
+-- study
+The colony, still - or so I tell the others. In truth I came down to find my sister. Maera was the colony's chronicler; she came down with Lord Varian's first three hundred and wrote down everything. Her pages are scattered through the Abyss now, wherever she went. Her study was somewhere off the library, but I have never found the door. Bring me any page thou findest, and I will pay what I can.
+! flag know_chronicle 1
+* I will look for her pages. -> start
+
+-- page
+A page in Maera's hand! ... Yes. Yes, this is hers. Thank thee, {name}. Take this for thy trouble, and bring me any more thou findest.
+! take ChroniclePage
+! flag+ chronicle
+! earn 20
+! exp 40
+* I have another page. -> page ? item:ChroniclePage & flag:chronicle<4
+* I have another page. -> page_last ? item:ChroniclePage & flag:chronicle=4
+* Back to other matters. -> start
+
+-- page_last
+The last of them. Her whole chronicle, from the founding to... to the end. She followed Lord Varian down, didn't she. She is one of them now, the dead below. ... No, do not answer. Thou hast given me her words, and that is more than I hoped for in twenty years. Take the gold I was saving to buy my way out - there is no way out, I know that now - and what I have learned of lore down here.
+! take ChroniclePage
+! flag+ chronicle
+! earn 80
+! skill Lore 2
+! exp 200
+* Rest easy, Elsmore. -> start
 
 -- place
 This is the Abyss. Lord Varian built a colony here where men, mountain folk, goblins and lizardmen lived as one, bound by the light of the Lumen Stone. One night the Stone was broken into three shards, and the peoples turned on each other.
@@ -72,7 +99,30 @@ Psst! Tobin's the name, and trade's the game. Even down here a man needs coin - 
 * Show me what thou hast. -> wares
 * Where dost thou get these things? -> where
 * Surely a man of thy taste gives his friends a little something. -> charm ? skill:Charm>=4 & !flag:tobin_charmed
+* Thou lookest troubled, Tobin. -> wenna ? !flag:tobin_wenna & !item:EngravedRing
+* I found this ring on a body in the bat roost. -> ring ? item:EngravedRing & !flag:tobin_ring
 * Farewell. -> end
+
+-- wenna
+Troubled? Me? ... Wenna. My partner, in trade and in everything else. Three days ago she went east past the water cave, after an old colony cache in the bats' cave. She has not come back. I'm no fighter. If thou goest that way... look for her.
+! flag tobin_wenna 1
+* I will look for her. -> end
+* Who was she? -> who_wenna
+* Back. -> start
+
+-- who_wenna
+We kept the colony's stores, she and I, before the Stone broke. Every torch, every loaf, written in our books. When the peoples fell to fighting, the stores were all that was left to keep, so we kept on trading. Someone has to.
+* I will look for her. -> end
+* Back. -> start
+
+-- ring
+That's... that's her ring. I gave it to her the year the colony was founded. ... So the bats got her. Or the dark did. Thank thee for telling me, and not for selling it to me. Here - her lantern. It's the one thing she didn't take with her. Keep it lit.
+! take EngravedRing
+! give Lantern
+! flag tobin_wenna 1
+! flag tobin_ring 1
+! exp 60
+* I am sorry, Tobin. -> end
 
 -- charm
 Ha! A silver tongue, and down here of all places. Thou'rt good for business. Here - a candle, on the house. And my prices are always fairer for a friend.
@@ -467,3 +517,51 @@ So be it. Give me the shards... There. Feel it? Warmth in thy limbs. Breath in t
 Then rise, my knight, and take it - if thou canst. I will not make it easy. A Lord of Souls must be strong.
 ! hostile
 * (Draw your weapon.) -> end
+
+// ------------------------------------------- added for the side quests
+// New conversations go at the end: saved NPCs keep their conversation's
+// index in this file.
+
+// ----------------------------------------------------------- level 1
+
+=== corwin
+-- start
+Hah? Another one crawled up out of the ground. Sit, sit, the floor is free. Corwin, captain of the guard. Captain of nothing, now. Of this hall and a barrel.
+* Thou didst write the words by the great doors. -> doors
+* What happened to thee? -> past
+* I have found thy sword. -> sword ? item:CaptainsSword & !flag:corwin_done
+* What is behind the iron door? -> armoury
+* Farewell. -> end
+
+-- doors
+Aye, that was me. We hammered at them for a month - picks, rams, Elsmore's spells. Not a hair. They let anyone in, those doors, and nobody out. Then I wrote that, and then I started drinking. In that order, more or less.
+* Back. -> start
+
+-- past
+On the night the Stone broke I should have stood at Lord Varian's left hand. That was my post. I was here, drunk on goblin beer. A young knight stood in my place, and the blast took them instead of me. I never learned their name. I never asked.
+* Who was that knight? -> knight
+* Where is thy sword? -> lost ? !flag:corwin_done
+* Back. -> start
+
+-- knight
+My eyes are not what they were. Tall, about thy height. Grey, like thee... Bah. The dead all look alike to a drunk. Ask the ghosts in the crypts; they keep better count than I do.
+* Back. -> start
+
+-- lost
+Gone, like everything else. I slept it off one night and woke without it. The green goblins - Gnarl's lot. They hide what they steal in a hole past their midden, south of the den, over a crack in the floor. Bring it back and I'll teach thee what a guard captain knows.
+! flag corwin_quest 1
+* I will bring it back. -> end
+* Back. -> start
+
+-- sword
+My sword! The goblins did not even sharpen it, the swine. ... Thank thee. Come, stand like this. Feet apart. Shield up - no, up. A guard does not win fights; a guard outlasts them. There. Remember that.
+! take CaptainsSword
+! flag corwin_done 1
+! skill Defense 1
+! skill Attack 1
+! exp 60
+* I will remember. -> end
+
+-- armoury
+My armoury. The lock is the old kind: three levers on the north wall, across the crack, and it opens to the watch as it ought to stand. I wrote it up on the wall so I'd not forget. Then I forgot how to read my own writing.
+* Back. -> start

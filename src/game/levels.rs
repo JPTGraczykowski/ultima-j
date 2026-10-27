@@ -685,9 +685,44 @@ fn level1(db: &DialogueDb) -> Level {
     b.npc(Race::Bat, 57.5, 41.5);
     b.npc(Race::Bat, 59.5, 45.5);
     b.npc(Race::Bat, 56.5, 46.0);
-    b.container(ItemKind::Corpse, 59.5, 43.0, vec![Item::new(ItemKind::LeatherCap), Item::new(ItemKind::Rope), Item::new(ItemKind::Coin).qty(8).data(8)]);
+    // Wenna, Tobin's partner (his side quest).
+    b.container(ItemKind::Corpse, 59.5, 43.0, vec![Item::new(ItemKind::LeatherCap), Item::new(ItemKind::Rope), Item::new(ItemKind::Coin).qty(8).data(8), Item::new(ItemKind::EngravedRing)]);
     b.item(ItemKind::WaterFlask, 57.0, 44.5);
     b.item(ItemKind::Stalagmite, 60.5, 41.0);
+
+    // Side quests. Corwin, the old guard captain, drinks in the south half
+    // of the guard hall; the green goblins hid his sword in their hoard.
+    b.named(Race::Human, 2, "Corwin", "corwin", 13.5, 18.0, 90.0);
+    b.item(ItemKind::Barrel, 12.0, 16.0);
+    b.item(ItemKind::CaptainsSword, 7.0, 61.4);
+
+    // His armoury, off the north half of the hall: a lock of three levers
+    // on the north wall, west and east pulled, the middle left alone.
+    b.style(Tex::Flagstones, Tex::StoneBlocks, Tex::CeilingRock);
+    b.tile(27, 11, 2, 9);
+    let armoury = b.door(27, 11, DoorAxis::EW, DoorKind::Iron, 0);
+    b.room(28, 10, 4, 3, 2, 9);
+    b.area("Armoury", 29, 11);
+    b.light(28, 10, 4, 3, 4);
+    b.combo(&[(14, 9, true), (18, 9, false), (22, 9, true)], armoury);
+    b.writing(27, 12, "ARMOURY. The lock opens to the watch as it ought to stand: the west post and the east post at their levers, the centre post asleep. - Capt. Corwin");
+    b.item(ItemKind::ChainCowl, 29.0, 10.6);
+    b.item(ItemKind::WoodenShield, 30.6, 10.6);
+    b.coins(25, 30.5, 12.4);
+
+    // Maera's study, behind a second secret door in the secret room: the
+    // first page of her chronicle.
+    b.style(Tex::WoodFloor, Tex::DarkPanels, Tex::CeilingBeams);
+    b.tile(27, 31, 2, 9);
+    b.door(27, 31, DoorAxis::EW, DoorKind::Secret, 0);
+    b.room(28, 29, 3, 4, 2, 9);
+    b.area("Maera's study", 29, 30);
+    b.light(28, 29, 3, 4, 3);
+    b.writing(26, 28, "Here I write, where no one comes to ask what I am writing. - M.");
+    b.item(ItemKind::Table, 29.5, 30.0);
+    b.put(Item::new(ItemKind::ChroniclePage).data(0), 29.5, 30.0);
+    b.item(ItemKind::Bookshelf, 30.4, 32.4);
+    b.item(ItemKind::Candle, 28.6, 29.5);
     b.finish()
 }
 

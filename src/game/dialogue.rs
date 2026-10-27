@@ -8,7 +8,7 @@
 //! ! action args        (run when the node is entered)
 //! * option text -> next_node ? condition & condition
 //! ```
-//! Conditions: `flag:NAME>=N`, `flag:NAME=N`, `!flag:NAME`, `item:Kind`,
+//! Conditions: `flag:NAME>=N`, `flag:NAME=N`, `flag:NAME<N`, `!flag:NAME`, `item:Kind`,
 //! `item:Kind>=N` (carrying at least N), `!item:Kind`, `gold>=N`, `afford:N`,
 //! `skill:NAME>=N`. Actions: `flag NAME N`, `flag+ NAME [N]` (add N, default 1),
 //! `give Kind [data] [qty]`, `take Kind [qty]`, `pay N`, `earn N`, `exp N`,
@@ -32,6 +32,7 @@ use std::collections::HashMap;
 pub enum Cond {
     FlagGe(String, i32),
     FlagEq(String, i32),
+    FlagLt(String, i32),
     NoFlag(String),
     HasItem(ItemKind),
     /// Carrying at least N of a kind.
@@ -81,7 +82,7 @@ pub const ALL_ITEM_KINDS: &[ItemKind] = {
         Bread, Cheese, Meat, Fish, Mushroom, WaterFlask, Wine, RedPotion, BluePotion, GreenPotion, YellowPotion, Torch, Candle,
         Lantern, Bag, Pack, Box, RuneBag, IronKey, GoldKey, SilverKey, RuneStone, Wand, Coin, RedGem, BlueGem, GreenGem,
         WhiteGem, GoldNugget, Scroll, Book, Map, Bedroll, Rock, Bone, Skull, Lockpick, Rope, Pole, Shovel, ShardOfValor,
-        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
+        ShardOfWisdom, ShardOfMercy, SilverSapling, Medallion, Hammer, LizardEgg, RelicBones, CaptainsSword, EngravedRing, ChroniclePage, Barrel, Table, Chest, Fountain, BonePile, Plant, Shrine, Lever,
         Campfire, Bed, Brazier, Statue, Bookshelf, Pillar, Gravestone, Cauldron, MoonOrb, Corpse, Blood, Stalagmite, Web, Ward,
     ]
 };
@@ -94,6 +95,9 @@ fn parse_cond(s: &str) -> Option<Cond> {
     if let Some(rest) = s.strip_prefix("flag:") {
         if let Some((n, v)) = rest.split_once(">=") {
             return Some(Cond::FlagGe(n.to_string(), v.trim().parse().ok()?));
+        }
+        if let Some((n, v)) = rest.split_once('<') {
+            return Some(Cond::FlagLt(n.to_string(), v.trim().parse().ok()?));
         }
         if let Some((n, v)) = rest.split_once('=') {
             return Some(Cond::FlagEq(n.to_string(), v.trim().parse().ok()?));
@@ -265,6 +269,7 @@ pub fn cond_ok(g: &Game, c: &Cond) -> bool {
     match c {
         Cond::FlagGe(n, v) => g.flag(n) >= *v,
         Cond::FlagEq(n, v) => g.flag(n) == *v,
+        Cond::FlagLt(n, v) => g.flag(n) < *v,
         Cond::NoFlag(n) => g.flag(n) == 0,
         Cond::HasItem(k) => g.player.has_item(*k),
         Cond::ItemGe(k, n) => g.player.count_item(*k) >= *n,
@@ -642,6 +647,9 @@ mod tests {
             (NoFlag(n), FlagEq(m, v)) => n == m && *v != 0,
             (FlagEq(n, x), FlagEq(m, y)) => n == m && x != y,
             (FlagEq(n, x), FlagGe(m, y)) => n == m && x < y,
+            (FlagLt(n, x), FlagGe(m, y)) => n == m && x <= y,
+            (FlagLt(n, x), FlagEq(m, y)) => n == m && x <= y,
+            (NoFlag(n), FlagLt(m, y)) => n == m && *y <= 0,
             (NoItem(k), HasItem(j)) | (NoItem(k), ItemGe(j, _)) => k == j,
             _ => false,
         };
@@ -693,6 +701,8 @@ mod tests {
         run_action(&mut g, 0, &act("flag+ pages 2"), &mut ended);
         assert_eq!(g.flag("pages"), 3);
         assert!(parse_cond("item:Nothing>=2").is_none());
+        assert!(cond_ok(&g, &parse_cond("flag:pages<4").unwrap()));
+        assert!(!cond_ok(&g, &parse_cond("flag:pages<3").unwrap()));
     }
 
     #[test]

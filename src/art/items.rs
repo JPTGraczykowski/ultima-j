@@ -681,6 +681,17 @@ pub fn icon(kind: ItemKind, data: u16, lit: bool) -> Bitmap {
             cv.ellipse(8.0, 8.0, 2.4, 3.2, 2.0, 1.0, gold);
             cv.render(true, true)
         }
+        CaptainsSword => sword(1.0, Ramp::Silver),
+        EngravedRing => {
+            let mut cv = canvas();
+            let m = cv.add_mat(Mat::new(Ramp::Silver, 3, 14).spec(0.8));
+            cv.ring(8.0, 9.0, 3.6, 2.6, 1.1, 0.0, m);
+            let mut b = cv.render(true, false);
+            for x in [6, 8, 10] {
+                b.set(x, 12, c(Ramp::Silver, 4));
+            }
+            b
+        }
         ChroniclePage => {
             // A loose leaf, torn along one edge, with a red seal.
             let mut cv = canvas();
@@ -989,7 +1000,7 @@ pub fn hand_weapon(kind: Option<ItemKind>, phase: u8) -> Bitmap {
     use ItemKind::*;
     let is_weapon = kind.map(|k| k.def().class == crate::game::items::Class::Weapon).unwrap_or(false);
     match kind {
-        Some(Dagger) | Some(Shortsword) | Some(Longsword) | Some(Broadsword) | Some(JeweledSword) => {
+        Some(Dagger) | Some(Shortsword) | Some(Longsword) | Some(Broadsword) | Some(JeweledSword) | Some(CaptainsSword) => {
             let len = match kind {
                 Some(Dagger) => 28.0,
                 Some(Shortsword) => 42.0,

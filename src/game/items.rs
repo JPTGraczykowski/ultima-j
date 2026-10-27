@@ -222,6 +222,10 @@ pub enum ItemKind {
     Hammer,
     LizardEgg,
     RelicBones,
+    /// Corwin's sword, taken by the green goblins (level 1).
+    CaptainsSword,
+    /// Wenna's ring, on her body in the bat roost (level 1).
+    EngravedRing,
     /// A page of the colony's chronicle; `data` is the page, 0-4 (`dialogue::CHRONICLE`).
     ChroniclePage,
     // Fixtures
@@ -437,6 +441,8 @@ impl ItemKind {
             }
             LizardEgg => d("clutch of lizard eggs", "clutches of lizard eggs", Class::Quest, 6, 0),
             RelicBones => d("bundle of ancient bones", "bundles of ancient bones", Class::Quest, 8, 0),
+            CaptainsSword => wpn("captain's sword", 12, 60, K::Sword, [4, 7, 6], 1.0),
+            EngravedRing => d("engraved ring", "engraved rings", Class::Quest, 1, 0),
             ChroniclePage => d("chronicle page", "chronicle pages", Class::Scroll, 1, 0),
             Barrel => fixture("barrel", (0.42, 0.55)),
             Table => fixture("table", (0.8, 0.45)),

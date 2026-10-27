@@ -11,14 +11,41 @@ Bogowie, miejcie nas w opiece - kolejny trup wypełzł ze starych grobów! Nie z
 * Kim ja jestem? -> self
 * Jak się stąd wydostać? -> out ? !flag:elsmore_out
 * Opowiedz mi jeszcze raz o drodze w dół. -> out2 ? flag:elsmore_out
-* Masz może trochę jedzenia? -> food ? !flag:elsmore_food
+* Masz może trochę jedzenia? -> food ? !flag:elsmore_food & !item:ChroniclePage
+* Znalazł{em|am} kartę jakiejś kroniki. -> page ? item:ChroniclePage & flag:chronicle<4
+* Znalazł{em|am} kolejną kartę kroniki. -> page_last ? item:ChroniclePage & flag:chronicle=4
 * Bywaj. -> end
 
 -- who
 Zszedłem tu przed laty, by badać ruiny kolonii lorda Variana. Potem Wielkie Wrota zamknęły się za mną, jak zamykają się za każdą duszą od tamtej pory. Żywi nie opuszczają Otchłani, {name}. A ostatnio i umarli nie chcą pozostać martwi.
 * Co się stało z kolonią? -> place
 * Jak działa tu na dole magia? -> magic
+* Co teraz badasz? -> study
 * Wróćmy do innych spraw. -> start
+
+-- study
+Wciąż kolonię - tak przynajmniej mówię pozostałym. Naprawdę zszedłem tu, by odnaleźć siostrę. Maera była kronikarką kolonii; zeszła z pierwszymi trzystoma lorda Variana i spisywała wszystko. Jej karty są teraz rozsiane po całej Otchłani, wszędzie tam, dokąd dotarła. Jej pracownia była gdzieś przy bibliotece, ale nigdy nie znalazłem drzwi. Przynoś mi każdą kartę, jaką znajdziesz, a zapłacę, ile zdołam.
+! flag know_chronicle 1
+* Poszukam jej kart. -> start
+
+-- page
+Karta zapisana ręką Maery! ... Tak. Tak, to jej pismo. Dziękuję, {name}. Weź to za fatygę i przynoś mi każdą następną, jaką znajdziesz.
+! take ChroniclePage
+! flag+ chronicle
+! earn 20
+! exp 40
+* Mam jeszcze jedną kartę. -> page ? item:ChroniclePage & flag:chronicle<4
+* Mam jeszcze jedną kartę. -> page_last ? item:ChroniclePage & flag:chronicle=4
+* Wróćmy do innych spraw. -> start
+
+-- page_last
+Ostatnia z nich. Cała jej kronika, od założenia aż po... po koniec. Zeszła za lordem Varianem, prawda? Jest teraz jedną z nich, z umarłych tam w dole. ... Nie, nie odpowiadaj. Przyniosł{eś|aś} mi jej słowa, a to więcej, niż śmiałem mieć nadzieję przez dwadzieścia lat. Weź złoto, które odkładałem, by wykupić sobie drogę na górę - nie ma drogi na górę, teraz to wiem - i to, czego nauczyłem się tu na dole o dawnej wiedzy.
+! take ChroniclePage
+! flag+ chronicle
+! earn 80
+! skill Lore 2
+! exp 200
+* Spoczywaj spokojnie, Elsmore. -> start
 
 -- place
 To jest Otchłań. Lord Varian zbudował tu kolonię, w której ludzie, górski lud, gobliny i jaszczuroludzie żyli razem, złączeni światłem Kamienia Lumen. Pewnej nocy Kamień rozpadł się na trzy odłamki, a ludy zwróciły się przeciwko sobie.
@@ -73,7 +100,30 @@ Psst! Nazywam się Tobin, a handel to moja gra. Nawet tu na dole człowiek potrz
 * Pokaż, co masz. -> wares
 * Skąd bierzesz te rzeczy? -> where
 * Człowiek z takim gustem z pewnością ma jakiś drobiazg dla przyjaciół. -> charm ? skill:Charm>=4 & !flag:tobin_charmed
+* Wyglądasz na zmartwionego, Tobinie. -> wenna ? !flag:tobin_wenna & !item:EngravedRing
+* Znalazł{em|am} ten pierścień przy ciele w jaskini nietoperzy. -> ring ? item:EngravedRing & !flag:tobin_ring
 * Bywaj. -> end
+
+-- wenna
+Zmartwiony? Ja? ... Wenna. Moja wspólniczka, w handlu i we wszystkim innym. Trzy dni temu poszła na wschód, za wodną jaskinię, szukać starej skrytki kolonii w jaskini nietoperzy. Nie wróciła. Ja nie jestem wojownikiem. Jeśli pójdziesz w tamtą stronę... poszukaj jej.
+! flag tobin_wenna 1
+* Poszukam jej. -> end
+* Kim ona była? -> who_wenna
+* Wróć. -> start
+
+-- who_wenna
+Pilnowaliśmy magazynów kolonii, ona i ja, zanim pękł Kamień. Każda pochodnia, każdy bochenek zapisany w naszych księgach. Kiedy ludy rzuciły się sobie do gardeł, z całej kolonii zostały tylko magazyny, więc handlowaliśmy dalej. Ktoś musi.
+* Poszukam jej. -> end
+* Wróć. -> start
+
+-- ring
+To... to jej pierścień. Dałem jej go w roku, w którym założono kolonię. ... Więc dopadły ją nietoperze. Albo ciemność. Dziękuję, że mi powiedział{eś|aś}, a nie próbował{eś|aś} mi go sprzedać. Masz - jej latarnia. Jedyna rzecz, której nie zabrała ze sobą. Niech świeci.
+! take EngravedRing
+! give Lantern
+! flag tobin_wenna 1
+! flag tobin_ring 1
+! exp 60
+* Przykro mi, Tobinie. -> end
 
 -- charm
 Ha! Srebrny język, i to akurat tutaj. Dobrze robisz interesom. Masz - świeca, na koszt firmy. A dla przyjaciół moje ceny zawsze są uczciwsze.
@@ -468,3 +518,51 @@ Niech tak będzie. Daj mi odłamki... Proszę. Czujesz? Ciepło w członkach. Od
 Zatem wstań, mój rycerzu, i weź go - jeśli zdołasz. Nie ułatwię ci tego. Pan Dusz musi być silny.
 ! hostile
 * (Dobądź broni.) -> end
+
+// ------------------------------------------- added for the side quests
+// Nowe rozmowy idą na koniec: zapisane postacie pamiętają numer swojej
+// rozmowy w tym pliku.
+
+// ----------------------------------------------------------- level 1
+
+=== corwin
+-- start
+Hę? Kolejny wypełzł z ziemi. Siadaj, siadaj, podłoga wolna. Corwin, kapitan straży. Teraz kapitan niczego. Tej sali i beczki.
+* To ty napisałeś te słowa przy Wielkich Wrotach. -> doors
+* Co ci się przytrafiło? -> past
+* Znalazł{em|am} twój miecz. -> sword ? item:CaptainsSword & !flag:corwin_done
+* Co jest za żelaznymi drzwiami? -> armoury
+* Bywaj. -> end
+
+-- doors
+Ano ja. Waliliśmy w nie przez miesiąc - kilofami, taranami, czarami Elsmore'a. Ani drgnęły. Wpuszczają każdego, te wrota, i nikogo nie wypuszczają. Wtedy to napisałem, a potem zacząłem pić. Mniej więcej w tej kolejności.
+* Wróć. -> start
+
+-- past
+Tej nocy, gdy pękł Kamień, powinienem był stać po lewej ręce lorda Variana. To było moje miejsce. A ja siedziałem tutaj, pijany goblińskim piwem. Na moim miejscu stanął młody rycerz i wybuch zabrał jego zamiast mnie. Nigdy nie poznałem jego imienia. Nigdy nie zapytałem.
+* Kim był ten rycerz? -> knight
+* Gdzie jest twój miecz? -> lost ? !flag:corwin_done
+* Wróć. -> start
+
+-- knight
+Oczy już nie te. Wysoki, mniej więcej twojego wzrostu. Szary, jak ty... E tam. Dla pijaka wszyscy umarli wyglądają tak samo. Zapytaj duchy w kryptach; one lepiej prowadzą rachunki niż ja.
+* Wróć. -> start
+
+-- lost
+Przepadł, jak wszystko inne. Pewnej nocy odsypiałem i obudziłem się bez niego. Zielone gobliny - banda Gnarla. To, co ukradną, chowają w dziurze za swoim śmietniskiem, na południe od nory, za pęknięciem w podłodze. Przynieś go, a nauczę cię tego, co wie kapitan straży.
+! flag corwin_quest 1
+* Przyniosę go. -> end
+* Wróć. -> start
+
+-- sword
+Mój miecz! Gobliny nawet go nie naostrzyły, świnie. ... Dziękuję. Chodź, stań tak. Stopy szerzej. Tarcza w górę - nie, w górę. Strażnik nie wygrywa walk; strażnik je przetrzymuje. No. Zapamiętaj to.
+! take CaptainsSword
+! flag corwin_done 1
+! skill Defense 1
+! skill Attack 1
+! exp 60
+* Zapamiętam. -> end
+
+-- armoury
+Moja zbrojownia. Zamek jest starego typu: trzy dźwignie na północnej ścianie, po drugiej stronie pęknięcia, a otwiera się, gdy warta stoi tak, jak stać powinna. Zapisałem to na ścianie, żeby nie zapomnieć. A potem zapomniałem, jak czytać własne pismo.
+* Wróć. -> start
