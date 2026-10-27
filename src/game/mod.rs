@@ -207,6 +207,7 @@ impl Game {
             self.events.push(Event::Sound(Sfx::Splash));
             self.sys(t!("You are swimming."));
         }
+        let in_lava = liquid == Liquid::Lava && self.player.pos.y <= floor + 0.05 && !body.flying;
         let p = &mut self.player;
         if p.swimming {
             // Heavy loads drag you down.
@@ -219,10 +220,11 @@ impl Game {
                     self.hurt_player(2, t!("You are drowning!"));
                 }
             }
-        } else {
+        } else if !in_lava {
+            // Water and lava share the timer, so only reset it on dry land.
             p.drown = 0.0;
         }
-        if liquid == Liquid::Lava && self.player.pos.y <= floor + 0.05 && !body.flying {
+        if in_lava {
             self.player.drown += dt;
             if self.player.drown > 0.5 {
                 self.player.drown = 0.0;
@@ -731,5 +733,33 @@ mod fuzz_tests {
             g.update(&MoveInput { forward: 2.0, strafe: 0.0, turn: 0.0, jump: false, fly_up: false, fly_down: false }, 1.0 / 30.0);
         }
         assert!(!g.player.swimming && g.player.pos.z < 17.5, "still in the water at {:?}", g.player.pos);
+    }
+
+    /// Stands the player for two seconds in the given liquid, poured under
+    /// their feet, and returns the vitality lost.
+    fn vit_lost_in(liquid: Liquid, resist_fire: bool) -> i32 {
+        let mut g = Game::new(Player::new("Wader", PClass::Fighter, false), 1);
+        let (x, z) = (g.player.pos.x.floor() as i32, g.player.pos.z.floor() as i32);
+        g.level_mut().map.get_mut(x, z).unwrap().liquid = liquid;
+        if resist_fire {
+            g.player.spells.push(state::ActiveSpell { spell: Spell::ResistFire, left: 60.0 });
+        }
+        let vit = g.player.vit;
+        let still = MoveInput { forward: 0.0, strafe: 0.0, turn: 0.0, jump: false, fly_up: false, fly_down: false };
+        for _ in 0..60 {
+            g.update(&still, 1.0 / 30.0);
+        }
+        vit - g.player.vit
+    }
+
+    /// Lava burns for 4 every half second (1 with Resist Fire); water does not
+    /// hurt a light swimmer.
+    #[test]
+    fn lava_burns_and_water_does_not() {
+        let burnt = vit_lost_in(Liquid::Lava, false);
+        assert!(burnt >= 8, "two seconds in lava should burn at least twice, lost {burnt}");
+        let resisted = vit_lost_in(Liquid::Lava, true);
+        assert!((1..burnt).contains(&resisted), "Resist Fire should cut the burns, lost {resisted}");
+        assert!(vit_lost_in(Liquid::Water, false) <= 0, "water should not hurt");
     }
 }

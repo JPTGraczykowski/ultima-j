@@ -214,7 +214,8 @@ container in your pack.
   one tile wide, and two tiles if you land lower down. A jump from a walk
   falls short. Every pit has a way back up, so a missed jump costs a fall.
 - **Lava** burns for 4 every half-second. *Resist Fire* cuts that to 1.
-  *Levitate* or *Fly* lets you cross it safely.
+  *Levitate* or *Fly* lets you cross it safely. Some lava is too deep to
+  climb out of, so never step into a pool you can't see the bottom of.
 - **Falling** more than about a body's height hurts. You can land safely in
   water, and with the *Slow Fall* spell.
 
