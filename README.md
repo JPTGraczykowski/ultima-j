@@ -36,8 +36,8 @@ archive and start the game; nothing else needs installing.
 - **Linux:** run `./ultima-j`. It needs OpenGL and ALSA, which desktop
   distributions already have.
 
-To publish a new release, push a version tag (`git tag v0.1.0 && git push origin
-v0.1.0`); the workflow in `.github/workflows/release.yml` builds and uploads
+To publish a new release, push a version tag (`git tag v1.0.0 && git push origin
+v1.0.0`); the workflow in `.github/workflows/release.yml` builds and uploads
 everything.
 
 ## Building and running

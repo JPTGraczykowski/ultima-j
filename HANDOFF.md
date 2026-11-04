@@ -1,9 +1,10 @@
 # Handoff — where the work stands
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
-original's style. Status (2026-11-04): the game is complete and playable from
-the title screen to the victory screen, and all 84 tests pass. Balance pass
-done and played through by hand (TASK-6).
+original's style. Status (2026-11-04): version 1.0 is done (milestone m-0,
+`Cargo.toml` 1.0.0; the release is the tag `v1.0.0`). The game is
+complete and playable from the title screen to the victory screen, and all
+84 tests pass. Next is the 2.0 roadmap (milestone m-1).
 
 ## Done
 
@@ -183,7 +184,9 @@ captures are on oldgames.sk; the reference card is on mocagh.org).
 Replaces the "next steps" of the 2026-10-15 review. For each feature: design
 it, play it by hand, then fix and improve.
 
-### Version 1.0, in this order
+### Version 1.0, in this order (done 2026-11-04)
+
+All done except step 4, art, which was dropped (TASK-4).
 
 1. **Check item identification and map notes.** Both are in the code
    already: Lore identifies enchantments on look (`Game::look` in

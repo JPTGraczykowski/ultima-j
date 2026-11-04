@@ -1,4 +1,4 @@
-# Builds the game for Linux, Windows and macOS. Pushing a tag like `v0.1.0`
+# Builds the game for Linux, Windows and macOS. Pushing a tag like `v1.0.0`
 # publishes the builds as a GitHub Release; running it by hand from the Actions
 # tab only builds them (download them from the run's artifacts).
 name: Release

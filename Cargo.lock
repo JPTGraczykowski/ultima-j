@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "ultima-j"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "flate2",
  "macroquad",
