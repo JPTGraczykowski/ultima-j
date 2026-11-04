@@ -617,7 +617,7 @@ impl Player {
     /// Experience needed for a given level. Paced so that a thorough player
     /// reaches about level 8 by the end of the Crypts.
     pub fn exp_for_level(level: i32) -> i32 {
-        const TABLE: [i32; 16] = [0, 50, 140, 300, 600, 900, 1300, 1800, 2400, 3200, 4200, 5400, 7000, 9000, 11500, 14500];
+        const TABLE: [i32; 16] = [0, 50, 150, 400, 700, 1100, 1700, 2600, 3800, 5000, 6500, 8000, 10000, 12500, 15500, 19000];
         TABLE[(level.clamp(1, 16) - 1) as usize]
     }
 

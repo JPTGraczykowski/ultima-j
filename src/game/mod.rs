@@ -606,7 +606,7 @@ impl Game {
                             ai::damage_npc(self, id, pr.dmg, true);
                             if pr.kind == ProjKind::Poison {
                                 if let Some(n) = self.level_mut().npc_mut(id) {
-                                    n.poisoned += 15.0;
+                                    n.poisoned += 30.0;
                                 }
                             }
                         }

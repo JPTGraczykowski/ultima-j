@@ -1,9 +1,9 @@
 # Handoff — where the work stands
 
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
-original's style. Status (2026-10-27): the game is complete and playable from
-the title screen to the victory screen, and all 84 tests pass. What remains is
-mostly balance.
+original's style. Status (2026-11-04): the game is complete and playable from
+the title screen to the victory screen, and all 84 tests pass. Balance pass
+done (TASK-6), waiting for a hand playthrough.
 
 ## Done
 
@@ -108,6 +108,27 @@ mostly balance.
   `Player::spell_cost`. Character creation shows the gift under the
   class line. HANDBOOK.md section 2 has the tables. Tests:
   `every_profession_starts_differently`, `profession_traits`.
+- Balance (2026-11-04, TASK-6), measured with the `balance_census` and
+  `balance_duels` tools (DEVELOPING.md). Before, an on-level fighter lost
+  about 1 vitality a fight and even a troll took only 3. Now player to-hit
+  is 50% + 2% per point of Attack and weapon skill + DEX/3 (was 55% + 3% +
+  DEX/2); creatures' chance to hit counts Defense and armour at 2% a point
+  and DEX/3 (was 3% and DEX/2), and armour soaks armour/4 (was /3);
+  creatures swing more often (cooldown 0.85/speed + 0-0.5 s, was 1.1/speed
+  + 0-0.6 s) and have more hits, the most from level 3 on (bestiary in
+  HANDBOOK.md section 12). A level-8 fighter now loses about a quarter of
+  their vitality to a troll and two thirds to the golem. The experience
+  table is stretched (level 8 at 2,600, was 1,800): kills and quests give
+  about 1,900 each by the end of the Crypts, so a thorough player was
+  reaching level 10 there. Magic: Poison does 6 and poisons for 30 s,
+  Tremor 20 + Casting, Flame Wind 26 + Casting. Traders: Tobin sells three
+  red potions, a green potion and more food; Bodric adds a breastplate,
+  chain leggings, an axe and the only crossbow (with 20 bolts); Hissk on
+  level 3 now trades potions and fish (under "I come in peace", since his
+  first menu is full). Gold found on the first two levels is about 600
+  with nuggets and gems, and Bodric's stock alone costs about 750, so
+  there are choices to make, and the gold from levels 3-5 has Hissk and
+  the breastplate to go to.
 - `HANDBOOK.md` is the player's handbook. Keep its numbers in step with the
   code when balancing.
 - `STORY.md` and `STORY.pl.md` tell the whole story in English and Polish.
@@ -121,7 +142,7 @@ mostly balance.
 
 ```sh
 source ~/.cargo/env
-cargo test --release                       # 84 tests: level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter, five choices per conversation node
+cargo test --release                       # 84 tests (+2 ignored balance tools, see DEVELOPING.md): level connectivity and jumps, runes, fuzzers, save round-trip, skills, spells, barter, five choices per conversation node
 cargo run --release                        # play
 target/release/ultima-j --script "..."     # headless runs and screenshots (src/headless.rs)
 target/release/ultima-j --script "play; level 1 21.5 47.5; goto 21.5 47.5 180; key W 23; key W+J 1; key W 20"   # a running jump

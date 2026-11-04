@@ -500,7 +500,7 @@ fn level1(db: &DialogueDb) -> Level {
     b.item(ItemKind::Campfire, 18.5, 43.0);
     b.named(Race::Human, 1, "Elsmore", "elsmore", 16.5, 42.0, 90.0);
     let tobin = b.named(Race::Human, 0, "Tobin", "tobin", 21.0, 41.0, 200.0);
-    b.npc_mut(tobin).inventory = [ItemKind::Torch, ItemKind::Torch, ItemKind::Bread, ItemKind::Bread, ItemKind::RedPotion, ItemKind::Lantern, ItemKind::Lockpick, ItemKind::Candle].into_iter().map(Item::new).collect();
+    b.npc_mut(tobin).inventory = [ItemKind::RedPotion, ItemKind::RedPotion, ItemKind::RedPotion, ItemKind::GreenPotion, ItemKind::Bread, ItemKind::Bread, ItemKind::Bread, ItemKind::Cheese, ItemKind::Torch, ItemKind::Torch, ItemKind::Lantern, ItemKind::Lockpick, ItemKind::Candle].into_iter().map(Item::new).collect();
     b.item(ItemKind::Barrel, 14.6, 40.6);
     b.item(ItemKind::Barrel, 15.5, 40.5);
     b.item(ItemKind::Bed, 21.4, 44.6);
@@ -801,7 +801,7 @@ fn level2(db: &DialogueDb) -> Level {
     b.lava(24, 47, 7, 1, -1);
     b.light(22, 42, 11, 7, 10);
     let bodric = b.named(Race::Dwarf, 3, "Bodric", "bodric", 26.5, 44.5, 0.0);
-    b.npc_mut(bodric).inventory = [ItemKind::ChainShirt, ItemKind::Gauntlets, ItemKind::Broadsword, ItemKind::WoodenShield, ItemKind::Torch, ItemKind::Torch].into_iter().map(Item::new).collect();
+    b.npc_mut(bodric).inventory = [ItemKind::Breastplate, ItemKind::ChainShirt, ItemKind::ChainLeggings, ItemKind::Gauntlets, ItemKind::Broadsword, ItemKind::Axe, ItemKind::Crossbow, ItemKind::WoodenShield, ItemKind::Torch, ItemKind::Torch].into_iter().map(Item::new).chain([Item::new(ItemKind::Bolt).qty(20)]).collect();
     b.item(ItemKind::Cauldron, 31.3, 43.0);
     b.item(ItemKind::Table, 29.0, 43.3);
     b.rune_stone(rune::FLAM, 29.0, 43.2);
@@ -1003,7 +1003,9 @@ fn level3(db: &DialogueDb) -> Level {
     b.area("Lizardman village", 41, 19);
     b.light(34, 10, 14, 12, 8);
     b.water(39, 14, 4, 4, -2);
-    b.named(Race::Lizardman, 0, "Hissk", "hissk", 35.5, 15.5, 270.0);
+    let hissk = b.named(Race::Lizardman, 0, "Hissk", "hissk", 35.5, 15.5, 270.0);
+    // The village trades what the water gives and what the healer brews.
+    b.npc_mut(hissk).inventory = [ItemKind::RedPotion, ItemKind::RedPotion, ItemKind::RedPotion, ItemKind::GreenPotion, ItemKind::GreenPotion, ItemKind::BluePotion, ItemKind::BluePotion, ItemKind::Fish, ItemKind::Fish, ItemKind::Fish].into_iter().map(Item::new).collect();
     for (x, z) in [(45.5, 12.5), (37.0, 20.0), (46.0, 19.5)] {
         let id = b.npc(Race::Lizardman, x, z);
         b.mellow(id);
@@ -1788,6 +1790,107 @@ mod tests {
         }
         for (r, f) in found.iter().enumerate() {
             assert!(f, "the {} rune is nowhere in the Abyss", super::super::magic::RUNE_NAMES[r]);
+        }
+    }
+}
+
+/// Balance tool: what each level offers (experience, gold, food, potions).
+/// Not part of the normal test run:
+/// `cargo test --release balance_census -- --ignored --nocapture`.
+#[cfg(test)]
+mod balance {
+    use super::*;
+    use crate::game::items::{Class, Item};
+    use std::collections::BTreeMap;
+
+    fn walk(it: &Item, f: &mut dyn FnMut(&Item)) {
+        f(it);
+        for c in &it.contents {
+            walk(c, f);
+        }
+    }
+
+    #[test]
+    #[ignore]
+    fn balance_census() {
+        let mut cum = 0;
+        for (i, lv) in build_all().iter().enumerate() {
+            let mut races: BTreeMap<String, (i32, i32)> = BTreeMap::new();
+            let mut exp = 0;
+            let mut items: Vec<Item> = lv.items.iter().map(|w| w.item.clone()).collect();
+            for n in &lv.npcs {
+                let d = n.race.def();
+                let hostile = n.attitude == crate::game::creatures::Attitude::Hostile;
+                let e = races
+                    .entry(format!(
+                        "{:?}{}",
+                        n.race,
+                        if hostile { "" } else { "(peace)" }
+                    ))
+                    .or_default();
+                e.0 += 1;
+                e.1 += d.exp;
+                if hostile {
+                    exp += d.exp;
+                }
+                if n.name.is_some() {
+                    println!(
+                        "   named {:?} {:?} {:?} inv {:?}",
+                        n.name,
+                        n.race,
+                        n.attitude,
+                        n.inventory
+                            .iter()
+                            .map(|i| format!("{:?}x{}", i.kind, i.qty))
+                            .collect::<Vec<_>>()
+                    );
+                } else {
+                    items.extend(n.inventory.iter().cloned());
+                }
+            }
+            cum += exp;
+            let (mut coins, mut treasure, mut food, mut potions, mut lights) = (0, 0, 0, 0, 0);
+            let mut kinds: BTreeMap<String, i32> = BTreeMap::new();
+            for it in &items {
+                walk(it, &mut |x| {
+                    let c = x.def().class;
+                    match c {
+                        Class::Treasure if x.kind == ItemKind::Coin => coins += x.qty as i32,
+                        Class::Treasure => treasure += x.value(),
+                        Class::Food => food += x.qty as i32,
+                        Class::Potion => potions += 1,
+                        Class::Light => lights += 1,
+                        _ => {}
+                    }
+                    if matches!(
+                        c,
+                        Class::Weapon
+                            | Class::Armor
+                            | Class::Potion
+                            | Class::Food
+                            | Class::Light
+                            | Class::Wand
+                            | Class::Missile
+                            | Class::Treasure
+                    ) {
+                        *kinds.entry(format!("{:?}", x.kind)).or_default() += x.qty as i32;
+                    }
+                });
+            }
+            println!(
+                "L{} {}: hostile exp {} (cum {}), coins {}, gems/nuggets worth {}, food {}, potions {}, lights {}",
+                i + 1,
+                lv.name,
+                exp,
+                cum,
+                coins,
+                treasure,
+                food,
+                potions,
+                lights
+            );
+            println!("   races {:?}", races);
+            println!("   items {:?}", kinds);
         }
     }
 }

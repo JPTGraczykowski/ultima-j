@@ -372,7 +372,13 @@ Three! Ssiva will eat. ... Thank you, warm-blood. Let me ssshow you how the Peop
 
 -- peace
 Peace is good. Peace is rare. The Sage Ssrath will sspeak with you, in the pool of thinking, north of the village.
+* Do the People trade? -> wares
 * Thank you. -> start
+
+-- wares
+! barter
+The People trade with thossse who come in peace. Fish from the deep pool, and the healer's brews - red for woundsss, green for poison, blue for the mind. Gold, or sssomething of worth.
+* Back. -> start
 
 -- shard
 The green ssshard is kept by the Sage Ssrath. Go north, to the pool of thinking. Be ressspectful.

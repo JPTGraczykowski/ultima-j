@@ -808,7 +808,7 @@ impl Game {
                 self.sound(Sfx::Fire);
                 shoot(self, ProjKind::Fireball, 6.0, 14 + casting)
             }
-            Spell::Poison => shoot(self, ProjKind::Poison, 6.0, 3),
+            Spell::Poison => shoot(self, ProjKind::Poison, 6.0, 6),
             Spell::Paralyze | Spell::Ally => {
                 if let Some(id) = self.creature_in_aim(aim, 6.0) {
                     let n = self.level_mut().npc_mut(id).unwrap();
@@ -904,7 +904,7 @@ impl Game {
             }
             Spell::Tremor | Spell::FlameWind => {
                 let ids: Vec<u32> = self.level().npcs.iter().filter(|n| n.alive() && (n.pos - eye).len() < 5.0 && n.attitude != Attitude::Friendly).map(|n| n.id).collect();
-                let dmg = if spell == Spell::Tremor { 12 } else { 18 } + casting;
+                let dmg = if spell == Spell::Tremor { 20 } else { 26 } + casting;
                 self.events.push(Event::Shake(0.6));
                 for id in ids {
                     ai::damage_npc(self, id, dmg, true);
@@ -1356,7 +1356,310 @@ mod tests {
             p.level = lvl;
             assert_eq!(p.max_circle(), lvl.min(8));
         }
-        // The eighth circle comes at about the experience the first four levels offer.
-        assert!(Player::exp_for_level(8) <= 2000);
+        // The eighth circle comes in the Crypts: the first four levels offer
+        // about 1,900 experience in kills and as much again in quests.
+        assert!(Player::exp_for_level(8) <= 3000);
+    }
+}
+
+/// Balance tools: duels between a player of a given level and kit and one
+/// creature, run through the real game loop. Not part of the normal test run:
+/// `cargo test --release balance_duels -- --ignored --nocapture`.
+#[cfg(test)]
+mod balance {
+    use crate::art::textures::Tex;
+    use crate::game::creatures::{AiState, Attitude, Npc, Race};
+    use crate::game::items::{Item, ItemKind, Skill};
+    use crate::game::state::EqSlot;
+    use crate::game::{Game, Level, MoveInput, PClass, Player, ai};
+    use crate::util::V3;
+    use crate::world::map::{Map, Tile};
+
+    /// A player as they might be on some dungeon level.
+    struct Prof {
+        name: &'static str,
+        class: PClass,
+        level: i32,
+        attack: i32,
+        wskill: Skill,
+        wpn_skill: i32,
+        defense: i32,
+        weapon: ItemKind,
+        kind: usize,
+        armor: &'static [(ItemKind, EqSlot)],
+    }
+
+    fn setup(p: &Prof, seed: u64) -> Game {
+        let mut pl = Player::new("T", p.class, false);
+        let mut g = Game::new(pl.clone(), seed);
+        g.gain_exp(Player::exp_for_level(p.level));
+        pl = g.player.clone();
+        pl.skills[Skill::Attack as usize] = p.attack;
+        pl.skills[Skill::Defense as usize] = p.defense;
+        pl.skills[p.wskill as usize] = p.wpn_skill;
+        pl.equip.weapon = Some(Item::new(p.weapon));
+        for (k, s) in p.armor {
+            *pl.equip.get_mut(*s) = Some(Item::new(*k));
+        }
+        g.player = pl;
+        let mut m = Map::new();
+        for x in 1..20 {
+            for z in 3..8 {
+                m.set(
+                    x,
+                    z,
+                    Tile::open(0, 10, Tex::Dirt, Tex::CeilingRock, Tex::RoughStone),
+                );
+            }
+        }
+        g.levels[0] = Level::new("t", m);
+        g.cur = 0;
+        g.player.pos = V3::new(5.5, 0.0, 5.5);
+        g.player.yaw = std::f32::consts::FRAC_PI_2;
+        g
+    }
+
+    /// One fight: the player stands still and swings at full power whenever
+    /// the power gem is full. Returns (killed it, vitality lost, seconds).
+    fn duel(p: &Prof, race: Race, seed: u64) -> (bool, i32, f32) {
+        let mut g = setup(p, seed);
+        let mut n = Npc::new(0, race, 6.6, 5.5);
+        n.attitude = Attitude::Hostile;
+        n.ai = AiState::Attack;
+        let id = g.level_mut().add_npc(n);
+        let vit0 = g.player.vit;
+        let delay = Item::new(p.weapon)
+            .def()
+            .weapon
+            .map(|w| w.delay)
+            .unwrap_or(0.8);
+        let period = 0.9 * delay + 0.34;
+        let dt = 1.0 / 30.0;
+        let mut t = 0.0;
+        let mut next = period;
+        while t < 120.0 {
+            g.update(&MoveInput::default(), dt);
+            t += dt;
+            g.player.pos.x = 5.5;
+            g.player.pos.z = 5.5;
+            if g.player.dead {
+                return (false, vit0, t);
+            }
+            let Some(npc) = g.level().npc(id) else { break };
+            if !npc.alive() {
+                return (true, vit0 - g.player.vit, t);
+            }
+            if t >= next {
+                next += period;
+                let e = g.eye();
+                let aim = V3::new(npc.pos.x - e.x, 0.0, npc.pos.z - e.z).norm();
+                ai::player_attack(&mut g, aim, p.kind, 1.0);
+            }
+        }
+        (false, vit0 - g.player.vit, t)
+    }
+
+    #[test]
+    #[ignore]
+    fn balance_duels() {
+        use ItemKind::*;
+        let profs = [
+            (
+                Prof {
+                    name: "L1 fighter lv2",
+                    class: PClass::Fighter,
+                    level: 2,
+                    attack: 7,
+                    wskill: Skill::Sword,
+                    wpn_skill: 6,
+                    defense: 7,
+                    weapon: Shortsword,
+                    kind: 1,
+                    armor: &[
+                        (LeatherVest, EqSlot::Chest),
+                        (LeatherCap, EqSlot::Head),
+                        (WoodenShield, EqSlot::Shield),
+                    ],
+                },
+                vec![
+                    Race::Rat,
+                    Race::Bat,
+                    Race::GreenGoblin,
+                    Race::Slug,
+                    Race::GrayGoblin,
+                ],
+            ),
+            (
+                Prof {
+                    name: "L1 mage lv2",
+                    class: PClass::Mage,
+                    level: 2,
+                    attack: 2,
+                    wskill: Skill::Sword,
+                    wpn_skill: 0,
+                    defense: 2,
+                    weapon: Dagger,
+                    kind: 2,
+                    armor: &[],
+                },
+                vec![Race::Rat, Race::Bat, Race::GreenGoblin],
+            ),
+            (
+                Prof {
+                    name: "L2 fighter lv4",
+                    class: PClass::Fighter,
+                    level: 4,
+                    attack: 9,
+                    wskill: Skill::Sword,
+                    wpn_skill: 8,
+                    defense: 8,
+                    weapon: Longsword,
+                    kind: 1,
+                    armor: &[
+                        (LeatherVest, EqSlot::Chest),
+                        (ChainCowl, EqSlot::Head),
+                        (WoodenShield, EqSlot::Shield),
+                    ],
+                },
+                vec![Race::Spider, Race::Slug, Race::Dwarf],
+            ),
+            (
+                Prof {
+                    name: "L3 fighter lv6",
+                    class: PClass::Fighter,
+                    level: 6,
+                    attack: 11,
+                    wskill: Skill::Sword,
+                    wpn_skill: 11,
+                    defense: 10,
+                    weapon: Longsword,
+                    kind: 1,
+                    armor: &[
+                        (ChainShirt, EqSlot::Chest),
+                        (ChainCowl, EqSlot::Head),
+                        (WoodenShield, EqSlot::Shield),
+                        (Gauntlets, EqSlot::Hands),
+                    ],
+                },
+                vec![Race::Ghoul, Race::Lurker, Race::Lizardman],
+            ),
+            (
+                Prof {
+                    name: "L3 paladin lv6",
+                    class: PClass::Paladin,
+                    level: 6,
+                    attack: 10,
+                    wskill: Skill::Mace,
+                    wpn_skill: 9,
+                    defense: 9,
+                    weapon: Mace,
+                    kind: 0,
+                    armor: &[
+                        (ChainShirt, EqSlot::Chest),
+                        (ChainCowl, EqSlot::Head),
+                        (WoodenShield, EqSlot::Shield),
+                    ],
+                },
+                vec![Race::Ghoul, Race::Lurker, Race::Lizardman],
+            ),
+            (
+                Prof {
+                    name: "L4 ranger lv8 sword",
+                    class: PClass::Ranger,
+                    level: 8,
+                    attack: 8,
+                    wskill: Skill::Sword,
+                    wpn_skill: 12,
+                    defense: 6,
+                    weapon: Longsword,
+                    kind: 1,
+                    armor: &[
+                        (ChainShirt, EqSlot::Chest),
+                        (PlateHelm, EqSlot::Head),
+                        (WoodenShield, EqSlot::Shield),
+                    ],
+                },
+                vec![Race::Skeleton, Race::Headless, Race::Troll, Race::Ghost],
+            ),
+            (
+                Prof {
+                    name: "L4 fighter lv8",
+                    class: PClass::Fighter,
+                    level: 8,
+                    attack: 13,
+                    wskill: Skill::Sword,
+                    wpn_skill: 14,
+                    defense: 12,
+                    weapon: Broadsword,
+                    kind: 1,
+                    armor: &[
+                        (ChainShirt, EqSlot::Chest),
+                        (PlateHelm, EqSlot::Head),
+                        (WoodenShield, EqSlot::Shield),
+                        (Gauntlets, EqSlot::Hands),
+                        (LeatherLeggings, EqSlot::Legs),
+                    ],
+                },
+                vec![
+                    Race::Skeleton,
+                    Race::Headless,
+                    Race::Troll,
+                    Race::Ghost,
+                    Race::Golem,
+                ],
+            ),
+            (
+                Prof {
+                    name: "L5 fighter lv9",
+                    class: PClass::Fighter,
+                    level: 9,
+                    attack: 14,
+                    wskill: Skill::Sword,
+                    wpn_skill: 15,
+                    defense: 13,
+                    weapon: Broadsword,
+                    kind: 1,
+                    armor: &[
+                        (ChainShirt, EqSlot::Chest),
+                        (PlateHelm, EqSlot::Head),
+                        (TowerShield, EqSlot::Shield),
+                        (Gauntlets, EqSlot::Hands),
+                        (PlateLeggings, EqSlot::Legs),
+                        (PlateBoots, EqSlot::Feet),
+                    ],
+                },
+                vec![Race::Ghoul, Race::Imp, Race::Reaper, Race::Headless],
+            ),
+        ];
+        for (p, races) in &profs {
+            let g = setup(p, 1);
+            println!(
+                "{} (vit {}, armour {})",
+                p.name,
+                g.player.max_vit,
+                g.player.armor_value()
+            );
+            for r in races {
+                let mut wins = 0;
+                let mut lost = 0;
+                let mut time = 0.0;
+                let n = 200;
+                for s in 0..n {
+                    let (w, l, t) = duel(p, *r, s as u64 + 3);
+                    if w {
+                        wins += 1;
+                    }
+                    lost += l;
+                    time += t;
+                }
+                println!(
+                    "   vs {:?}: win {}%, vit lost {:.1}, {:.1}s",
+                    r,
+                    wins * 100 / n,
+                    lost as f32 / n as f32,
+                    time / n as f32
+                );
+            }
+        }
     }
 }

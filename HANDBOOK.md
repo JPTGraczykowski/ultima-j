@@ -261,17 +261,18 @@ and learning things in conversation.
 
 | Level | Experience | | Level | Experience |
 | --- | --- | --- | --- | --- |
-| 1 | 0 | | 9 | 2,400 |
-| 2 | 50 | | 10 | 3,200 |
-| 3 | 140 | | 11 | 4,200 |
-| 4 | 300 | | 12 | 5,400 |
-| 5 | 600 | | 13 | 7,000 |
-| 6 | 900 | | 14 | 9,000 |
-| 7 | 1,300 | | 15 | 11,500 |
-| 8 | 1,800 | | 16 | 14,500 |
+| 1 | 0 | | 9 | 3,800 |
+| 2 | 50 | | 10 | 5,000 |
+| 3 | 150 | | 11 | 6,500 |
+| 4 | 400 | | 12 | 8,000 |
+| 5 | 700 | | 13 | 10,000 |
+| 6 | 1,100 | | 14 | 12,500 |
+| 7 | 1,700 | | 15 | 15,500 |
+| 8 | 2,600 | | 16 | 19,000 |
 
-An adventurer who explores everything usually reaches level 3 in the Upper
-Halls, level 5 or 6 in the Flooded Warrens, and level 8 in the Crypts.
+An adventurer who explores everything and helps the people they meet usually
+reaches level 3 in the Upper Halls, level 5 in the Mines, level 6 or 7 in the
+Flooded Warrens, and level 8 in the Crypts.
 
 Each level gives you:
 
@@ -290,12 +291,12 @@ circle up to your level. See [Magic](#9-magic).
 
 | Skill | Effect |
 | --- | --- |
-| **Attack** | +3% to hit with every weapon |
-| **Defense** | −3% chance for creatures to hit you |
-| **Unarmed** | +3% to hit with your fists |
-| **Sword** | +3% to hit with daggers and swords |
-| **Axe** | +3% to hit with axes |
-| **Mace** | +3% to hit with cudgels and maces |
+| **Attack** | +2% to hit with every weapon |
+| **Defense** | −2% chance for creatures to hit you |
+| **Unarmed** | +2% to hit with your fists |
+| **Sword** | +2% to hit with daggers and swords |
+| **Axe** | +2% to hit with axes |
+| **Mace** | +2% to hit with cudgels and maces |
 | **Missile** | +1 damage per 2 points with a sling or crossbow |
 | **Mana** | Faster mana regeneration. Each point spent also gives +1 maximum mana, and you gain more mana on each level-up. |
 | **Lore** | Names an item's enchantment when you look at it, if Lore × 6 + INT/2 is high enough. Stronger enchantments need more. |
@@ -331,7 +332,7 @@ Where you aim decides how you attack:
 
 Each weapon does different damage with each attack. Use its best one.
 
-**Chance to hit** = 55% + 3% × (Attack + weapon skill) + DEX/2 − 3% × the foe's
+**Chance to hit** = 50% + 2% × (Attack + weapon skill) + DEX/3 − 3% × the foe's
 defense + up to 10% for power, kept between 10% and 95%.
 
 **Damage** = (weapon damage + (ST − 10)/5) × (0.4 + 0.9 × power) + 0–2, plus
@@ -340,8 +341,8 @@ less damage. Paladins do half again as much to the undead, and Rangers double
 damage to a creature that has not noticed them yet.
 
 **Being hit.** A creature hits you with a chance of 45% + 4% × its attack −
-(3% × Defense + 3% × armour + DEX/2), kept between 8% and 92%. Your armour
-also takes armour/3 off every blow.
+(2% × Defense + 2% × armour + DEX/3), kept between 8% and 92%. Your armour
+also takes armour/4 off every blow.
 
 **Wear.** Weapons and armour wear down slowly as you fight (a Tinker's
 half as fast). Armour below 20%
@@ -466,7 +467,7 @@ Durations are in minutes. "Area" means every creature within a few paces.
 | --- | --- | --- |
 | Heal | In Mani | Heals 14–23 |
 | Levitate | Hur Por | Float up to a little above the floor for 1 min, which is enough to cross lava and water |
-| Poison | Nox Mani | A poison bolt: 3 damage, then the target stays poisoned |
+| Poison | Nox Mani | A poison bolt: 6 damage, then the target is poisoned for 30 seconds (1 damage every 3 seconds) |
 | Remove Trap | An Jux | Disarms traps within 3 tiles |
 | Resist Fire | Sanct Flam | Lava hurts much less, for 2 min |
 
@@ -504,11 +505,11 @@ Durations are in minutes. "Area" means every creature within a few paces.
 
 | Spell | Runes | Effect |
 | --- | --- | --- |
-| Flame Wind | Flam Hur | 18 + Casting damage to everything around you |
+| Flame Wind | Flam Hur | 26 + Casting damage to everything around you |
 | Freeze Time | An Tym | Every creature stops for 15 seconds |
 | Iron Flesh | In Vas Sanct | Halves all damage you take, for 2 min |
 | Roaming Sight | Ort Por Wis | Shows the whole level on your map |
-| Tremor | Vas Por Ylem | 12 + Casting damage to everything around you |
+| Tremor | Vas Por Ylem | 20 + Casting damage to everything around you |
 
 **Wands** hold a spell and a number of charges. *Use* one to cast its spell
 without spending mana or needing a level.
@@ -577,7 +578,8 @@ Traders show their goods in the top left of the barter screen. To trade:
 Right-click anything on either side to ask what it is worth. Change comes back
 in gold, and anything you leave on the table returns to you when you finish
 talking. Traders pay half price for what you sell them, and never more than
-they would ask for it themselves.
+they would ask for it themselves. They don't restock: what they have is all they have,
+and what you sell them joins their goods.
 
 ## 12. Bestiary
 
@@ -585,26 +587,26 @@ they would ask for it themselves.
 
 | Creature | Hits | Damage | Exp | Notes |
 | --- | --- | --- | --- | --- |
-| Giant rat | 6 | 1–3 | 4 | Quick |
-| Cave bat | 5 | 1–3 | 5 | Flies, very quick |
-| Acid slug | 12 | 2–5 | 12 | Very slow |
-| Green goblin | 14 | 2–6 | 15 | |
-| Gray goblin | 16 | 2–7 | 18 | |
-| Giant spider | 16 | 2–6 | 22 | Quick, **poisonous** |
-| Skeleton | 18 | 2–8 | 25 | Undead |
-| Imp | 18 | 2–6 | 50 | Flies, **throws fire** |
-| Mage | 20 | 2–6 | 45 | **Casts magic bolts** |
-| Lizardman | 22 | 3–8 | 30 | Swims |
-| Outcast (human) | 24 | 2–8 | 30 | Usually peaceful |
-| Ghoul | 28 | 3–9 | 50 | Undead, **poisonous** |
-| Mountainman (dwarf) | 30 | 3–9 | 40 | Usually peaceful |
-| Ghost | 30 | 3–10 | 90 | Undead, flies, hard to hit |
-| Headless | 40 | 4–12 | 80 | |
-| Lurker | 45 | 4–12 | 90 | Lives in deep water |
-| Troll | 60 | 5–14 | 110 | |
-| Reaper | 70 | 5–15 | 150 | Slow |
-| Earth golem | 90 | 6–16 | 160 | Slow, very hard to hit, never flees |
-| Lord of souls | 220 | 8–22 | 1000 | **Throws fire** once angered. See Part Two. |
+| Cave bat | 6 | 1–4 | 5 | Flies, very quick |
+| Giant rat | 7 | 1–4 | 4 | Quick |
+| Acid slug | 14 | 2–6 | 12 | Very slow |
+| Green goblin | 18 | 2–7 | 15 | |
+| Gray goblin | 20 | 2–8 | 18 | |
+| Giant spider | 22 | 2–7 | 22 | Quick, **poisonous** |
+| Mage | 22 | 2–7 | 45 | **Casts magic bolts** |
+| Imp | 22 | 2–7 | 50 | Flies, **throws fire** |
+| Outcast (human) | 26 | 2–9 | 30 | Usually peaceful |
+| Lizardman | 28 | 3–9 | 30 | Swims |
+| Skeleton | 30 | 3–10 | 25 | Undead |
+| Mountainman (dwarf) | 34 | 3–10 | 40 | Usually peaceful |
+| Ghoul | 40 | 4–10 | 50 | Undead, **poisonous** |
+| Ghost | 40 | 4–11 | 90 | Undead, flies, hard to hit |
+| Headless | 55 | 4–13 | 80 | |
+| Lurker | 56 | 4–13 | 90 | Lives in deep water |
+| Troll | 80 | 6–16 | 110 | |
+| Reaper | 90 | 6–16 | 150 | Slow |
+| Earth golem | 110 | 7–18 | 160 | Slow, very hard to hit, never flees |
+| Lord of souls | 260 | 8–22 | 1000 | **Throws fire** once angered. See Part Two. |
 
 The undead feel no fear and leave bones when destroyed.
 
@@ -638,8 +640,8 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 
 - **The outcasts' camp** (west): **Elsmore** tells you about the colony, the
   shards and the Lord of Souls, and how to go down. Ask him for food and he
-  gives you bread. **Tobin** sells torches, bread, a red potion, a lantern, a lockpick and
-  a candle. With Charm 4 or more he gives you a candle and lower prices. There
+  gives you bread. **Tobin** sells red potions (40 gold), a green potion, bread,
+  cheese, torches, a lantern, a lockpick and a candle. With Charm 4 or more he gives you a candle and lower prices. There
   is a **bedroll** here.
 - **The shrine** (south of the corridor): heals you and reminds you about
   skill points.
@@ -682,8 +684,10 @@ explains the IN LOR and ORT JUX spells. Light the torch.
   them when the east face fell into a shaft. Leap from the dig face onto the
   lower ledge beyond for a box with two gold nuggets and a red gem, and a
   lantern. To get back, drop into the shaft and climb its ramp.
-- **Bodric the smith** (forge, south): sells a chain shirt, gauntlets, a
-  broadsword, a wooden shield and torches. He buys gold nuggets for 30 each,
+- **Bodric the smith** (forge, south): sells a breastplate (250 gold), a
+  chain shirt, chain leggings, gauntlets, a broadsword, an axe, a crossbow
+  with 20 bolts (the only crossbow in the Abyss), a wooden shield and
+  torches. He buys gold nuggets for 30 each,
   and repairs all your gear for 15 gold. With Charm 3 or more he repairs it
   once for free. The **FLAM** rune lies on his table, and there's a mace and a
   chain cowl nearby.
@@ -706,7 +710,9 @@ explains the IN LOR and ORT JUX spells. Light the torch.
 ### Level 3 — The Flooded Warrens
 
 - **Hissk** (the lizardman village, east of the great flooded hall) sends you
-  to the Sage.
+  to the Sage. Say you come in peace and he trades: red, green and blue
+  potions and fish. He is the last trader on the way down, so bring the gold
+  and gems you have found.
 - **Ssrath the Sage** (the pool of thinking, north of the village): ask him
   to teach you magic and he gives you the **WIS** rune. Ask about the shard
   and he tells you that lurkers have stolen the clutch of eggs. Ask about the

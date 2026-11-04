@@ -21,7 +21,7 @@ source ~/.cargo/env                 # if cargo is not on the PATH
 cargo build --release               # the binary is target/release/ultima-j
 cargo run --release                 # title screen
 cargo run --release -- --play       # skip the title, start in the dungeon
-cargo test --release                # every test (78, about a minute)
+cargo test --release                # every test (84, about a minute)
 cargo test --release levels         # only tests whose name contains "levels"
 cargo test --release jump_reach -- --nocapture   # one test, with its printed output
 ```
@@ -41,6 +41,14 @@ Tests worth knowing by name:
 | `random_walks_keep_player_in_bounds`, `ui_fuzz` | Fuzzers: random movement and random clicks never crash or leave the map |
 | `every_phrase_is_translated`, `polish_dialogue_matches_english` | Every `t!()` text and every dialogue line has a Polish version |
 | `game_state_round_trips_through_a_save` | Saves load back unchanged |
+
+Two balance tools are tests marked `#[ignore]`, so they run only when asked
+(`cargo test --release balance -- --ignored --nocapture`):
+
+| Tool | What it prints |
+| --- | --- |
+| `balance_census` | For each level: the experience its hostile creatures give, gold coins, the worth of gems and nuggets, food, potions, lights, and the named characters' goods |
+| `balance_duels` | A player as they might be on each level (level, skills, kit) fighting one creature at a time through the real game loop, 200 times: how often they kill it, the vitality they lose, and how long it takes. A fight the player doesn't win usually means the creature fled |
 
 ## 2. Command-line options
 

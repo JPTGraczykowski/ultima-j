@@ -373,7 +373,13 @@ Trzy! Ssiva będzie jeść. ... Dziękuję, {ciepłokrwisssty|ciepłokrwissssta}
 
 -- peace
 Pokój jessst dobry. Pokój jessst rzadki. Mędrzec Ssssrath z tobą porozmawia, w sssadzawce myślenia, na północ od wiosssski.
+* Czy Lud handluje? -> wares
 * Dziękuję. -> start
+
+-- wares
+! barter
+Lud handluje z tymi, którzy przychodzą w pokoju. Ryby z głębokiej sssadzawki i wywary uzdrowiciela - czerwony na rany, zielony na truciznę, niebieski dla umysssłu. Złoto albo coś cennego.
+* Wróć. -> start
 
 -- shard
 Zielonego odłamka ssstrzeże Mędrzec Ssrath. Idź na północ, do sssadzawki myślenia. Okaż ssszacunek.

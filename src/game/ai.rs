@@ -298,16 +298,16 @@ fn melee(g: &mut Game, i: usize, dt: f32) {
         return;
     }
     npc.swing = 0.0;
-    npc.cooldown = 1.1 / def.speed.max(0.4) + g.rng.rangef(0.0, 0.6);
+    npc.cooldown = 0.85 / def.speed.max(0.4) + g.rng.rangef(0.0, 0.5);
     // Resolve the blow.
     let p = &g.player;
-    let defense = p.skill(Skill::Defense) * 3 + p.armor_value() * 3 + p.dex / 2 + if p.has_spell(Spell::ResistBlows) { 15 } else { 0 };
+    let defense = p.skill(Skill::Defense) * 2 + p.armor_value() * 2 + p.dex / 3 + if p.has_spell(Spell::ResistBlows) { 15 } else { 0 };
     let chance = (45 + def.attack * 4 - defense).clamp(8, 92);
     g.sound(Sfx::Swing);
     if g.rng.range(0, 100) < chance {
         let armor = g.player.armor_value();
         let raw = g.rng.range(def.dmg.0, def.dmg.1 + 1);
-        let dmg = (raw - armor / 3).max(1);
+        let dmg = (raw - armor / 4).max(1);
         let name = crate::lang::Noun::new(def.name, def.name);
         g.hurt_player(dmg, &t!("The {} hits you.", name));
         if def.poisons && g.rng.chance(0.25) {
@@ -552,7 +552,7 @@ pub fn player_attack(g: &mut Game, aim: V3, kind: usize, power: f32) {
         Some(super::items::Enchant::Accuracy(n)) => n as i32 * 5,
         _ => 0,
     };
-    let chance = (55 + (p.skill(Skill::Attack) + p.skill(skill)) * 3 + p.dex / 2 - def.defense * 3 + (power * 10.0) as i32 + accuracy).clamp(10, 95);
+    let chance = (50 + (p.skill(Skill::Attack) + p.skill(skill)) * 2 + p.dex / 3 - def.defense * 3 + (power * 10.0) as i32 + accuracy).clamp(10, 95);
     if g.rng.range(0, 100) < chance {
         let base = dmg_table[kind.min(2)];
         let strength_bonus = (p.st - 10) / 5;
