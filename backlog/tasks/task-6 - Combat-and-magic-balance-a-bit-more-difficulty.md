@@ -1,11 +1,11 @@
 ---
 id: TASK-6
 title: Combat and magic balance, a bit more difficulty
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-10-22T11:17:00Z'
-updated_date: '2026-11-04T10:14:00Z'
+updated_date: '2026-11-04T12:26:00Z'
 labels: []
 milestone: m-0
 dependencies:
@@ -27,7 +27,7 @@ Done last as one playthrough of all five levels, because the earlier 1.0 tasks c
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 One full hand playthrough of all five levels completed after the other 1.0 tasks
+- [x] #1 One full hand playthrough of all five levels completed after the other 1.0 tasks
 - [x] #2 Combat and magic tuned for somewhat more difficulty
 - [x] #3 Traders are worth visiting with the gold a player finds
 - [x] #4 HANDBOOK.md numbers match the code
@@ -52,4 +52,20 @@ Measured before: an on-level fighter lost ~1 vitality a fight (L3 ghoul 0.9 of 6
 After (balance_duels, 200 fights each, full-power swings): L1 fighter lv2 loses 2-3 to a goblin; L3 fighter lv6 loses 6 to a ghoul, 12 to a lurker; L3 paladin 7 and 19; L4 fighter lv8 loses 18 to a troll, 47 of 72 to the golem; L4 ranger lv8 with a sword loses 40 of 63 to a troll. L5 in plate stays easy one-on-one (2 vs a ghoul); its danger is groups and fire-throwing imps.
 Hissk's trade checked headless in English and Polish (peace -> 'Do the People trade?' -> barter screen with his potions and fish). cargo test --release: 84 passed, 2 ignored (the balance tools).
 Not changed: sleep (90% heal, food-limited), spell costs, exp per kill, level contents (adding creatures would reshape the levels' rng caves).
+
+2026-11-04: the user played all five levels by hand after the balance pass and asked to close the task.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Combat, magic and traders rebalanced for a bit more difficulty, measured with two new ignored balance tools (balance_census, balance_duels) and played through by the user.
+
+- Combat: player to-hit 50% + 2% per Attack/weapon point + DEX/3 (was capped at 95%); creature blows count Defense and armour at 2% a point, armour soaks armour/4; creatures swing more often and have more hits and damage, most from level 3 on. An on-level fighter now loses 10-25% vitality to standard foes and far more to trolls and the golem (before: ~1 vitality a fight).
+- Experience table stretched (level 8 at 2,600) so a thorough player reaches level 8 in the Crypts.
+- Magic: Poison 6 damage + 30 s poison, Tremor 20 + Casting, Flame Wind 26 + Casting.
+- Traders: Tobin and Bodric stock more (potions, food, breastplate, the only crossbow); Hissk on level 3 trades potions and fish (English and Polish).
+- HANDBOOK.md (formulas, exp table, bestiary, spells, traders), DEVELOPING.md and HANDOFF.md updated. cargo test --release: 84 passed, 2 ignored.
+
+Risks: level 5 in plate is still easy one-on-one; old saves keep their creatures' old hits.
+<!-- SECTION:FINAL_SUMMARY:END -->

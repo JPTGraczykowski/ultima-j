@@ -3,7 +3,7 @@
 Goal: a clone of Ultima Underworld (1992) in Rust whose graphics match the
 original's style. Status (2026-11-04): the game is complete and playable from
 the title screen to the victory screen, and all 84 tests pass. Balance pass
-done (TASK-6), waiting for a hand playthrough.
+done and played through by hand (TASK-6).
 
 ## Done
 
